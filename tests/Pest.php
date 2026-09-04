@@ -1,47 +1,69 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Test Case
-|--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
-|
-*/
+use App\Enums\ClubStatus;
+use App\Enums\CompetitionStatus;
+use App\Enums\Equipment;
+use App\Enums\EventGender;
+use App\Enums\Gender;
+use App\Enums\Stroke;
+use App\Models\AgeGroup;
+use App\Models\Athlete;
+use App\Models\Club;
+use App\Models\Competition;
+use App\Models\Event;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-pest()->extend(Tests\TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
+pest()->extend(TestCase::class)
+    ->in('Unit');
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
-
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
-*/
-
-function something()
+/**
+ * @return array{
+ *     club: Club,
+ *     coach: User,
+ *     competition: Competition,
+ *     group: AgeGroup,
+ *     event: Event,
+ *     athlete: Athlete
+ * }
+ */
+function openRegistrationMeet(): array
 {
-    // ..
+    $club = Club::factory()->create(['status' => ClubStatus::Verified]);
+    $coach = User::factory()->pelatih($club)->create();
+    $competition = Competition::factory()->status(CompetitionStatus::Registration)->create([
+        'max_events_per_athlete' => 3,
+        'fee_per_event' => 50_000,
+        'pool_length' => 25,
+    ]);
+    $group = AgeGroup::factory()->create([
+        'competition_id' => $competition->id,
+        'code' => '3',
+        'name' => 'Group 3',
+        'birth_year_start' => 2015,
+        'birth_year_end' => 2016,
+        'sort_order' => 3,
+    ]);
+    $event = Event::factory()->create([
+        'competition_id' => $competition->id,
+        'event_number' => 13,
+        'gender' => EventGender::Male,
+        'distance' => 50,
+        'stroke' => Stroke::Breaststroke,
+        'equipment' => Equipment::None,
+    ]);
+    $event->ageGroups()->attach($group->id);
+    $athlete = Athlete::factory()->create([
+        'club_id' => $club->id,
+        'gender' => Gender::Male,
+        'birth_year' => 2016,
+        'full_name' => 'AHZA DANISH RAHMAN',
+    ]);
+
+    return compact('club', 'coach', 'competition', 'group', 'event', 'athlete');
 }

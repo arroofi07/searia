@@ -2,24 +2,146 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ClubStatus;
+use App\Enums\ClubType;
+use App\Enums\CompetitionStatus;
+use App\Enums\CompetitionType;
+use App\Enums\Equipment;
+use App\Enums\EventGender;
+use App\Enums\Gender;
+use App\Enums\SeedingMode;
+use App\Enums\Stroke;
+use App\Enums\UserRole;
+use App\Models\AgeGroup;
+use App\Models\Athlete;
+use App\Models\Club;
+use App\Models\Competition;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $clubA = Club::query()->create([
+            'name' => 'SeaRIA Aquatic Padang',
+            'short_name' => 'SAP',
+            'type' => ClubType::Perkumpulan,
+            'city' => 'Padang',
+            'province' => 'Sumatera Barat',
+            'contact_name' => 'Official SeaRIA',
+            'contact_phone' => '081234567890',
+            'status' => ClubStatus::Verified,
+            'is_active' => true,
         ]);
+
+        $clubB = Club::query()->create([
+            'name' => 'Gunung Sport Center',
+            'short_name' => 'GSC',
+            'type' => ClubType::Perkumpulan,
+            'city' => 'Padang',
+            'province' => 'Sumatera Barat',
+            'contact_name' => 'Official GSC',
+            'contact_phone' => '081298765432',
+            'status' => ClubStatus::Pending,
+            'is_active' => true,
+        ]);
+
+        User::query()->create([
+            'name' => 'Super Admin',
+            'email' => 'admin@searia.test',
+            'password' => Hash::make('password'),
+            'role' => UserRole::SuperAdmin,
+            'is_active' => true,
+        ]);
+
+        User::query()->create([
+            'name' => 'Panitia',
+            'email' => 'panitia@searia.test',
+            'password' => Hash::make('password'),
+            'role' => UserRole::Panitia,
+            'is_active' => true,
+        ]);
+
+        User::query()->create([
+            'name' => 'Pelatih SeaRIA',
+            'email' => 'pelatih@searia.test',
+            'password' => Hash::make('password'),
+            'role' => UserRole::Pelatih,
+            'club_id' => $clubA->id,
+            'is_active' => true,
+        ]);
+
+        User::query()->create([
+            'name' => 'Pelatih GSC',
+            'email' => 'pelatih.gsc@searia.test',
+            'password' => Hash::make('password'),
+            'role' => UserRole::Pelatih,
+            'club_id' => $clubB->id,
+            'is_active' => true,
+        ]);
+
+        Athlete::query()->create([
+            'club_id' => $clubA->id,
+            'full_name' => 'AHZA DANISH RAHMAN',
+            'gender' => Gender::Male,
+            'birth_year' => 2016,
+            'is_active' => true,
+        ]);
+
+        Athlete::query()->create([
+            'club_id' => $clubA->id,
+            'full_name' => 'MUTYA ZAHIRA TANJUNG',
+            'gender' => Gender::Female,
+            'birth_year' => 2017,
+            'is_active' => true,
+        ]);
+
+        $competition = Competition::query()->create([
+            'name' => 'SeaRIA Aquatic Championship 2026',
+            'venue' => 'Kolam Renang Painan',
+            'city' => 'Pesisir Selatan',
+            'start_date' => '2026-10-12',
+            'end_date' => '2026-10-13',
+            'registration_opens_at' => '2026-09-01 08:00:00',
+            'registration_closes_at' => '2026-10-10 23:59:00',
+            'technical_meeting_at' => '2026-10-11 19:00:00',
+            'type' => CompetitionType::Official,
+            'pool_lanes' => 6,
+            'pool_length' => 25,
+            'max_events_per_athlete' => 3,
+            'seeding_mode' => SeedingMode::Balanced,
+            'fee_per_event' => 50_000,
+            'late_fee_per_event' => 0,
+            'status' => CompetitionStatus::Registration,
+        ]);
+
+        foreach (AgeGroup::defaultDefinitions(2026) as $definition) {
+            $competition->ageGroups()->create($definition);
+        }
+
+        $putra = $competition->events()->create([
+            'event_number' => 13,
+            'gender' => EventGender::Male,
+            'distance' => 50,
+            'stroke' => Stroke::Breaststroke,
+            'equipment' => Equipment::None,
+            'session' => 1,
+            'sort_order' => 1,
+        ]);
+        $putri = $competition->events()->create([
+            'event_number' => 14,
+            'gender' => EventGender::Female,
+            'distance' => 50,
+            'stroke' => Stroke::Breaststroke,
+            'equipment' => Equipment::None,
+            'session' => 1,
+            'sort_order' => 2,
+        ]);
+
+        $groupIds = $competition->ageGroups()->pluck('id');
+        $putra->ageGroups()->attach($groupIds);
+        $putri->ageGroups()->attach($groupIds);
     }
 }

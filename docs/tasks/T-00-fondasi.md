@@ -107,24 +107,27 @@ Uji:
 Prasyarat : T-00-01
 Acuan : [../06-catatan-waktu.md](../06-catatan-waktu.md)
 Perkiraan : M
+Status : Selesai
 
 Satu kelas yang menjadi satu-satunya tempat aturan format waktu ditulis. Dipakai oleh pendaftaran, import Excel, input hasil, dan seluruh tampilan.
 
 Berkas yang disentuh:
 - `app/Support/SwimTime.php`
 - `app/Casts/SwimTimeCast.php`
+- `app/Exceptions/InvalidSwimTimeException.php`
+- `tests/Unit/SwimTimeTest.php`
 
 Kriteria selesai:
-- [ ] Menguraikan `52.20`, `52,20`, `00:52.20`, `1:34.70`, `00:01:34.70` menjadi milidetik yang benar
-- [ ] Menguraikan `NT`, string kosong, `-`, dan `99:99:99` menjadi `null`
-- [ ] Menguraikan bentuk tanpa pemisah `5220` dan `13470` bila mode input cepat aktif
-- [ ] Memformat milidetik menjadi `mm:ss.SS`, dan `hh:mm:ss.SS` bila melewati satu jam
-- [ ] Menolak masukan yang tidak dikenali dengan melempar `InvalidSwimTimeException`
-- [ ] Cast Eloquent dapat dipasang pada kolom integer milidetik
+- [x] Menguraikan `52.20`, `52,20`, `00:52.20`, `1:34.70`, `00:01:34.70` menjadi milidetik yang benar
+- [x] Menguraikan `NT`, string kosong, `-`, dan `99:99:99` menjadi `null`
+- [x] Menguraikan bentuk tanpa pemisah `5220` dan `13470` bila mode input cepat aktif
+- [x] Memformat milidetik menjadi `mm:ss.SS`, dan `hh:mm:ss.SS` bila melewati satu jam
+- [x] Menolak masukan yang tidak dikenali dengan melempar `InvalidSwimTimeException`
+- [x] Cast Eloquent dapat dipasang pada kolom integer milidetik
 
 Uji:
-- Unit test tabel masukan dan keluaran untuk seluruh bentuk pada dokumen acuan
-- Uji bolak-balik: memformat lalu menguraikan kembali menghasilkan nilai semula
+- [x] Unit test tabel masukan dan keluaran untuk seluruh bentuk pada dokumen acuan
+- [x] Uji bolak-balik: memformat lalu menguraikan kembali menghasilkan nilai semula
 
 ---
 
@@ -133,21 +136,23 @@ Uji:
 Prasyarat : T-00-05
 Acuan : [../06-catatan-waktu.md](../06-catatan-waktu.md) bagian Batas kewajaran
 Perkiraan : S
+Status : Selesai
 
 Aturan validasi yang menahan salah ketik seperti `00:05.20` untuk jarak 50 meter.
 
 Berkas yang disentuh:
 - `app/Rules/ReasonableSwimTime.php`
 - `config/searia.php`
+- `tests/Unit/ReasonableSwimTimeTest.php`
 
 Kriteria selesai:
-- [ ] Ambang bawah dan atas per jarak dibaca dari konfigurasi, bukan ditulis tetap di kode
-- [ ] Aturan menolak nilai di luar rentang saat dipakai pada pendaftaran
-- [ ] Aturan hanya menghasilkan peringatan, bukan penolakan, saat dipakai pada input hasil juri
-- [ ] Nilai `null` yang berarti NT selalu lolos
+- [x] Ambang bawah dan atas per jarak dibaca dari konfigurasi, bukan ditulis tetap di kode
+- [x] Aturan menolak nilai di luar rentang saat dipakai pada pendaftaran
+- [x] Aturan hanya menghasilkan peringatan, bukan penolakan, saat dipakai pada input hasil juri
+- [x] Nilai `null` yang berarti NT selalu lolos
 
 Uji:
-- Unit test untuk jarak 25, 50, dan 100 meter pada batas bawah, batas atas, dan di antaranya
+- [x] Unit test untuk jarak 25, 50, dan 100 meter pada batas bawah, batas atas, dan di antaranya
 
 ---
 
