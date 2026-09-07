@@ -15,4 +15,6 @@
         class="rounded-md px-3 py-1.5 {{ $current === 'eligibility' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Matriks kelayakan</a>
     <a href="{{ route('admin.competitions.readiness', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $current === 'readiness' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Kesiapan</a>
+    <a href="{{ route('admin.imports.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'imports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Import</a>
 </nav>

@@ -13,6 +13,16 @@ return [
     */
     'athlete_name_similarity_threshold' => (float) env('ATHLETE_NAME_SIMILARITY_THRESHOLD', 0.78),
 
+    'import' => [
+        'max_bytes' => 5 * 1024 * 1024,
+        'max_rows' => 2000,
+        'queue_after_rows' => 200,
+        'chunk_size' => 500,
+        'file_retention_days' => 90,
+        'memory_limit' => '512M',
+        'time_limit' => 120,
+    ],
+
     'swim_time' => [
         'fast_input' => (bool) env('SWIM_TIME_FAST_INPUT', true),
         'no_time_format' => env('SWIM_TIME_NO_TIME_FORMAT', 'NT'),

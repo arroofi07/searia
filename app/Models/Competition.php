@@ -121,6 +121,14 @@ class Competition extends Model
         return $this->hasMany(Registration::class);
     }
 
+    /**
+     * @return HasMany<ImportBatch, $this>
+     */
+    public function importBatches(): HasMany
+    {
+        return $this->hasMany(ImportBatch::class);
+    }
+
     public function isDraft(): bool
     {
         return $this->status === CompetitionStatus::Draft;

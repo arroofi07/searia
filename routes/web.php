@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\CompetitionReadinessController;
 use App\Http\Controllers\Admin\CompetitionStatusController;
 use App\Http\Controllers\Admin\EligibilityMatrixController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\ImportController;
+use App\Http\Controllers\Admin\ImportTemplateController;
 use App\Http\Controllers\Admin\RegistrationVerificationController;
 use App\Http\Controllers\AthleteController;
 use App\Http\Controllers\Auth\LoginController;
@@ -53,6 +55,16 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('registrations/{registration}/reject', [RegistrationVerificationController::class, 'reject'])->name('registrations.reject');
         Route::post('competitions/{competition}/registrations/approve', [RegistrationVerificationController::class, 'bulkApprove'])->name('registrations.bulk-approve');
         Route::post('competitions/{competition}/registrations/reject', [RegistrationVerificationController::class, 'bulkReject'])->name('registrations.bulk-reject');
+
+        Route::get('competitions/{competition}/imports', [ImportController::class, 'index'])->name('imports.index');
+        Route::post('competitions/{competition}/imports', [ImportController::class, 'store'])->name('imports.store');
+        Route::get('competitions/{competition}/imports/template', ImportTemplateController::class)->name('imports.template');
+        Route::get('imports/{importBatch}', [ImportController::class, 'show'])->name('imports.show');
+        Route::get('imports/{importBatch}/progress', [ImportController::class, 'progress'])->name('imports.progress');
+        Route::get('imports/{importBatch}/errors', [ImportController::class, 'errors'])->name('imports.errors');
+        Route::patch('imports/{importBatch}/rows/{excelRow}', [ImportController::class, 'updateRow'])->name('imports.rows.update');
+        Route::post('imports/{importBatch}/commit', [ImportController::class, 'commit'])->name('imports.commit');
+        Route::delete('imports/{importBatch}', [ImportController::class, 'destroy'])->name('imports.destroy');
 
         Route::resource('competitions', CompetitionController::class);
     });

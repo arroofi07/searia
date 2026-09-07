@@ -25,6 +25,7 @@
                             <a href="{{ route('coach.registrations.index', $competition) }}" class="ml-3 text-slate-600 hover:underline">Ringkasan</a>
                             @can('viewAny', App\Models\Competition::class)
                                 <a href="{{ route('admin.registrations.index', $competition) }}" class="ml-3 text-slate-600 hover:underline">Verifikasi</a>
+                                <a href="{{ route('admin.imports.index', $competition) }}" class="ml-3 text-slate-600 hover:underline">Import</a>
                             @endcan
                         </td>
                     </tr>

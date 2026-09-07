@@ -109,6 +109,14 @@ class Registration extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /**
+     * @return BelongsTo<ImportBatch, $this>
+     */
+    public function importBatch(): BelongsTo
+    {
+        return $this->belongsTo(ImportBatch::class);
+    }
+
     public function isEditableByEntrant(): bool
     {
         return $this->competition?->status === \App\Enums\CompetitionStatus::Registration

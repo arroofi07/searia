@@ -67,3 +67,30 @@ function openRegistrationMeet(): array
 
     return compact('club', 'coach', 'competition', 'group', 'event', 'athlete');
 }
+
+/**
+ * @param  list<list<string>>  $rows
+ * @param  list<string>|null  $headers
+ */
+function writeParticipantCsv(array $rows, ?array $headers = null): string
+{
+    $headers ??= [
+        'NO',
+        'NAMA LENGKAP',
+        'L/P',
+        'TAHUN LAHIR',
+        'KLUB/SEKOLAH',
+        'KABUPATEN/KOTA',
+        'KODE ACARA',
+        'CATATAN WAKTU',
+    ];
+    $path = tempnam(sys_get_temp_dir(), 'imp').'.csv';
+    $handle = fopen($path, 'w');
+    fputcsv($handle, $headers);
+    foreach ($rows as $row) {
+        fputcsv($handle, $row);
+    }
+    fclose($handle);
+
+    return $path;
+}
