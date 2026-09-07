@@ -47,7 +47,7 @@
         @if ($athlete->photo_path)
             <div class="sm:col-span-2">
                 <dt class="text-xs uppercase tracking-wide text-slate-500">Foto</dt>
-                <dd class="mt-2"><img src="{{ Storage::url($athlete->photo_path) }}" alt="{{ $athlete->full_name }}" class="h-32 rounded object-cover"></dd>
+                <dd class="mt-2"><img src="{{ route('files.athletes.photo', $athlete) }}" alt="{{ $athlete->full_name }}" class="h-32 rounded object-cover"></dd>
             </div>
         @endif
     </dl>

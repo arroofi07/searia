@@ -16,6 +16,7 @@ use App\Models\AgeGroup;
 use App\Models\Athlete;
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\SitePage;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,22 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        SitePage::query()->updateOrCreate(
+            ['slug' => 'about'],
+            [
+                'title' => 'Pengenalan SeaRIA',
+                'body' => "SeaRIA adalah sistem informasi kejuaraan renang untuk penyelenggara, pelatih, juri, dan peserta.\n\nKategori lomba mencakup nomor perorangan berbagai gaya dan jarak, dikelompokkan menurut kelompok umur. Jenis kejuaraan dapat Resmi atau Fun sesuai keputusan panitia.\n\nHalaman ini dapat disunting dari dasbor panitia.",
+            ],
+        );
+
+        SitePage::query()->updateOrCreate(
+            ['slug' => 'terms'],
+            [
+                'title' => 'Syarat, ketentuan, dan kebijakan privasi',
+                'body' => "Dengan menggunakan SeaRIA, Anda menyetujui ketentuan berikut.\n\n1. Data peserta dikelola untuk keperluan kejuaraan dan tidak dipublikasikan melebihi kebutuhan (nama, klub, tahun lahir, hasil).\n2. Nomor identitas dan tanggal lahir lengkap tidak ditampilkan di halaman publik.\n3. Hasil resmi baru berlaku setelah kejuaraan berstatus dipublikasikan.\n4. Panitia dapat mengkoreksi hasil dengan jejak audit.\n5. Kebijakan privasi: data pribadi hanya diakses oleh peran yang berwenang (panitia, pelatih klub terkait, juri pada penugasan).\n\nNaskah ini dapat diperbarui oleh panitia tanpa mengubah kode aplikasi.",
+            ],
+        );
+
         $clubA = Club::query()->create([
             'name' => 'SeaRIA Aquatic Padang',
             'short_name' => 'SAP',

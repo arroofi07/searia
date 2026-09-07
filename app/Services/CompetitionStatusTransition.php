@@ -7,6 +7,7 @@ use App\Exceptions\CannotTransitionCompetitionException;
 use App\Models\ActivityLog;
 use App\Models\Competition;
 use App\Models\Event;
+use App\Models\Heat;
 use App\Models\Result;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -73,8 +74,22 @@ class CompetitionStatusTransition
             );
         }
 
+        if ($to === CompetitionStatus::Published && $this->hasUnlockedResultHeats($competition)) {
+            throw new CannotTransitionCompetitionException(
+                'Perpindahan ke published ditolak karena masih ada seri yang belum dikunci.',
+            );
+        }
+
         return DB::transaction(function () use ($competition, $from, $to, $actor, $reason, $ipAddress): Competition {
-            $competition->update(['status' => $to]);
+            $payload = ['status' => $to];
+            if ($to === CompetitionStatus::Published) {
+                $payload['published_at'] = now();
+            }
+            if ($from === CompetitionStatus::Published && $to !== CompetitionStatus::Published) {
+                $payload['published_at'] = null;
+            }
+
+            $competition->update($payload);
 
             ActivityLog::query()->create([
                 'user_id' => $actor->id,
@@ -108,6 +123,15 @@ class CompetitionStatusTransition
             ->whereHas('heatLane.heat.event', function ($query) use ($competition): void {
                 $query->where('competition_id', $competition->id);
             })
+            ->exists();
+    }
+
+    public function hasUnlockedResultHeats(Competition $competition): bool
+    {
+        return Heat::query()
+            ->whereHas('event', fn ($query) => $query->where('competition_id', $competition->id))
+            ->whereHas('lanes', fn ($query) => $query->whereNotNull('registration_id'))
+            ->whereNull('results_locked_at')
             ->exists();
     }
 }

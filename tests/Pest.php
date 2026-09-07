@@ -5,12 +5,14 @@ use App\Enums\CompetitionStatus;
 use App\Enums\Equipment;
 use App\Enums\EventGender;
 use App\Enums\Gender;
+use App\Enums\RegistrationStatus;
 use App\Enums\Stroke;
 use App\Models\AgeGroup;
 use App\Models\Athlete;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Event;
+use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -66,6 +68,54 @@ function openRegistrationMeet(): array
     ]);
 
     return compact('club', 'coach', 'competition', 'group', 'event', 'athlete');
+}
+
+/**
+ * @param  array{competition: Competition, event: Event, athlete: Athlete, group: AgeGroup, coach: User}  $meet
+ * @param  array<string, mixed>  $overrides
+ */
+function verifiedRegistration(array $meet, array $overrides = []): Registration
+{
+    return Registration::factory()->create(array_merge([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['coach']->id,
+        'status' => RegistrationStatus::Verified,
+    ], $overrides));
+}
+
+/**
+ * @return array{0: Competition, 1: Event, 2: AgeGroup, 3: list<Registration>}
+ */
+function seedMeetWithEntrants(int $count, int $lanes = 6, ?\App\Enums\SeedingMode $mode = null, int $timedCount = -1): array
+{
+    $meet = openRegistrationMeet();
+    $meet['competition']->update([
+        'pool_lanes' => $lanes,
+        'seeding_mode' => $mode ?? \App\Enums\SeedingMode::Balanced,
+    ]);
+
+    if ($timedCount < 0) {
+        $timedCount = $count;
+    }
+
+    $registrations = [];
+    for ($i = 0; $i < $count; $i++) {
+        $athlete = Athlete::factory()->create([
+            'club_id' => $meet['club']->id,
+            'gender' => $meet['athlete']->gender,
+            'birth_year' => 2016,
+            'full_name' => sprintf('ATHLETE %02d', $i + 1),
+        ]);
+        $registrations[] = verifiedRegistration($meet, [
+            'athlete_id' => $athlete->id,
+            'seed_time_ms' => $i < $timedCount ? 30_000 + ($i * 100) : null,
+        ]);
+    }
+
+    return [$meet['competition']->fresh(), $meet['event'], $meet['group'], $registrations];
 }
 
 /**

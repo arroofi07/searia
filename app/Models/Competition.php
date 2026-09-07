@@ -33,8 +33,13 @@ class Competition extends Model
         'seeding_mode',
         'fee_per_event',
         'late_fee_per_event',
+        'fast_time_input',
         'status',
+        'published_at',
         'banner_path',
+        'certificate_background_path',
+        'certificate_signer_name',
+        'certificate_signer_title',
         'description',
     ];
 
@@ -53,7 +58,9 @@ class Competition extends Model
             'seeding_mode' => SeedingMode::class,
             'fee_per_event' => 'integer',
             'late_fee_per_event' => 'integer',
+            'fast_time_input' => 'boolean',
             'status' => CompetitionStatus::class,
+            'published_at' => 'datetime',
         ];
     }
 
@@ -129,6 +136,30 @@ class Competition extends Model
         return $this->hasMany(ImportBatch::class);
     }
 
+    /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * @return HasMany<Certificate, $this>
+     */
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    /**
+     * @return HasMany<CertificateArchive, $this>
+     */
+    public function certificateArchives(): HasMany
+    {
+        return $this->hasMany(CertificateArchive::class);
+    }
+
     public function isDraft(): bool
     {
         return $this->status === CompetitionStatus::Draft;
@@ -142,5 +173,43 @@ class Competition extends Model
     public function year(): int
     {
         return (int) $this->start_date->year;
+    }
+
+    public function allowsFastTimeInput(): bool
+    {
+        if ($this->fast_time_input === null) {
+            return (bool) config('searia.swim_time.fast_input', true);
+        }
+
+        return (bool) $this->fast_time_input;
+    }
+
+    /**
+     * @param  Builder<Competition>  $query
+     * @return Builder<Competition>
+     */
+    public function scopeOpenRegistration(Builder $query): Builder
+    {
+        return $query->where('status', CompetitionStatus::Registration);
+    }
+
+    /**
+     * @param  Builder<Competition>  $query
+     * @return Builder<Competition>
+     */
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->where('status', CompetitionStatus::Published);
+    }
+
+    /**
+     * Visible on public schedule/fees (never draft).
+     *
+     * @param  Builder<Competition>  $query
+     * @return Builder<Competition>
+     */
+    public function scopePublicInfo(Builder $query): Builder
+    {
+        return $query->where('status', '!=', CompetitionStatus::Draft);
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Registration extends Model
 {
@@ -115,6 +116,14 @@ class Registration extends Model
     public function importBatch(): BelongsTo
     {
         return $this->belongsTo(ImportBatch::class);
+    }
+
+    /**
+     * @return HasOne<HeatLane, $this>
+     */
+    public function heatLane(): HasOne
+    {
+        return $this->hasOne(HeatLane::class);
     }
 
     public function isEditableByEntrant(): bool

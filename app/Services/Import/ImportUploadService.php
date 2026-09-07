@@ -9,7 +9,6 @@ use App\Models\ImportBatch;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ImportUploadService
@@ -18,22 +17,31 @@ class ImportUploadService
 
     public function store(Competition $competition, User $user, UploadedFile $file): ImportBatch
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: 'xlsx');
-        $stored = $file->storeAs(
+        $path = \App\Support\UploadedFileGuard::storePrivate(
+            $file,
             'imports/'.$competition->id,
-            Str::uuid()->toString().'.'.$extension,
-            'local',
+            [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'application/zip',
+                'application/octet-stream',
+                'text/csv',
+                'text/plain',
+                'application/csv',
+            ],
+            (int) config('searia.import.max_bytes', 5 * 1024 * 1024),
         );
 
         $batch = ImportBatch::query()->create([
             'competition_id' => $competition->id,
             'user_id' => $user->id,
             'original_filename' => $file->getClientOriginalName(),
-            'stored_path' => $stored,
+            'stored_path' => $path,
             'status' => ImportStatus::Uploaded,
         ]);
 
-        $absolute = Storage::disk('local')->path($stored);
+        $absolute = Storage::disk('local')->path($path);
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
         $estimated = $this->estimateDataRows($absolute, $extension);
         $queueAfter = (int) config('searia.import.queue_after_rows', 200);
 

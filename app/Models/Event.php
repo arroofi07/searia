@@ -76,6 +76,14 @@ class Event extends Model
     }
 
     /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function judges(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'event_judge')->withTimestamps();
+    }
+
+    /**
      * @return Attribute<string, never>
      */
     protected function displayName(): Attribute

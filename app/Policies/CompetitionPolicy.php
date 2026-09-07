@@ -46,4 +46,9 @@ class CompetitionPolicy
     {
         return $user->isSuperAdmin();
     }
+
+    public function seed(User $user, Competition $competition): bool
+    {
+        return $user->managesMasterData();
+    }
 }

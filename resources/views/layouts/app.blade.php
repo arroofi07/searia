@@ -16,6 +16,8 @@
                 <nav class="flex flex-wrap items-center gap-3 text-sm">
                     @can('viewAny', App\Models\Competition::class)
                         <a href="{{ route('admin.competitions.index') }}" class="{{ request()->routeIs('admin.competitions.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Kejuaraan</a>
+                        <a href="{{ route('admin.site-pages.index') }}" class="{{ request()->routeIs('admin.site-pages.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Halaman publik</a>
+                        <a href="{{ route('admin.activity-logs.index') }}" class="{{ request()->routeIs('admin.activity-logs.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Audit</a>
                     @endcan
                     @can('viewAny', App\Models\Club::class)
                         <a href="{{ route('admin.clubs.index') }}" class="{{ request()->routeIs('admin.clubs.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Klub</a>
@@ -26,6 +28,9 @@
                     @can('viewAny', App\Models\Registration::class)
                         <a href="{{ route('registrations.index') }}" class="{{ request()->routeIs('registrations.*') || request()->routeIs('register.*') || request()->routeIs('coach.registrations.*') || request()->routeIs('admin.registrations.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Pendaftaran</a>
                     @endcan
+                    @if (auth()->user()?->isJuri() || auth()->user()?->managesMasterData())
+                        <a href="{{ route('judge.tasks') }}" class="{{ request()->routeIs('judge.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Tugas juri</a>
+                    @endif
                     @if (auth()->user()?->club)
                         @can('view', auth()->user()->club)
                             <a href="{{ route('coach.club.show', auth()->user()->club) }}" class="{{ request()->routeIs('coach.club.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Profil klub</a>
@@ -57,5 +62,6 @@
 
             @yield('content')
         </main>
+        @stack('scripts')
     </body>
 </html>

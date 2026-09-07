@@ -67,4 +67,12 @@ enum CompetitionStatus: string
     {
         return in_array($target, $this->allowedBackward(), true);
     }
+
+    public function isSeededOrLater(): bool
+    {
+        return match ($this) {
+            self::Seeded, self::Running, self::Finished, self::Published => true,
+            self::Draft, self::Registration, self::Closed => false,
+        };
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ResultStatus;
 use App\Models\HeatLane;
 use App\Models\Result;
 use App\Models\User;
@@ -19,7 +20,7 @@ class ResultFactory extends Factory
         return [
             'heat_lane_id' => HeatLane::factory(),
             'time_ms' => fake()->numberBetween(20_000, 180_000),
-            'status' => 'ok',
+            'status' => ResultStatus::Ok,
             'dsq_code' => null,
             'dsq_reason' => null,
             'recorded_by' => User::factory(),
@@ -34,6 +35,24 @@ class ResultFactory extends Factory
         return $this->state(fn (): array => [
             'verified_by' => $by?->id ?? User::factory(),
             'verified_at' => now(),
+        ]);
+    }
+
+    public function dns(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => ResultStatus::Dns,
+            'time_ms' => null,
+            'dsq_code' => null,
+        ]);
+    }
+
+    public function dsq(string $code = 'SF'): static
+    {
+        return $this->state(fn (): array => [
+            'status' => ResultStatus::Dsq,
+            'time_ms' => null,
+            'dsq_code' => $code,
         ]);
     }
 }

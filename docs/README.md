@@ -18,6 +18,7 @@ Dokumen ini adalah spesifikasi fungsional dan teknis yang menjadi acuan pembangu
 | 08 | [Desain Database](08-database.md) | ERD dan definisi tabel |
 | 09 | [Glosarium](09-glosarium.md) | Istilah renang dan istilah sistem |
 | -- | [Backlog Task](tasks/README.md) | Spesifikasi di atas dipecah menjadi task per modul, siap dikerjakan |
+| -- | [Penerapan produksi](deployment.md) | Penerapan, cadangan, pemulihan, daftar periksa hari lomba |
 
 Dokumen 01 sampai 09 menjelaskan **apa** yang dibangun dan mengapa. Folder [tasks/](tasks/README.md) menjelaskan **urutan pengerjaannya**, lengkap dengan kriteria selesai dan daftar uji per task.
 

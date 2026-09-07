@@ -82,7 +82,12 @@ class AthleteController extends Controller
             /** @var UploadedFile $photo */
             $photo = $request->file('photo');
             $athlete->update([
-                'photo_path' => $photo->store('athletes/photos', 'public'),
+                'photo_path' => \App\Support\UploadedFileGuard::storePrivate(
+                    $photo,
+                    'athletes/photos',
+                    ['image/jpeg', 'image/png'],
+                    2 * 1024 * 1024,
+                ),
             ]);
         }
 
@@ -137,10 +142,16 @@ class AthleteController extends Controller
             $photo = $request->file('photo');
 
             if ($athlete->photo_path) {
+                Storage::disk('local')->delete($athlete->photo_path);
                 Storage::disk('public')->delete($athlete->photo_path);
             }
 
-            $data['photo_path'] = $photo->store('athletes/photos', 'public');
+            $data['photo_path'] = \App\Support\UploadedFileGuard::storePrivate(
+                $photo,
+                'athletes/photos',
+                ['image/jpeg', 'image/png'],
+                2 * 1024 * 1024,
+            );
         }
 
         try {
@@ -173,6 +184,7 @@ class AthleteController extends Controller
         }
 
         if ($athlete->photo_path) {
+            Storage::disk('local')->delete($athlete->photo_path);
             Storage::disk('public')->delete($athlete->photo_path);
         }
 

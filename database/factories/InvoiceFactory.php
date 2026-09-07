@@ -20,14 +20,17 @@ class InvoiceFactory extends Factory
         return [
             'competition_id' => Competition::factory(),
             'club_id' => Club::factory(),
-            'invoice_number' => 'INV-'.fake()->unique()->numerify('######'),
+            'invoice_number' => 'INV-'.fake()->unique()->numerify('####-####'),
             'item_count' => 1,
             'amount' => 50_000,
+            'line_items' => [],
             'proof_path' => null,
             'status' => InvoiceStatus::Unpaid,
+            'rejection_reason' => null,
             'verified_by' => null,
             'verified_at' => null,
             'due_at' => now()->addDays(7),
+            'reminder_sent_at' => null,
         ];
     }
 
@@ -36,6 +39,14 @@ class InvoiceFactory extends Factory
         return $this->state(fn (): array => [
             'status' => InvoiceStatus::Paid,
             'verified_at' => now(),
+        ]);
+    }
+
+    public function waitingVerification(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => InvoiceStatus::WaitingVerification,
+            'proof_path' => 'invoices/proof.jpg',
         ]);
     }
 }

@@ -17,4 +17,18 @@
         class="rounded-md px-3 py-1.5 {{ $current === 'readiness' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Kesiapan</a>
     <a href="{{ route('admin.imports.index', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $current === 'imports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Import</a>
+    <a href="{{ route('admin.invoices.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'invoices' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Tagihan</a>
+    <a href="{{ route('admin.seeding.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'seeding' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Seeding</a>
+    <a href="{{ route('admin.start-list.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'start-list' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Buku acara</a>
+    <a href="{{ route('admin.results.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'results' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Hasil</a>
+    <a href="{{ route('admin.results.verify', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'verify' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Verifikasi</a>
+    <a href="{{ route('admin.exports.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'exports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Export</a>
+    <a href="{{ route('admin.judges.edit', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $current === 'judges' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Juri</a>
 </nav>

@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# DomPDF path-repo zips (extracted dirs are committed)
+/storage/composer-packages/*.zip

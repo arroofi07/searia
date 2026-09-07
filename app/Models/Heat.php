@@ -21,6 +21,7 @@ class Heat extends Model
         'scheduled_at',
         'status',
         'locked_at',
+        'results_locked_at',
         'seeded_at',
     ];
 
@@ -30,6 +31,7 @@ class Heat extends Model
             'heat_number' => 'integer',
             'scheduled_at' => 'datetime',
             'locked_at' => 'datetime',
+            'results_locked_at' => 'datetime',
             'seeded_at' => 'datetime',
         ];
     }
@@ -64,5 +66,53 @@ class Heat extends Model
     public function results(): HasManyThrough
     {
         return $this->hasManyThrough(Result::class, HeatLane::class);
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_at !== null;
+    }
+
+    public function isResultsLocked(): bool
+    {
+        return $this->results_locked_at !== null;
+    }
+
+    public function lock(): void
+    {
+        $this->update(['locked_at' => now()]);
+    }
+
+    public function lockResults(): void
+    {
+        $this->update([
+            'results_locked_at' => now(),
+            'status' => 'finished',
+        ]);
+    }
+
+    public function unlockResults(): void
+    {
+        $this->update([
+            'results_locked_at' => null,
+            'status' => 'running',
+        ]);
+    }
+
+    public function occupiedLaneCount(): int
+    {
+        return $this->lanes()->whereNotNull('registration_id')->count();
+    }
+
+    public function recordedResultCount(): int
+    {
+        return $this->results()->count();
+    }
+
+    public function isFullyRecorded(): bool
+    {
+        $occupied = $this->occupiedLaneCount();
+
+        return $occupied > 0 && $this->recordedResultCount() >= $occupied;
     }
 }

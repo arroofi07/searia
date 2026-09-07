@@ -25,6 +25,10 @@ class DashboardController extends Controller
             return redirect()->route('registrations.index');
         }
 
+        if ($user?->isJuri()) {
+            return redirect()->route('judge.tasks');
+        }
+
         if ($user?->club) {
             return redirect()->route('coach.club.show', $user->club);
         }

@@ -4,8 +4,86 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b2584b3da8caccd727d4677aee315804",
+    "content-hash": "03f462f49fa0daf29a3f32a9c98dd903",
     "packages": [
+        {
+            "name": "barryvdh/laravel-dompdf",
+            "version": "3.1.1",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/laravel-dompdf-3.1.1",
+                "reference": "3d9448e2ab8a9b1266df0b98e3cb73c43e57d74e"
+            },
+            "require": {
+                "dompdf/dompdf": "^3.0",
+                "illuminate/support": "^9|^10|^11|^12",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "larastan/larastan": "^2.7|^3.0",
+                "orchestra/testbench": "^7|^8|^9|^10",
+                "phpro/grumphp": "^2.5",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "Barryvdh\\DomPDF\\ServiceProvider"
+                    ],
+                    "aliases": {
+                        "Pdf": "Barryvdh\\DomPDF\\Facade\\Pdf",
+                        "PDF": "Barryvdh\\DomPDF\\Facade\\Pdf"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Barryvdh\\DomPDF\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Barryvdh\\DomPDF\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ],
+                "check-style": [
+                    "phpcs -p --standard=psr12 src/"
+                ],
+                "fix-style": [
+                    "phpcbf -p --standard=psr12 src/"
+                ],
+                "phpstan": [
+                    "phpstan analyze --memory-limit=-1"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Barry vd. Heuvel",
+                    "email": "barryvdh@gmail.com"
+                }
+            ],
+            "description": "A DOMPDF Wrapper for Laravel",
+            "keywords": [
+                "dompdf",
+                "laravel",
+                "pdf"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        },
         {
             "name": "brick/math",
             "version": "0.14.1",
@@ -529,6 +607,152 @@
                 }
             ],
             "time": "2024-02-05T11:56:58+00:00"
+        },
+        {
+            "name": "dompdf/dompdf",
+            "version": "3.1.0",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/dompdf-3.1.0",
+                "reference": "c827006fabcb86dc51f93e259357e2dec22722a3"
+            },
+            "require": {
+                "dompdf/php-font-lib": "^1.0.0",
+                "dompdf/php-svg-lib": "^1.0.0",
+                "ext-dom": "*",
+                "ext-mbstring": "*",
+                "masterminds/html5": "^2.0",
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "ext-gd": "*",
+                "ext-json": "*",
+                "ext-zip": "*",
+                "mockery/mockery": "^1.3",
+                "phpunit/phpunit": "^7.5 || ^8 || ^9 || ^10 || ^11",
+                "squizlabs/php_codesniffer": "^3.5",
+                "symfony/process": "^4.4 || ^5.4 || ^6.2 || ^7.0"
+            },
+            "suggest": {
+                "ext-gd": "Needed to process images",
+                "ext-gmagick": "Improves image processing performance",
+                "ext-imagick": "Improves image processing performance",
+                "ext-zlib": "Needed for pdf stream compression"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Dompdf\\": "src/"
+                },
+                "classmap": [
+                    "lib/"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Dompdf\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "The Dompdf Community",
+                    "homepage": "https://github.com/dompdf/dompdf/blob/master/AUTHORS.md"
+                }
+            ],
+            "description": "DOMPDF is a CSS 2.1 compliant HTML to PDF converter",
+            "homepage": "https://github.com/dompdf/dompdf",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        },
+        {
+            "name": "dompdf/php-font-lib",
+            "version": "1.0.1",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/php-font-lib-1.0.1",
+                "reference": "b9cff5b391d5b73dc7d47df03694b7501f5ab65f"
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "symfony/phpunit-bridge": "^3 || ^4 || ^5 || ^6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "FontLib\\": "src/FontLib"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "FontLib\\Tests\\": "tests/FontLib"
+                }
+            },
+            "license": [
+                "LGPL-2.1-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "The FontLib Community",
+                    "homepage": "https://github.com/dompdf/php-font-lib/blob/master/AUTHORS.md"
+                }
+            ],
+            "description": "A library to read, parse, export and make subsets of different types of font files.",
+            "homepage": "https://github.com/dompdf/php-font-lib",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        },
+        {
+            "name": "dompdf/php-svg-lib",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/php-svg-lib-1.0.0",
+                "reference": "7c89ab971d6537d3a494254e0ed89454c6e3f020"
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8.0",
+                "sabberworm/php-css-parser": "^8.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Svg\\": "src/Svg"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Svg\\Tests\\": "tests/Svg"
+                }
+            },
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "The SvgLib Community",
+                    "homepage": "https://github.com/dompdf/php-svg-lib/blob/master/AUTHORS.md"
+                }
+            ],
+            "description": "A library to read, parse and export to PDF SVG files.",
+            "homepage": "https://github.com/dompdf/php-svg-lib",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         },
         {
             "name": "dragonmantank/cron-expression",
@@ -2497,6 +2721,70 @@
             "time": "2022-12-02T22:17:43+00:00"
         },
         {
+            "name": "masterminds/html5",
+            "version": "2.9.0",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/html5-php-2.9.0",
+                "reference": "04fcf80e2114731a3577afd078c2bd10b3ef299b"
+            },
+            "require": {
+                "ext-dom": "*",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35 || ^5.7.21 || ^6 || ^7 || ^8 || ^9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Masterminds\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Masterminds\\HTML5\\Tests\\": "test/HTML5"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Matt Butcher",
+                    "email": "technosophos@gmail.com"
+                },
+                {
+                    "name": "Matt Farina",
+                    "email": "matt@mattfarina.com"
+                },
+                {
+                    "name": "Asmir Mustafic",
+                    "email": "goetas@gmail.com"
+                }
+            ],
+            "description": "An HTML5 parser and serializer.",
+            "homepage": "http://masterminds.github.io/html5-php",
+            "keywords": [
+                "dom",
+                "html",
+                "html5",
+                "parser",
+                "querypath",
+                "serializer",
+                "xml"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        },
+        {
             "name": "monolog/monolog",
             "version": "3.9.0",
             "source": {
@@ -3874,6 +4162,100 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.1"
             },
             "time": "2025-09-04T20:59:21+00:00"
+        },
+        {
+            "name": "sabberworm/php-css-parser",
+            "version": "8.5.1",
+            "dist": {
+                "type": "path",
+                "url": "storage/composer-packages/PHP-CSS-Parser-8.5.1",
+                "reference": "f908f36467af689270f2cf27d68b8a80a2379856"
+            },
+            "require": {
+                "ext-iconv": "*",
+                "php": ">=5.6.20"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7.27"
+            },
+            "suggest": {
+                "ext-mbstring": "for parsing UTF-8 CSS"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "9.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Sabberworm\\CSS\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Sabberworm\\CSS\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "ci": [
+                    "@ci:static"
+                ],
+                "ci:php:fixer": [
+                    "@php ./.phive/php-cs-fixer.phar --config=config/php-cs-fixer.php fix --dry-run -v --show-progress=dots bin src tests"
+                ],
+                "ci:php:sniffer": [
+                    "@php ./.phive/phpcs.phar --standard=config/phpcs.xml bin src tests"
+                ],
+                "ci:php:stan": [
+                    "@php ./.phive/phpstan.phar --configuration=config/phpstan.neon"
+                ],
+                "ci:static": [
+                    "@ci:php:fixer",
+                    "@ci:php:sniffer",
+                    "@ci:php:stan"
+                ],
+                "fix:php": [
+                    "@fix:php:fixer",
+                    "@fix:php:sniffer"
+                ],
+                "fix:php:fixer": [
+                    "@php ./.phive/php-cs-fixer.phar --config=config/php-cs-fixer.php fix bin src tests"
+                ],
+                "fix:php:sniffer": [
+                    "@php ./.phive/phpcbf.phar --standard=config/phpcs.xml bin src tests"
+                ],
+                "phpstan:baseline": [
+                    "@php ./.phive/phpstan.phar --configuration=config/phpstan.neon --generate-baseline=config/phpstan-baseline.neon"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Raphael Schweikert"
+                },
+                {
+                    "name": "Oliver Klee",
+                    "email": "github@oliverklee.de"
+                },
+                {
+                    "name": "Jake Hotson",
+                    "email": "jake.github@qzdesign.co.uk"
+                }
+            ],
+            "description": "Parser for CSS Files written in PHP",
+            "homepage": "https://www.sabberworm.com/blog/2010/6/10/php-css-parser",
+            "keywords": [
+                "css",
+                "parser",
+                "stylesheet"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         },
         {
             "name": "symfony/clock",

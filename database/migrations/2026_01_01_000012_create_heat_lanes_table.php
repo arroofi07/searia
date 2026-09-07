@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('heat_id')->constrained()->cascadeOnDelete();
             $table->smallInteger('lane_number');
-            $table->foreignId('registration_id')->constrained()->restrictOnDelete();
+            $table->foreignId('registration_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
 
             $table->unique(['heat_id', 'lane_number']);

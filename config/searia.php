@@ -23,6 +23,15 @@ return [
         'time_limit' => 120,
     ],
 
+    'invoice' => [
+        'due_days' => (int) env('INVOICE_DUE_DAYS', 7),
+        'reminder_hours' => (int) env('INVOICE_REMINDER_HOURS', 24),
+        'proof_max_bytes' => 5 * 1024 * 1024,
+        'bank_name' => env('INVOICE_BANK_NAME', ''),
+        'bank_account' => env('INVOICE_BANK_ACCOUNT', ''),
+        'bank_holder' => env('INVOICE_BANK_HOLDER', ''),
+    ],
+
     'swim_time' => [
         'fast_input' => (bool) env('SWIM_TIME_FAST_INPUT', true),
         'no_time_format' => env('SWIM_TIME_NO_TIME_FORMAT', 'NT'),
@@ -31,6 +40,11 @@ return [
             50 => ['min_ms' => 20_000, 'max_ms' => 480_000],
             100 => ['min_ms' => 45_000, 'max_ms' => 900_000],
         ],
+    ],
+
+    'certificate' => [
+        'signer_name' => env('CERTIFICATE_SIGNER_NAME', 'Panitia'),
+        'signer_title' => env('CERTIFICATE_SIGNER_TITLE', 'Ketua Panitia'),
     ],
 
 ];

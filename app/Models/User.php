@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -63,6 +64,14 @@ class User extends Authenticatable
     public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class, 'registered_by');
+    }
+
+    /**
+     * @return BelongsToMany<Event, $this>
+     */
+    public function judgedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_judge')->withTimestamps();
     }
 
     public function isSuperAdmin(): bool

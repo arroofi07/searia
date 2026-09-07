@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "3.1.1",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1"
@@ -28,8 +29,17 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
-        }
+            "Database\\Seeders\\": "database/seeders/",
+            "Barryvdh\\DomPDF\\": "vendor/barryvdh/laravel-dompdf/src",
+            "Dompdf\\": "vendor/dompdf/dompdf/src",
+            "FontLib\\": "vendor/dompdf/php-font-lib/src/FontLib",
+            "Svg\\": "vendor/dompdf/php-svg-lib/src/Svg",
+            "Masterminds\\": "vendor/masterminds/html5/src",
+            "Sabberworm\\CSS\\": "vendor/sabberworm/php-css-parser/src"
+        },
+        "classmap": [
+            "vendor/dompdf/dompdf/lib"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -87,5 +97,49 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "css-parser": {
+            "type": "path",
+            "url": "storage/composer-packages/PHP-CSS-Parser-8.5.1",
+            "options": {
+                "symlink": false
+            }
+        },
+        "html5": {
+            "type": "path",
+            "url": "storage/composer-packages/html5-php-2.9.0",
+            "options": {
+                "symlink": false
+            }
+        },
+        "php-svg-lib": {
+            "type": "path",
+            "url": "storage/composer-packages/php-svg-lib-1.0.0",
+            "options": {
+                "symlink": false
+            }
+        },
+        "php-font-lib": {
+            "type": "path",
+            "url": "storage/composer-packages/php-font-lib-1.0.1",
+            "options": {
+                "symlink": false
+            }
+        },
+        "dompdf": {
+            "type": "path",
+            "url": "storage/composer-packages/dompdf-3.1.0",
+            "options": {
+                "symlink": false
+            }
+        },
+        "laravel-dompdf": {
+            "type": "path",
+            "url": "storage/composer-packages/laravel-dompdf-3.1.1",
+            "options": {
+                "symlink": false
+            }
+        }
+    }
 }

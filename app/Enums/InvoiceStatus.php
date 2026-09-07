@@ -18,4 +18,14 @@ enum InvoiceStatus: string
             self::Rejected => 'Ditolak',
         };
     }
+
+    public function canReissue(): bool
+    {
+        return $this !== self::Paid;
+    }
+
+    public function canUploadProof(): bool
+    {
+        return $this !== self::Paid;
+    }
 }

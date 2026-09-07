@@ -13,9 +13,18 @@
             <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
             <p class="text-sm text-slate-500">Entri klub dikelompokkan per atlet.</p>
         </div>
-        @if (! $locked)
-            <a href="{{ route('registrations.create', $competition) }}" class="rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-teal-800">Daftar atlet</a>
-        @endif
+        <div class="flex flex-wrap gap-2">
+            @if (! $locked)
+                <a href="{{ route('registrations.create', $competition) }}" class="rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-teal-800">Daftar atlet</a>
+            @endif
+            <a href="{{ route('coach.invoices.index', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm hover:bg-slate-50">Tagihan klub</a>
+            @if ($competition->status->isSeededOrLater() && auth()->user()?->club_id)
+                <a href="{{ route('coach.start-list.download', [$competition, auth()->user()->club_id]) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm hover:bg-slate-50">Unduh start list klub</a>
+            @endif
+            @if ($competition->status === \App\Enums\CompetitionStatus::Published)
+                <a href="{{ route('certificates.index', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm hover:bg-slate-50">Sertifikat</a>
+            @endif
+        </div>
     </div>
 
     @if ($locked)
