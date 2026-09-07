@@ -127,3 +127,47 @@ it('matches the worked example lane names for series three', function () {
         ->and($namesByLane[5])->toBe('Hazical Thaif Haris')
         ->and($namesByLane[1])->toBe('Heri Rafael Panggabean');
 });
+
+it('seeds ten NT entrants into two reproducible heats', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(10, timedCount: 0);
+    $first = app(RunSeeding::class)->handle($competition, $event, $group);
+    $layout = $first->mapWithKeys(fn (Heat $heat) => [
+        $heat->heat_number => $heat->lanes()->orderBy('lane_number')->pluck('registration_id')->all(),
+    ])->all();
+
+    expect($first)->toHaveCount(2);
+
+    $second = app(RunSeeding::class)->handle($competition->fresh(), $event, $group);
+    $again = $second->mapWithKeys(fn (Heat $heat) => [
+        $heat->heat_number => $heat->lanes()->orderBy('lane_number')->pluck('registration_id')->all(),
+    ])->all();
+
+    expect($again)->toBe($layout);
+});
+
+it('places a solitary entrant in lane three of a six-lane pool', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(1);
+    $heats = app(RunSeeding::class)->handle($competition, $event, $group);
+
+    expect($heats)->toHaveCount(1);
+    $lanes = $heats->first()->lanes()->get()->keyBy('lane_number');
+    expect($lanes)->toHaveCount(1)
+        ->and($lanes->keys()->all())->toBe([3]);
+});
+
+it('creates no heats when an age group has zero entrants', function () {
+    $meet = openRegistrationMeet();
+    $emptyGroup = AgeGroup::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'code' => '9',
+        'name' => 'Group Empty',
+        'birth_year_start' => 2008,
+        'birth_year_end' => 2009,
+        'sort_order' => 9,
+    ]);
+    $meet['event']->ageGroups()->attach($emptyGroup->id);
+
+    $heats = app(RunSeeding::class)->handle($meet['competition'], $meet['event'], $emptyGroup);
+
+    expect($heats)->toHaveCount(0);
+});

@@ -84,6 +84,10 @@ class MoveEntrantToHeat
         DB::transaction(function () use ($lane, $actor, $ipAddress): void {
             $lane->loadMissing(['registration', 'heat']);
 
+            if ($lane->registration_id === null) {
+                throw new CannotAdjustHeatLaneException('Lintasan sudah kosong.');
+            }
+
             $old = [
                 'heat_id' => $lane->heat_id,
                 'heat_number' => $lane->heat?->heat_number,
@@ -91,22 +95,19 @@ class MoveEntrantToHeat
                 'registration_id' => $lane->registration_id,
             ];
 
-            if ($lane->registration) {
-                $lane->registration->update(['status' => RegistrationStatus::Withdrawn]);
-            }
+            $lane->registration?->update(['status' => RegistrationStatus::Withdrawn]);
 
-            $laneId = $lane->id;
-            $lane->delete();
+            $lane->update(['registration_id' => null]);
 
             ActivityLog::query()->create([
                 'user_id' => $actor->id,
                 'action' => 'heat_lane.withdraw',
                 'subject_type' => HeatLane::class,
-                'subject_id' => $laneId,
+                'subject_id' => $lane->id,
                 'old_values' => $old,
                 'new_values' => [
-                    'heat_id' => $old['heat_id'],
-                    'lane_number' => $old['lane_number'],
+                    'heat_id' => $lane->heat_id,
+                    'lane_number' => $lane->lane_number,
                     'registration_id' => null,
                 ],
                 'reason' => null,
