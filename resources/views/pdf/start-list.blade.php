@@ -6,11 +6,14 @@
 @section('content')
     @if (!empty($includeToc) && count($document->sessions) > 0)
         <h2 style="font-size:12px;margin:0 0 6px;">Daftar isi</h2>
+        <p style="font-size:8px;color:#64748b;margin:0 0 8px;">Nomor acara diurutkan sesuai cetakan. Nomor halaman ada di kaki setiap lembar.</p>
         <div class="toc">
+            @php $tocIndex = 0; @endphp
             @foreach ($document->sessions as $session)
                 @foreach ($session->events as $event)
+                    @php $tocIndex++; @endphp
                     <div class="toc-row">
-                        Sesi {{ $session->session }} · Acara {{ $event->eventNumber }} — {{ $event->eventName }}
+                        {{ $tocIndex }}. Sesi {{ $session->session }} · Acara {{ $event->eventNumber }} — {{ $event->eventName }}
                     </div>
                 @endforeach
             @endforeach

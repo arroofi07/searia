@@ -169,7 +169,7 @@ Route::middleware('auth')->group(function (): void {
         Route::put('site-pages/{sitePage}', [SitePageController::class, 'update'])->name('site-pages.update');
 
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-        Route::get('activity-logs/subject/{subjectType}/{subjectId}', [ActivityLogController::class, 'forSubject'])->name('activity-logs.subject');
+        Route::get('activity-logs/for-subject', [ActivityLogController::class, 'forSubject'])->name('activity-logs.subject');
         Route::get('activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
 
         Route::resource('competitions', CompetitionController::class);

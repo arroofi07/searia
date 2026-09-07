@@ -11,6 +11,9 @@
         <div>
             <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
             <p class="text-sm text-slate-500">{{ $competition->venue }}, {{ $competition->city }} · {{ $competition->status->label() }}</p>
+            <p class="mt-2 text-sm">
+                <a href="{{ route('admin.activity-logs.subject') }}?{{ http_build_query(['type' => \App\Models\Competition::class, 'id' => $competition->id]) }}" class="text-teal-800 hover:underline">Riwayat audit kejuaraan</a>
+            </p>
         </div>
         <form method="POST" action="{{ route('admin.competitions.duplicate', $competition) }}">
             @csrf

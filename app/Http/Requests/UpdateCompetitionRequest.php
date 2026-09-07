@@ -15,6 +15,13 @@ class UpdateCompetitionRequest extends FormRequest
         return $competition instanceof Competition && ($this->user()?->can('update', $competition) ?? false);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'fast_time_input' => $this->boolean('fast_time_input'),
+        ]);
+    }
+
     /**
      * @return array<string, list<string|ValidationRule|\Closure>>
      */
@@ -24,6 +31,7 @@ class UpdateCompetitionRequest extends FormRequest
         $competition = $this->route('competition');
 
         $rules = StoreCompetitionRequest::baseRules();
+        $rules['fast_time_input'] = ['required', 'boolean'];
         $currentLanes = $competition->pool_lanes;
 
         $rules['pool_lanes'] = [

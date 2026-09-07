@@ -71,3 +71,40 @@ it('allows a coach to download their own club start list pdf', function () {
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
 });
+
+it('highlights matching athlete names on the public start list', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $competition->update(['status' => CompetitionStatus::Seeded]);
+
+    $this->get(route('start-list.show', [$competition, 'q' => 'ATHLETE 01']))
+        ->assertOk()
+        ->assertSee('bg-amber-50', false)
+        ->assertSee('ATHLETE 01');
+});
+
+it('orders club start list by program order rather than athlete name', function () {
+    [$competition, $event, $group, $registrations] = seedMeetWithEntrants(4);
+    $registrations[0]->athlete->update(['full_name' => 'ZZZ LAST']);
+    $registrations[1]->athlete->update(['full_name' => 'AAA FIRST']);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $competition->update(['status' => CompetitionStatus::Seeded]);
+
+    $document = app(\App\Services\StartListBuilder::class)->build($competition->fresh(), clubId: $registrations[0]->athlete->club_id);
+    $names = [];
+    foreach ($document->sessions as $session) {
+        foreach ($session->events as $eventBlock) {
+            foreach ($eventBlock->ageGroups as $ageGroup) {
+                foreach ($ageGroup->heats as $heat) {
+                    foreach ($heat->lanes as $lane) {
+                        if (! $lane->isEmpty()) {
+                            $names[] = $lane->athleteName;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    expect($names)->not->toBe(collect($names)->sort()->values()->all());
+});

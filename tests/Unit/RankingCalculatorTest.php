@@ -140,3 +140,23 @@ it('flags age groups with fewer than three participants', function () {
 
     expect($blocks->first()['small_field'])->toBeTrue();
 });
+
+it('rolls medal totals up by club and age group', function () {
+    $fx = rankingFixture();
+    ($fx['makeLane'])($fx['heat1'], 1, 'TIE A', 34_000);
+    ($fx['makeLane'])($fx['heat1'], 2, 'TIE B', 34_000);
+    ($fx['makeLane'])($fx['heat2'], 1, 'THIRD', 36_000);
+
+    $tally = app(MedalTally::class);
+    $blocks = $tally->forCompetition($fx['competition']->load('events'), app(RankingCalculator::class));
+    $byClub = $tally->rollupClubs($blocks);
+    $byAge = $tally->rollupAgeGroups($blocks);
+
+    expect($byClub)->toHaveCount(1)
+        ->and($byClub->first()['gold'])->toBe(2)
+        ->and($byClub->first()['silver'])->toBe(0)
+        ->and($byClub->first()['bronze'])->toBe(1)
+        ->and($byAge)->toHaveCount(1)
+        ->and($byAge->first()['age_group_name'])->toBe($fx['group']->name)
+        ->and($byAge->first()['total'])->toBe(3);
+});

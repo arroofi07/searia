@@ -85,6 +85,8 @@ class CorrectResult
                 'ip_address' => $ipAddress,
             ]);
 
+            \App\Support\PublicPageCache::bump();
+
             return $result->fresh();
         });
     }

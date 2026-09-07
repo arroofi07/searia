@@ -42,6 +42,10 @@ return [
         ],
     ],
 
+    'pdf' => [
+        'organizer_logo' => env('SEARIA_PDF_LOGO', storage_path('app/public/branding/logo.png')),
+    ],
+
     'certificate' => [
         'signer_name' => env('CERTIFICATE_SIGNER_NAME', 'Panitia'),
         'signer_title' => env('CERTIFICATE_SIGNER_TITLE', 'Ketua Panitia'),

@@ -45,8 +45,16 @@ class StoreCompetitionRequest extends FormRequest
             'seeding_mode' => ['required', Rule::enum(SeedingMode::class)],
             'fee_per_event' => ['required', 'integer', 'min:0'],
             'late_fee_per_event' => ['required', 'integer', 'min:0'],
+            'fast_time_input' => ['required', 'boolean'],
             'description' => ['nullable', 'string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'fast_time_input' => $this->boolean('fast_time_input'),
+        ]);
     }
 
     /**
@@ -78,6 +86,7 @@ class StoreCompetitionRequest extends FormRequest
             'seeding_mode' => 'mode seeding',
             'fee_per_event' => 'biaya per nomor',
             'late_fee_per_event' => 'denda keterlambatan',
+            'fast_time_input' => 'input waktu cepat',
             'description' => 'deskripsi',
         ];
     }

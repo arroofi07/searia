@@ -130,6 +130,18 @@
     </div>
 </div>
 
+<div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+    <label class="flex items-start gap-3 text-sm text-slate-700">
+        <input type="checkbox" name="fast_time_input" value="1" class="mt-1 rounded border-slate-300"
+            @checked(old('fast_time_input', $competition?->fast_time_input ?? true))>
+        <span>
+            <span class="font-medium">Input waktu cepat tanpa pemisah</span>
+            <span class="mt-0.5 block text-xs text-slate-500">Aktifkan agar juri dapat mengetik <code class="rounded bg-white px-1">3470</code> sebagai <code class="rounded bg-white px-1">00:34.70</code>. Nonaktifkan jika hanya format baku yang diizinkan.</span>
+        </span>
+    </label>
+    @error('fast_time_input') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+</div>
+
 <div>
     <label for="description" class="block text-sm font-medium text-slate-700">Deskripsi</label>
     <textarea id="description" name="description" rows="3" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">{{ old('description', $competition?->description) }}</textarea>

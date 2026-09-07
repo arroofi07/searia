@@ -110,3 +110,79 @@ it('ranks a club with one gold above a club with five silvers', function () {
         ->and($silverRow['silver'])->toBe(5)
         ->and($goldIndex)->toBeLessThan($silverIndex);
 });
+
+it('lists clubs without medals below medalists and shows participant counts', function () {
+    $meet = openRegistrationMeet();
+    $competition = $meet['competition'];
+    $group = $meet['group'];
+    $event = $meet['event'];
+    $medalClub = $meet['club'];
+    $emptyClub = Club::factory()->create(['status' => ClubStatus::Verified, 'name' => 'No Medals SC']);
+    $recorder = User::factory()->panitia()->create();
+
+    $heat = Heat::factory()->create([
+        'event_id' => $event->id,
+        'age_group_id' => $group->id,
+        'heat_number' => 1,
+        'results_locked_at' => now(),
+    ]);
+
+    foreach ([['Club Champ', $medalClub, 30_000], ['Also Club', $medalClub, 31_000], ['Also Club 2', $medalClub, 32_000]] as [$name, $club, $time]) {
+        $athlete = Athlete::factory()->create([
+            'club_id' => $club->id,
+            'full_name' => $name,
+            'gender' => $meet['athlete']->gender,
+            'birth_year' => 2016,
+        ]);
+        $registration = verifiedRegistration([
+            'competition' => $competition,
+            'event' => $event,
+            'athlete' => $athlete,
+            'group' => $group,
+            'coach' => $meet['coach'],
+        ], ['seed_time_ms' => 40_000]);
+        $heatLane = HeatLane::factory()->create([
+            'heat_id' => $heat->id,
+            'lane_number' => HeatLane::query()->where('heat_id', $heat->id)->count() + 1,
+            'registration_id' => $registration->id,
+        ]);
+        Result::factory()->create([
+            'heat_lane_id' => $heatLane->id,
+            'time_ms' => $time,
+            'status' => ResultStatus::Ok,
+            'recorded_by' => $recorder->id,
+            'verified_at' => now(),
+            'verified_by' => $recorder->id,
+        ]);
+    }
+
+    $emptyAthlete = Athlete::factory()->create([
+        'club_id' => $emptyClub->id,
+        'gender' => $meet['athlete']->gender,
+        'birth_year' => 2016,
+        'full_name' => 'No Medal Athlete',
+    ]);
+    verifiedRegistration([
+        'competition' => $competition,
+        'event' => $event,
+        'athlete' => $emptyAthlete,
+        'group' => $group,
+        'coach' => $meet['coach'],
+    ], ['seed_time_ms' => 45_000]);
+
+    $rows = app(ClubStanding::class)->forCompetition(
+        $competition->fresh(),
+        app(MedalTally::class),
+        app(RankingCalculator::class),
+    );
+
+    $emptyRow = $rows->firstWhere('club_id', $emptyClub->id);
+    $medalIndex = $rows->search(fn (array $row): bool => $row['club_id'] === $medalClub->id);
+    $emptyIndex = $rows->search(fn (array $row): bool => $row['club_id'] === $emptyClub->id);
+
+    expect($emptyRow)->not->toBeNull()
+        ->and($emptyRow['has_medals'])->toBeFalse()
+        ->and($emptyRow['participants'])->toBe(1)
+        ->and($emptyRow['total'])->toBe(0)
+        ->and($medalIndex)->toBeLessThan($emptyIndex);
+});

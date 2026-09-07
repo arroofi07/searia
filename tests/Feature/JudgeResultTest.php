@@ -158,3 +158,91 @@ it('writes an audit entry when correcting a result', function () {
         ->and($log->new_values['status'])->toBe('dsq')
         ->and($log->reason)->toBe('Kesalahan pencatatan juri');
 });
+
+it('shows an empty explanation when a judge has no assignments', function () {
+    $judge = User::factory()->juri()->create();
+
+    $this->actingAs($judge)
+        ->get(route('judge.tasks'))
+        ->assertOk()
+        ->assertSee('Belum ada nomor lomba yang ditugaskan');
+});
+
+it('lets panitia open any heat input screen', function () {
+    $meet = seededHeatMeet();
+    $admin = User::factory()->panitia()->create();
+
+    $this->actingAs($admin)
+        ->get(route('judge.heats.show', $meet['heat']))
+        ->assertOk();
+});
+
+it('requires a reason when unlocking a heat', function () {
+    $meet = seededHeatMeet(2);
+    $lanes = HeatLane::query()->where('heat_id', $meet['heat']->id)->whereNotNull('registration_id')->get();
+    foreach ($lanes as $lane) {
+        app(RecordLaneResult::class)->handle($lane, ['status' => ResultStatus::Ok, 'time' => '3200'], $meet['judge']);
+    }
+    app(LockHeat::class)->handle($meet['heat']->fresh(), $meet['judge']);
+    $admin = User::factory()->panitia()->create();
+
+    $this->actingAs($admin)
+        ->post(route('admin.heats.unlock', $meet['heat']), [])
+        ->assertSessionHasErrors('reason');
+
+    $this->actingAs($admin)
+        ->post(route('admin.heats.unlock', $meet['heat']), ['reason' => 'Salah kunci terlalu dini'])
+        ->assertRedirect();
+
+    expect($meet['heat']->fresh()->isResultsLocked())->toBeFalse()
+        ->and(ActivityLog::query()->where('action', 'heat.results_unlock')->exists())->toBeTrue();
+});
+
+it('requires confirmation before correcting a published competition result', function () {
+    $meet = seededHeatMeet(2);
+    $lane = HeatLane::query()->where('heat_id', $meet['heat']->id)->whereNotNull('registration_id')->firstOrFail();
+    $result = app(RecordLaneResult::class)->handle($lane, ['status' => ResultStatus::Ok, 'time' => '3200'], $meet['judge']);
+    $meet['competition']->update(['status' => CompetitionStatus::Published, 'published_at' => now()]);
+    $admin = User::factory()->panitia()->create();
+
+    $this->actingAs($admin)
+        ->put(route('admin.results.correct', $result), [
+            'status' => 'ok',
+            'time' => '3100',
+            'reason' => 'Koreksi setelah publikasi',
+        ])
+        ->assertSessionHasErrors('confirm_published');
+
+    $this->actingAs($admin)
+        ->put(route('admin.results.correct', $result), [
+            'status' => 'ok',
+            'time' => '3100',
+            'reason' => 'Koreksi setelah publikasi',
+            'confirm_published' => '1',
+        ])
+        ->assertRedirect();
+
+    expect($result->fresh()->time_ms)->toBe(31_000);
+});
+
+it('shows correction history on the public event result page', function () {
+    $meet = seededHeatMeet(2);
+    $lane = HeatLane::query()->where('heat_id', $meet['heat']->id)->whereNotNull('registration_id')->firstOrFail();
+    $result = app(RecordLaneResult::class)->handle($lane, ['status' => ResultStatus::Ok, 'time' => '3200'], $meet['judge']);
+    $admin = User::factory()->panitia()->create();
+
+    app(\App\Actions\CorrectResult::class)->handle(
+        $result,
+        ['status' => ResultStatus::Ok, 'time' => '3150'],
+        $admin,
+        'Penyesuaian waktu',
+    );
+
+    $meet['competition']->update(['status' => CompetitionStatus::Published, 'published_at' => now()]);
+    $ageGroup = $meet['group'];
+
+    $this->get(route('results.show', [$meet['competition'], $meet['event'], $ageGroup]))
+        ->assertOk()
+        ->assertSee('Riwayat koreksi')
+        ->assertSee('Penyesuaian waktu');
+});

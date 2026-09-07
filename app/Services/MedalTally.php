@@ -69,13 +69,22 @@ class MedalTally
     }
 
     /**
-     * @return Collection<int, array{club_id: int, club_name: string, gold: int, silver: int, bronze: int, small_fields: int}>
+     * @return Collection<int, array{club_id: int, club_name: string, gold: int, silver: int, bronze: int, total: int, small_fields: int}>
      */
     public function byClub(Competition $competition, RankingCalculator $ranking): Collection
     {
+        return $this->rollupClubs($this->forCompetition($competition, $ranking));
+    }
+
+    /**
+     * @param  Collection<int, array{medals: list<array{metal: string, entry: RankingEntry}>}>  $blocks
+     * @return Collection<int, array{club_id: int, club_name: string, gold: int, silver: int, bronze: int, total: int, small_fields: int}>
+     */
+    public function rollupClubs(Collection $blocks): Collection
+    {
         $totals = [];
 
-        foreach ($this->forCompetition($competition, $ranking) as $block) {
+        foreach ($blocks as $block) {
             foreach ($block['medals'] as $medal) {
                 /** @var RankingEntry $entry */
                 $entry = $medal['entry'];
@@ -93,11 +102,60 @@ class MedalTally
                 ];
                 $totals[$id][$medal['metal']]++;
             }
+        }
+
+        return collect($totals)
+            ->map(function (array $row): array {
+                $row['total'] = $row['gold'] + $row['silver'] + $row['bronze'];
+
+                return $row;
+            })
+            ->sort(fn (array $a, array $b): int => [$b['gold'], $b['silver'], $b['bronze'], $a['club_name']]
+                <=> [$a['gold'], $a['silver'], $a['bronze'], $b['club_name']])
+            ->values();
+    }
+
+    /**
+     * @return Collection<int, array{age_group_id: int, age_group_name: string, gold: int, silver: int, bronze: int, total: int, small_fields: int}>
+     */
+    public function byAgeGroup(Competition $competition, RankingCalculator $ranking): Collection
+    {
+        return $this->rollupAgeGroups($this->forCompetition($competition, $ranking));
+    }
+
+    /**
+     * @param  Collection<int, array{age_group: AgeGroup, gold: int, silver: int, bronze: int, small_field: bool}>  $blocks
+     * @return Collection<int, array{age_group_id: int, age_group_name: string, gold: int, silver: int, bronze: int, total: int, small_fields: int}>
+     */
+    public function rollupAgeGroups(Collection $blocks): Collection
+    {
+        $totals = [];
+
+        foreach ($blocks as $block) {
+            $id = $block['age_group']->id;
+            $totals[$id] ??= [
+                'age_group_id' => $id,
+                'age_group_name' => $block['age_group']->name,
+                'gold' => 0,
+                'silver' => 0,
+                'bronze' => 0,
+                'small_fields' => 0,
+            ];
+            $totals[$id]['gold'] += $block['gold'];
+            $totals[$id]['silver'] += $block['silver'];
+            $totals[$id]['bronze'] += $block['bronze'];
             if ($block['small_field']) {
-                // tracked at block level for reports; club rollup of small fields optional
+                $totals[$id]['small_fields']++;
             }
         }
 
-        return collect($totals)->values();
+        return collect($totals)
+            ->map(function (array $row): array {
+                $row['total'] = $row['gold'] + $row['silver'] + $row['bronze'];
+
+                return $row;
+            })
+            ->sortBy('age_group_name')
+            ->values();
     }
 }

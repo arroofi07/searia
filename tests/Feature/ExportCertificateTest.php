@@ -206,3 +206,124 @@ it('downloads export endpoints for panitia', function () {
     $this->actingAs($admin)->get(route('admin.exports.medals', $meet['competition']))->assertOk();
     $this->actingAs($admin)->get(route('admin.exports.blank-results', $meet['competition']))->assertOk();
 });
+
+it('filters participant export by club', function () {
+    $meet = openRegistrationMeet();
+    verifiedRegistration($meet);
+    $otherClub = Club::factory()->create();
+    $otherAthlete = \App\Models\Athlete::factory()->create([
+        'club_id' => $otherClub->id,
+        'gender' => $meet['athlete']->gender,
+        'birth_year' => 2016,
+    ]);
+    verifiedRegistration($meet, ['athlete_id' => $otherAthlete->id]);
+
+    $all = (new ParticipantExport($meet['competition']))->collection();
+    $filtered = (new ParticipantExport($meet['competition'], clubId: $meet['club']->id))->collection();
+
+    expect($all)->toHaveCount(2)
+        ->and($filtered)->toHaveCount(1)
+        ->and($filtered->first()[4])->toBe($meet['club']->name);
+});
+
+it('builds one sheet per event for start list export', function () {
+    $meet = publishedMeetForExport();
+    $event = \App\Models\Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 88,
+        'gender' => \App\Enums\EventGender::Male,
+        'distance' => 50,
+        'stroke' => \App\Enums\Stroke::Freestyle,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $event->ageGroups()->attach($meet['group']->id);
+
+    $sheets = (new \App\Exports\PerEventStartListExport($meet['competition']->fresh()))->sheets();
+
+    expect($sheets)->toHaveCount(2);
+});
+
+it('keeps eighty-character athlete names on certificates and uses competition signer settings', function () {
+    $meet = publishedMeetForExport();
+    $longName = str_repeat('A', 80);
+    $certificate = Certificate::query()->where('competition_id', $meet['competition']->id)->firstOrFail();
+    $certificate->athlete->update(['full_name' => $longName]);
+    $meet['competition']->update([
+        'certificate_signer_name' => 'Dr. Penandatangan',
+        'certificate_signer_title' => 'Ketua Panitia Kejuaraan',
+    ]);
+
+    $data = app(\App\Services\Certificate\CertificatePdf::class)->viewData($certificate->fresh(['competition', 'athlete.club', 'event', 'ageGroup']));
+
+    expect($data['athleteName'])->toBe($longName)
+        ->and(mb_strlen($data['athleteName']))->toBe(80)
+        ->and($data['signerName'])->toBe('Dr. Penandatangan')
+        ->and($data['signerTitle'])->toBe('Ketua Panitia Kejuaraan')
+        ->and($data['verificationUrl'])->toContain('/sertifikat/verifikasi/');
+});
+
+it('hides private athlete fields on the public verification page', function () {
+    $meet = publishedMeetForExport();
+    $certificate = Certificate::query()->where('competition_id', $meet['competition']->id)->firstOrFail();
+    $certificate->athlete->update([
+        'identity_number' => 'SECRET-CERT-ID',
+        'birth_date' => '2016-05-20',
+    ]);
+
+    $this->get(route('certificates.verify', $certificate->code))
+        ->assertOk()
+        ->assertSee($certificate->athlete->full_name)
+        ->assertDontSee('SECRET-CERT-ID')
+        ->assertDontSee('2016-05-20')
+        ->assertDontSee('identity_number')
+        ->assertDontSee('birth_date');
+});
+
+it('sets archive expiry to seven days, notifies requester, and rejects expired links', function () {
+    Notification::fake();
+    $meet = publishedMeetForExport();
+    $admin = $meet['admin'];
+
+    $this->mock(\App\Services\Certificate\CertificatePdf::class, function ($mock) {
+        $mock->shouldReceive('render')->andReturn('%PDF-1.4 fake');
+    });
+
+    $archive = \App\Models\CertificateArchive::query()->create([
+        'competition_id' => $meet['competition']->id,
+        'requested_by' => $admin->id,
+        'club_id' => null,
+        'status' => 'pending',
+    ]);
+
+    (new GenerateCertificateArchive($archive->id))->handle(
+        app(GenerateCertificates::class),
+        app(\App\Services\Certificate\CertificatePdf::class),
+    );
+
+    $archive = $archive->fresh();
+    expect($archive->status)->toBe('ready')
+        ->and($archive->expires_at)->not->toBeNull()
+        ->and($archive->expires_at->greaterThan(now()->addDays(6)))->toBeTrue()
+        ->and($archive->expires_at->lessThanOrEqualTo(now()->addDays(7)->addMinute()))->toBeTrue();
+
+    Notification::assertSentTo($admin, CertificateArchiveReady::class);
+
+    $this->get(route('certificates.archives.download', $archive->token))->assertOk();
+
+    $archive->update(['expires_at' => now()->subDay()]);
+    $this->get(route('certificates.archives.download', $archive->token))->assertNotFound();
+});
+
+it('saves certificate signer settings from the admin form', function () {
+    $meet = publishedMeetForExport();
+
+    $this->actingAs($meet['admin'])
+        ->post(route('admin.certificates.settings', $meet['competition']), [
+            'certificate_signer_name' => 'Bu Panitia',
+            'certificate_signer_title' => 'Sekretaris',
+        ])
+        ->assertRedirect();
+
+    expect($meet['competition']->fresh()->certificate_signer_name)->toBe('Bu Panitia')
+        ->and($meet['competition']->fresh()->certificate_signer_title)->toBe('Sekretaris');
+});

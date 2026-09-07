@@ -111,6 +111,15 @@ it('publishes results and opens the public page', function () {
     Notification::assertSentTo($meet['registrations'][0]->registrar, ResultsPublished::class);
 });
 
+it('bumps the public page cache version when results are published', function () {
+    $meet = finishedMeetWithResults();
+    $before = \App\Support\PublicPageCache::version();
+
+    app(PublishResults::class)->handle($meet['competition']->fresh(), $meet['admin']);
+
+    expect(\App\Support\PublicPageCache::version())->toBe($before + 1);
+});
+
 it('shows every event the athlete swam on their result page', function () {
     $meet = finishedMeetWithResults();
     app(PublishResults::class)->handle($meet['competition']->fresh(), $meet['admin']);
@@ -121,4 +130,78 @@ it('shows every event the athlete swam on their result page', function () {
         ->assertOk()
         ->assertSee($athlete->full_name)
         ->assertSee((string) $meet['event']->event_number);
+});
+
+it('flags all-dns heats and out-of-bounds times as anomalies', function () {
+    $meet = finishedMeetWithResults(verify: false, lock: false);
+    $heat = $meet['heat']->fresh()->load(['event', 'lanes.result', 'lanes.registration']);
+
+    foreach ($heat->lanes->whereNotNull('registration_id') as $lane) {
+        $lane->result?->update([
+            'status' => ResultStatus::Dns,
+            'time_ms' => null,
+            'dsq_code' => null,
+        ]);
+    }
+
+    $dnsAnomalies = app(ResultAnomalyDetector::class)->forHeat($heat->fresh()->load(['event', 'lanes.result', 'lanes.registration']));
+    expect($dnsAnomalies->contains(fn (array $item): bool => $item['type'] === 'all_dns'))->toBeTrue();
+
+    $lane = HeatLane::query()->where('heat_id', $heat->id)->whereNotNull('registration_id')->firstOrFail();
+    $lane->result->update(['status' => ResultStatus::Ok, 'time_ms' => 1_000]);
+
+    $boundAnomalies = app(ResultAnomalyDetector::class)->forHeat($heat->fresh()->load(['event', 'lanes.result', 'lanes.registration']));
+    expect($boundAnomalies->contains(fn (array $item): bool => $item['type'] === 'out_of_bounds'))->toBeTrue();
+});
+
+it('shows cross-competition history on the athlete result page', function () {
+    $meet = finishedMeetWithResults();
+    app(PublishResults::class)->handle($meet['competition']->fresh(), $meet['admin']);
+    $athlete = $meet['registrations'][0]->athlete;
+
+    $other = openRegistrationMeet();
+    $other['competition']->update(['name' => 'Kejuaraan Sebelumnya']);
+    $registration = verifiedRegistration([
+        'competition' => $other['competition'],
+        'event' => $other['event'],
+        'athlete' => $athlete,
+        'group' => $other['group'],
+        'coach' => $other['coach'],
+    ], ['seed_time_ms' => 40_000]);
+    $heat = Heat::factory()->create([
+        'event_id' => $other['event']->id,
+        'age_group_id' => $other['group']->id,
+        'heat_number' => 1,
+        'results_locked_at' => now(),
+    ]);
+    $lane = HeatLane::factory()->create([
+        'heat_id' => $heat->id,
+        'lane_number' => 4,
+        'registration_id' => $registration->id,
+    ]);
+    \App\Models\Result::factory()->create([
+        'heat_lane_id' => $lane->id,
+        'time_ms' => 38_000,
+        'status' => ResultStatus::Ok,
+        'recorded_by' => $meet['admin']->id,
+        'recorded_at' => now()->subDay(),
+        'verified_at' => now(),
+        'verified_by' => $meet['admin']->id,
+    ]);
+
+    $this->get(route('results.athlete', [$meet['competition'], $athlete]))
+        ->assertOk()
+        ->assertSee('Riwayat kejuaraan lain')
+        ->assertSee('Kejuaraan Sebelumnya');
+});
+
+it('shows medal rollups by club on the public medals page', function () {
+    $meet = finishedMeetWithResults();
+    app(PublishResults::class)->handle($meet['competition']->fresh(), $meet['admin']);
+
+    $this->get(route('results.medals', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Per klub')
+        ->assertSee('Per kelompok umur')
+        ->assertSee($meet['registrations'][0]->athlete->club->name);
 });

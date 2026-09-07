@@ -126,3 +126,15 @@ it('filters by session and event', function () {
         ->and($singleEvent->sessions[0]->events)->toHaveCount(1)
         ->and($singleEvent->sessions[0]->events[0]->eventId)->toBe($event->id);
 });
+
+it('builds a thousand-entrant start list in under three seconds', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(1000, lanes: 8);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+
+    $started = microtime(true);
+    $document = app(StartListBuilder::class)->build($competition->fresh());
+    $elapsed = microtime(true) - $started;
+
+    expect($elapsed)->toBeLessThan(3.0)
+        ->and($document->sessions)->not->toBeEmpty();
+});

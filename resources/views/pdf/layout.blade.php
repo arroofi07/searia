@@ -7,6 +7,9 @@
         @page { margin: 18mm 14mm 18mm 18mm; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #0f172a; }
         .header { border-bottom: 1.5px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px; }
+        .header-table { width: 100%; border-collapse: collapse; }
+        .header-table td { vertical-align: middle; border: none; padding: 0; }
+        .header .logo { width: 48px; height: 48px; }
         .header h1 { font-size: 14px; margin: 0 0 2px; }
         .header p { margin: 0; color: #334155; font-size: 9px; }
         .footer { position: fixed; bottom: -12mm; left: 0; right: 0; font-size: 8px; color: #64748b; border-top: 0.5px solid #cbd5e1; padding-top: 4px; }
@@ -27,10 +30,28 @@
     </style>
 </head>
 <body>
+    @php
+        $logoPath = $logoPath ?? null;
+        if ($logoPath === null) {
+            $configured = config('searia.pdf.organizer_logo');
+            if (is_string($configured) && $configured !== '' && is_file($configured)) {
+                $logoPath = 'file://'.str_replace('\\', '/', $configured);
+            }
+        }
+    @endphp
     <div class="header">
-        <h1>{{ $competitionName ?? '' }}</h1>
-        <p>{{ $venue ?? '' }}@if(!empty($city)), {{ $city }}@endif · {{ $dateLabel ?? '' }}</p>
-        <p>@yield('document-title', 'Buku Acara') · Dicetak: {{ ($printedAt ?? now())->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</p>
+        <table class="header-table">
+            <tr>
+                @if ($logoPath)
+                    <td style="width:58px"><img class="logo" src="{{ $logoPath }}" alt="Logo"></td>
+                @endif
+                <td>
+                    <h1>{{ $competitionName ?? '' }}</h1>
+                    <p>{{ $venue ?? '' }}@if(!empty($city)), {{ $city }}@endif · {{ $dateLabel ?? '' }}</p>
+                    <p>@yield('document-title', 'Buku Acara') · Dicetak: {{ ($printedAt ?? now())->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 
     @yield('content')

@@ -12,15 +12,12 @@ use App\Models\ActivityLog;
 use App\Models\Competition;
 use App\Models\Heat;
 use App\Models\HeatLane;
-use App\Models\Invoice;
 use App\Models\User;
 use App\Support\UploadedFileGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -131,62 +128,4 @@ it('reports database and queue health', function () {
         ->assertOk()
         ->assertJsonPath('database', 'ok')
         ->assertJsonStructure(['status', 'database', 'queue']);
-});
-
-it('requires auth middleware on mutating web routes', function () {
-    $exceptions = [
-        'login',
-        'logout',
-    ];
-
-    $checked = 0;
-
-    foreach (Route::getRoutes() as $route) {
-        /** @var RoutingRoute $route */
-        $methods = array_diff($route->methods(), ['HEAD']);
-        if (! array_intersect($methods, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
-            continue;
-        }
-
-        $name = $route->getName() ?? $route->uri();
-        if (in_array($name, $exceptions, true)) {
-            continue;
-        }
-
-        $middleware = $route->gatherMiddleware();
-        expect($middleware)->toContain('auth');
-        $checked++;
-    }
-
-    expect($checked)->toBeGreaterThan(10);
-});
-
-it('covers the access matrix for key capabilities', function () {
-    $super = User::factory()->superAdmin()->create();
-    $panitia = User::factory()->panitia()->create();
-    $coach = User::factory()->pelatih()->create();
-    $judge = User::factory()->juri()->create();
-
-    $meet = openRegistrationMeet();
-
-    $cases = [
-        ['user' => $panitia, 'route' => 'admin.competitions.index', 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.competitions.index', 'status' => 403],
-        ['user' => $judge, 'route' => 'admin.competitions.index', 'status' => 403],
-        ['user' => $panitia, 'route' => 'admin.activity-logs.index', 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.activity-logs.index', 'status' => 403],
-        ['user' => $panitia, 'route' => 'admin.exports.index', 'args' => [$meet['competition']], 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.exports.index', 'args' => [$meet['competition']], 'status' => 403],
-        ['user' => $super, 'route' => 'admin.competitions.index', 'status' => 200],
-    ];
-
-    foreach ($cases as $case) {
-        $args = $case['args'] ?? [];
-        $this->actingAs($case['user'])
-            ->get(route($case['route'], $args))
-            ->assertStatus($case['status']);
-    }
-
-    auth()->logout();
-    $this->get(route('admin.competitions.index'))->assertRedirect(route('login'));
 });

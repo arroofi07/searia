@@ -126,3 +126,86 @@ it('serves a sitemap xml document', function () {
         ->assertHeader('content-type', 'application/xml')
         ->assertSee(route('archive.index'), false);
 });
+
+it('shows a countdown and three recent published meets on the home page', function () {
+    Competition::factory()->status(CompetitionStatus::Registration)->create([
+        'name' => 'OPEN COUNTDOWN MEET',
+        'registration_closes_at' => now()->addDays(2),
+    ]);
+
+    foreach (['RECENT ONE', 'RECENT TWO', 'RECENT THREE', 'RECENT FOUR'] as $index => $name) {
+        Competition::factory()->status(CompetitionStatus::Published)->create([
+            'name' => $name,
+            'published_at' => now()->subDays($index),
+        ]);
+    }
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('OPEN COUNTDOWN MEET')
+        ->assertSee('data-countdown', false)
+        ->assertSee('RECENT ONE')
+        ->assertSee('RECENT TWO')
+        ->assertSee('RECENT THREE')
+        ->assertDontSee('RECENT FOUR');
+});
+
+it('filters the archive by year', function () {
+    Competition::factory()->status(CompetitionStatus::Published)->create([
+        'name' => 'MEET 2024',
+        'start_date' => '2024-06-01',
+        'end_date' => '2024-06-02',
+        'published_at' => now(),
+    ]);
+    Competition::factory()->status(CompetitionStatus::Published)->create([
+        'name' => 'MEET 2025',
+        'start_date' => '2025-06-01',
+        'end_date' => '2025-06-02',
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('archive.index', ['year' => 2024]))
+        ->assertOk()
+        ->assertSee('MEET 2024')
+        ->assertDontSee('MEET 2025');
+});
+
+it('formats schedule dates in Indonesian', function () {
+    \Carbon\Carbon::setLocale('id');
+    app()->setLocale('id');
+
+    $competition = Competition::factory()->status(CompetitionStatus::Registration)->create([
+        'registration_opens_at' => '2026-03-01 09:00:00',
+        'registration_closes_at' => '2026-03-10 17:00:00',
+        'technical_meeting_at' => '2026-03-12 10:00:00',
+        'start_date' => '2026-03-15',
+        'end_date' => '2026-03-15',
+    ]);
+
+    $this->get(route('public.competitions.schedule', $competition))
+        ->assertOk()
+        ->assertSee('Maret');
+});
+
+it('embeds open graph tags on public result pages', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Published)->create([
+        'name' => 'OG RESULTS MEET',
+        'published_at' => now(),
+    ]);
+
+    $this->get(route('results.index', $competition))
+        ->assertOk()
+        ->assertSee('property="og:title"', false)
+        ->assertSee('property="og:description"', false)
+        ->assertSee('OG RESULTS MEET');
+});
+
+it('rate limits athlete search requests', function () {
+    \Illuminate\Support\Facades\RateLimiter::clear(md5('athlete-search'.'|127.0.0.1'));
+
+    for ($i = 0; $i < 30; $i++) {
+        $this->get(route('public.athletes.search', ['q' => 'ab']))->assertOk();
+    }
+
+    $this->get(route('public.athletes.search', ['q' => 'ab']))->assertStatus(429);
+});

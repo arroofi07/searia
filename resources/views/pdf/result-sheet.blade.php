@@ -32,8 +32,9 @@
                                     <th style="width:7%">Thn</th>
                                     <th style="width:7%">KU</th>
                                     <th style="width:16%">Klub</th>
-                                    <th style="width:18%">Waktu</th>
-                                    <th style="width:12%">Status</th>
+                                    <th style="width:12%">Kota</th>
+                                    <th style="width:16%">Waktu</th>
+                                    <th style="width:10%">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -41,14 +42,15 @@
                                     <tr>
                                         <td>{{ $lane->laneNumber }}</td>
                                         @if ($lane->isEmpty())
-                                            <td colspan="4" class="empty">kosong</td>
-                                            <td>&nbsp;</td>
+                                            <td colspan="5" class="empty">kosong</td>
+                                            <td style="height:22px;">&nbsp;</td>
                                             <td>&nbsp;</td>
                                         @else
                                             <td>{{ $lane->athleteName }}</td>
                                             <td>{{ $lane->birthYear }}</td>
                                             <td>{{ $lane->ageGroupCode }}</td>
                                             <td>{{ $lane->clubName }}</td>
+                                            <td>{{ $lane->city }}</td>
                                             <td style="height:22px;">&nbsp;</td>
                                             <td>&nbsp;</td>
                                         @endif

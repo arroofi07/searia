@@ -5,6 +5,9 @@
 @section('content')
     <h1 class="text-2xl font-semibold">Hasil acara {{ $event->event_number }}</h1>
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $event->formattedName() }}</p>
+    <p class="mt-2 text-sm">
+        <a href="{{ route('admin.activity-logs.subject') }}?{{ http_build_query(['type' => \App\Models\Event::class, 'id' => $event->id]) }}" class="text-teal-800 hover:underline">Riwayat audit acara</a>
+    </p>
 
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'results'])
 
@@ -92,11 +95,20 @@
                                     </td>
                                     <td class="px-3 py-3 text-xs text-slate-600">
                                         @forelse ($result?->activityLogs?->where('action', 'result.correct') ?? [] as $log)
+                                            @php
+                                                $old = $log->old_values ?? [];
+                                                $new = $log->new_values ?? [];
+                                            @endphp
                                             <div class="mb-2 rounded border border-slate-100 p-2">
                                                 <div>{{ $log->user?->name }} · {{ $log->created_at?->format('d/m H:i') }}</div>
+                                                <div>
+                                                    {{ $old['status'] ?? '—' }}
+                                                    @if (($old['status'] ?? null) === 'ok') {{ ($formatTime)($old['time_ms'] ?? null) }} @endif
+                                                    →
+                                                    {{ $new['status'] ?? '—' }}
+                                                    @if (($new['status'] ?? null) === 'ok') {{ ($formatTime)($new['time_ms'] ?? null) }} @endif
+                                                </div>
                                                 <div>Alasan: {{ $log->reason }}</div>
-                                                <div>Lama: {{ json_encode($log->old_values) }}</div>
-                                                <div>Baru: {{ json_encode($log->new_values) }}</div>
                                             </div>
                                         @empty
                                             <span class="text-slate-400">—</span>

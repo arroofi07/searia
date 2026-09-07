@@ -28,6 +28,7 @@ function competitionForm(Competition $competition, array $overrides = []): array
         'seeding_mode' => $competition->seeding_mode->value,
         'fee_per_event' => $competition->fee_per_event,
         'late_fee_per_event' => $competition->late_fee_per_event,
+        'fast_time_input' => $competition->fast_time_input ?? true,
         'description' => $competition->description,
         ...$overrides,
     ];

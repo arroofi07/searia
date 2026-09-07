@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\CompetitionStatus;
+use App\Models\ActivityLog;
 use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
+use App\Models\Result;
 use App\Services\ClubStanding;
 use App\Services\MedalTally;
 use App\Services\RankingCalculator;
 use App\Support\SwimTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -49,12 +52,24 @@ class ResultController extends Controller
         abort_unless($ageGroup->competition_id === $competition->id, 404);
 
         $table = $ranking->forEventAgeGroup($event, $ageGroup);
+        $resultIds = collect($table->entries)->pluck('resultId')->filter()->all();
+
+        /** @var Collection<int, Collection<int, ActivityLog>> $corrections */
+        $corrections = ActivityLog::query()
+            ->with('user')
+            ->where('action', 'result.correct')
+            ->where('subject_type', Result::class)
+            ->whereIn('subject_id', $resultIds)
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('subject_id');
 
         return view('results.show', [
             'competition' => $competition,
             'event' => $event,
             'ageGroup' => $ageGroup,
             'table' => $table,
+            'corrections' => $corrections,
             'preview' => $competition->status !== CompetitionStatus::Published,
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);
@@ -64,9 +79,13 @@ class ResultController extends Controller
     {
         $this->authorizePublicOrPreview($request, $competition);
 
+        $blocks = $medals->forCompetition($competition->load('events'), $ranking);
+
         return view('results.medals', [
             'competition' => $competition,
-            'blocks' => $medals->forCompetition($competition->load('events'), $ranking),
+            'blocks' => $blocks,
+            'byClub' => $medals->rollupClubs($blocks),
+            'byAgeGroup' => $medals->rollupAgeGroups($blocks),
             'preview' => $competition->status !== CompetitionStatus::Published,
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);

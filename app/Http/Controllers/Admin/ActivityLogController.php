@@ -58,14 +58,29 @@ class ActivityLogController extends Controller
         ]);
     }
 
-    public function forSubject(Request $request, string $subjectType, int $subjectId): View
+    public function forSubject(Request $request): View
     {
         $this->authorize('viewAny', ActivityLog::class);
 
-        $class = Relation::getMorphedModel($subjectType) ?? $subjectType;
-        if (! class_exists($class)) {
-            abort(404);
+        $subjectType = rawurldecode((string) $request->query('type', ''));
+        $subjectId = (int) $request->query('id', 0);
+        abort_unless($subjectType !== '' && $subjectId > 0, 404);
+
+        $candidates = array_values(array_unique([
+            Relation::getMorphedModel($subjectType),
+            $subjectType,
+            str_replace(['.', '-'], '\\', $subjectType),
+            str_contains($subjectType, '\\') ? $subjectType : 'App\\Models\\'.$subjectType,
+        ]));
+
+        $class = null;
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '' && class_exists($candidate)) {
+                $class = $candidate;
+                break;
+            }
         }
+        abort_unless(is_string($class), 404);
 
         $request->merge([
             'subject_type' => $class,
