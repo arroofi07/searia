@@ -6,6 +6,8 @@
     <h1 class="text-2xl font-semibold">Tambah pendaftaran manual</h1>
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
 
+    @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'create'])
+
     @if ($errors->any())
         <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {{ $errors->first() }}

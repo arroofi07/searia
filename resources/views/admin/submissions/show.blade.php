@@ -10,6 +10,8 @@
     <h1 class="text-2xl font-semibold">Pendaftaran {{ $submission->code }}</h1>
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
 
+    @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'submissions'])
+
     <div class="mt-6 grid gap-4 lg:grid-cols-2">
         <div class="rounded-lg border border-slate-200 bg-white p-5 text-sm">
             <h2 class="font-semibold">Kontak pendaftar</h2>

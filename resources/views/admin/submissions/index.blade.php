@@ -6,6 +6,8 @@
     <h1 class="text-2xl font-semibold">Pendaftaran masuk</h1>
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
 
+    @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'submissions'])
+
     <form method="GET" class="mt-4 flex flex-wrap gap-3">
         <input name="code" value="{{ $filters['code'] ?? '' }}" placeholder="Kode pendaftaran"
             class="rounded-md border border-slate-300 px-3 py-2 text-sm uppercase">

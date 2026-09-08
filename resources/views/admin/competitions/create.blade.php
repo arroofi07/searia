@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah kejuaraan')
+@section('title', 'Tambah acara')
 
 @section('content')
-    <h1 class="text-2xl font-semibold">Tambah kejuaraan</h1>
+    <h1 class="text-2xl font-semibold">Tambah acara</h1>
 
     <form method="POST" action="{{ route('admin.competitions.store') }}" class="mt-6 max-w-3xl space-y-4 rounded-lg border border-slate-200 bg-white p-5">
         @csrf

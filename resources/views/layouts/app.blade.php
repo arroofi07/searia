@@ -10,51 +10,60 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <header class="border-b border-slate-200 bg-white">
-            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-                <a href="{{ route('dashboard') }}" class="text-lg font-semibold tracking-tight text-teal-800">SeaRIA</a>
-                <nav class="flex flex-wrap items-center gap-3 text-sm">
-                    @can('viewAny', App\Models\Competition::class)
-                        <a href="{{ route('admin.competitions.index') }}" class="{{ request()->routeIs('admin.competitions.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Kejuaraan</a>
-                        <a href="{{ route('admin.site-pages.index') }}" class="{{ request()->routeIs('admin.site-pages.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Halaman publik</a>
-                        <a href="{{ route('admin.activity-logs.index') }}" class="{{ request()->routeIs('admin.activity-logs.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Audit</a>
-                    @endcan
-                    @can('viewAny', App\Models\Club::class)
-                        <a href="{{ route('admin.clubs.index') }}" class="{{ request()->routeIs('admin.clubs.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Klub</a>
-                    @endcan
-                    @can('viewAny', App\Models\Athlete::class)
-                        <a href="{{ route('athletes.index') }}" class="{{ request()->routeIs('athletes.*') || request()->routeIs('admin.athletes.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Atlet</a>
-                    @endcan
-                    @if (auth()->user()?->isJuri() || auth()->user()?->managesMasterData())
-                        <a href="{{ route('judge.tasks') }}" class="{{ request()->routeIs('judge.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Tugas juri</a>
+        <div class="flex min-h-screen">
+            <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden"></div>
+
+            <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 flex min-h-screen w-64 -translate-x-full flex-col overflow-y-auto bg-slate-900 transition-transform lg:static lg:translate-x-0">
+                @include('layouts.partials.sidebar')
+            </aside>
+
+            <div class="flex min-w-0 flex-1 flex-col">
+                <header class="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+                    <button type="button" id="sidebar-toggle" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700" aria-controls="admin-sidebar" aria-expanded="false">
+                        Menu
+                    </button>
+                    <a href="{{ route('dashboard') }}" class="font-semibold text-teal-800">SeaRIA</a>
+                </header>
+
+                <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+                    @if (session('status'))
+                        <div class="mb-4 rounded-md border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+                            {{ session('status') }}
+                        </div>
                     @endif
-                    <a href="{{ route('register.index') }}" class="{{ request()->routeIs('register.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Form pendaftaran</a>
-                </nav>
-                <div class="flex items-center gap-3 text-sm">
-                    <span class="text-slate-500">{{ auth()->user()?->name }}</span>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="text-slate-600 hover:text-red-700">Keluar</button>
-                    </form>
-                </div>
+
+                    @if ($errors->has('delete'))
+                        <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            {{ $errors->first('delete') }}
+                        </div>
+                    @endif
+
+                    @yield('content')
+                </main>
             </div>
-        </header>
+        </div>
 
-        <main class="mx-auto max-w-6xl px-4 py-6">
-            @if (session('status'))
-                <div class="mb-4 rounded-md border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
-                    {{ session('status') }}
-                </div>
-            @endif
+        <script>
+            (() => {
+                const sidebar = document.getElementById('admin-sidebar');
+                const backdrop = document.getElementById('sidebar-backdrop');
+                const toggle = document.getElementById('sidebar-toggle');
+                if (!sidebar || !backdrop || !toggle) {
+                    return;
+                }
 
-            @if ($errors->has('delete'))
-                <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    {{ $errors->first('delete') }}
-                </div>
-            @endif
+                const setOpen = (open) => {
+                    sidebar.classList.toggle('-translate-x-full', !open);
+                    backdrop.classList.toggle('hidden', !open);
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                };
 
-            @yield('content')
-        </main>
+                toggle.addEventListener('click', () => {
+                    setOpen(sidebar.classList.contains('-translate-x-full'));
+                });
+                backdrop.addEventListener('click', () => setOpen(false));
+            })();
+        </script>
         @stack('scripts')
     </body>
 </html>

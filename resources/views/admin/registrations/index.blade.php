@@ -4,17 +4,13 @@
 
 @extends('layouts.app')
 
-@section('title', 'Verifikasi pendaftaran')
+@section('title', 'Pendaftaran')
 
 @section('content')
-    <h1 class="text-2xl font-semibold">Antrean verifikasi</h1>
-    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · status pending</p>
+    <h1 class="text-2xl font-semibold">Pendaftaran</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · antrean status pending</p>
 
-    <div class="mt-4 flex flex-wrap gap-2">
-        <a href="{{ route('admin.registrations.create', $competition) }}" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Tambah manual</a>
-        <a href="{{ route('admin.imports.index', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Import Excel</a>
-        <a href="{{ route('admin.submissions.index', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Pendaftaran masuk</a>
-    </div>
+    @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'registrations'])
 
     <form method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3">
         <select name="club_id" class="rounded-md border border-slate-300 px-3 py-2 text-sm">

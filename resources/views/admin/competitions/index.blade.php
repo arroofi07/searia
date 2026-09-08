@@ -1,19 +1,15 @@
-@php
-    use App\Enums\CompetitionStatus;
-@endphp
-
 @extends('layouts.app')
 
-@section('title', 'Kejuaraan')
+@section('title', 'Pilih acara')
 
 @section('content')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-semibold">Kejuaraan</h1>
-            <p class="text-sm text-slate-500">Susun identitas acara, kelompok umur, nomor lomba, dan matriks kelayakan.</p>
+            <h1 class="text-2xl font-semibold">Pilih acara</h1>
+            <p class="text-sm text-slate-500">Buka acara untuk mengelola pendaftaran, seeding, dan hasil.</p>
         </div>
         @can('create', App\Models\Competition::class)
-            <a href="{{ route('admin.competitions.create') }}" class="rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-teal-800">Tambah kejuaraan</a>
+            <a href="{{ route('admin.competitions.create') }}" class="rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-teal-800">Tambah acara</a>
         @endcan
     </div>
 
@@ -42,7 +38,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-slate-500">Belum ada kejuaraan.</td>
+                        <td colspan="5" class="px-4 py-8 text-center text-slate-500">Belum ada acara.</td>
                     </tr>
                 @endforelse
             </tbody>

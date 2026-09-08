@@ -23,6 +23,34 @@ function uploadCsv(array $meet, string $path, ?User $user = null)
         ]);
 }
 
+it('shows import excel only inside the registration section', function () {
+    $meet = openRegistrationMeet();
+    $panitia = User::factory()->panitia()->create();
+
+    $this->actingAs($panitia)
+        ->get(route('admin.competitions.index'))
+        ->assertOk()
+        ->assertSee('Dasbor')
+        ->assertDontSee('Import Excel');
+
+    $this->actingAs($panitia)
+        ->get(route('admin.competitions.show', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Pendaftaran')
+        ->assertDontSee('Import Excel');
+
+    $this->actingAs($panitia)
+        ->get(route('admin.registrations.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Import Excel');
+
+    $this->actingAs($panitia)
+        ->get(route('admin.imports.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Import peserta dari Excel')
+        ->assertSee('Unggah .xlsx atau .csv');
+});
+
 it('downloads a template with the three required sheet names', function () {
     $meet = openRegistrationMeet();
     $panitia = User::factory()->panitia()->create();

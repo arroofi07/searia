@@ -21,8 +21,6 @@
         </form>
     </div>
 
-    @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'show'])
-
     @error('status')
         <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
     @enderror
@@ -41,6 +39,19 @@
             <dd class="mt-1">{{ $competition->age_groups_count }} grup · {{ $competition->events_count }} nomor</dd>
         </div>
     </dl>
+
+    <div class="mt-6 rounded-lg border border-slate-200 bg-white p-5">
+        <h2 class="font-medium">Pengaturan acara</h2>
+        <p class="mt-1 text-sm text-slate-500">Siapkan data sebelum membuka pendaftaran.</p>
+        <div class="mt-4 grid gap-2 sm:grid-cols-2">
+            <a href="{{ route('admin.competitions.edit', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Data acara</a>
+            <a href="{{ route('admin.competitions.age-groups.index', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Kelompok umur</a>
+            <a href="{{ route('admin.competitions.events.index', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Nomor lomba</a>
+            <a href="{{ route('admin.competitions.eligibility', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Matriks kelayakan</a>
+            <a href="{{ route('admin.competitions.readiness', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Kesiapan</a>
+            <a href="{{ route('admin.judges.edit', $competition) }}" class="rounded-md border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50">Penugasan juri</a>
+        </div>
+    </div>
 
     @php
         $next = $competition->status->allowedForward()[0] ?? null;

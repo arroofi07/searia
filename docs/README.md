@@ -15,6 +15,7 @@ Sistem Pendaftaran dan Manajemen Kejuaraan Renang — **versi sederhana tanpa pe
 | 07 | [Import Excel](07-import-excel.md) | Template dan validasi unggah |
 | 08 | [Desain Database](08-database.md) | ERD dan tabel |
 | 09 | [Glosarium](09-glosarium.md) | Istilah |
+| -- | [Cara Pemakaian](cara-pemakaian.md) | Alur kerja: panitia siapkan → daftar → seeding → hasil |
 | -- | [Backlog Task](tasks/README.md) | Task MVP per modul |
 | -- | [Ditunda](deferred/README.md) | Biaya, sertifikat, dll. |
 
