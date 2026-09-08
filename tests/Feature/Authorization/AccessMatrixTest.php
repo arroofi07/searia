@@ -1,11 +1,8 @@
 <?php
 
-use App\Enums\ClubStatus;
-use App\Enums\InvoiceStatus;
+use App\Enums\RegistrationStatus;
 use App\Models\ActivityLog;
-use App\Models\Club;
-use App\Models\Invoice;
-use App\Models\Result;
+use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,23 +11,19 @@ uses(RefreshDatabase::class);
 it('covers the access matrix for key capabilities', function () {
     $super = User::factory()->superAdmin()->create();
     $panitia = User::factory()->panitia()->create();
-    $coach = User::factory()->pelatih()->create();
     $judge = User::factory()->juri()->create();
 
     $meet = openRegistrationMeet();
 
     $cases = [
         ['user' => $panitia, 'route' => 'admin.competitions.index', 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.competitions.index', 'status' => 403],
         ['user' => $judge, 'route' => 'admin.competitions.index', 'status' => 403],
         ['user' => $panitia, 'route' => 'admin.activity-logs.index', 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.activity-logs.index', 'status' => 403],
         ['user' => $judge, 'route' => 'admin.activity-logs.index', 'status' => 403],
         ['user' => $panitia, 'route' => 'admin.exports.index', 'args' => [$meet['competition']], 'status' => 200],
-        ['user' => $coach, 'route' => 'admin.exports.index', 'args' => [$meet['competition']], 'status' => 403],
+        ['user' => $judge, 'route' => 'admin.exports.index', 'args' => [$meet['competition']], 'status' => 403],
         ['user' => $super, 'route' => 'admin.competitions.index', 'status' => 200],
         ['user' => $judge, 'route' => 'judge.tasks', 'status' => 200],
-        ['user' => $coach, 'route' => 'judge.tasks', 'status' => 403],
         ['user' => $panitia, 'route' => 'judge.tasks', 'status' => 200],
     ];
 
@@ -45,27 +38,24 @@ it('covers the access matrix for key capabilities', function () {
     $this->get(route('admin.competitions.index'))->assertRedirect(route('login'));
 });
 
-it('rejects coach access to another club invoice by direct URL', function () {
+it('lets panitia create a manual registration that is eligible for seeding', function () {
     $meet = openRegistrationMeet();
-    $clubA = $meet['club'];
-    $clubB = Club::factory()->create(['status' => ClubStatus::Verified]);
-    $coachA = User::factory()->pelatih($clubA)->create();
-    $coachB = User::factory()->pelatih($clubB)->create();
+    $panitia = User::factory()->panitia()->create();
 
-    $invoiceA = Invoice::factory()->create([
-        'competition_id' => $meet['competition']->id,
-        'club_id' => $clubA->id,
-        'status' => InvoiceStatus::Unpaid,
-        'proof_path' => 'invoices/1/proof.jpg',
-    ]);
+    $this->actingAs($panitia)
+        ->post(route('admin.registrations.store', $meet['competition']), [
+            'athlete_id' => $meet['athlete']->id,
+            'event_id' => $meet['event']->id,
+            'seed_time' => '00:45.00',
+            'verify_now' => '1',
+        ])
+        ->assertRedirect(route('admin.registrations.index', $meet['competition']));
 
-    $this->actingAs($coachB)
-        ->get(route('coach.invoices.show', $invoiceA))
-        ->assertForbidden();
+    $registration = Registration::query()->first();
 
-    $this->actingAs($coachA)
-        ->get(route('coach.invoices.show', $invoiceA))
-        ->assertOk();
+    expect($registration)->not->toBeNull()
+        ->and($registration->status)->toBe(RegistrationStatus::Verified)
+        ->and(Registration::query()->eligibleForSeeding()->whereKey($registration->id)->exists())->toBeTrue();
 });
 
 it('filters activity logs by user action and date range', function () {
@@ -100,7 +90,7 @@ it('opens subject history from the activity log subject route', function () {
 
     $this->actingAs($admin)
         ->get('/admin/activity-logs/for-subject?'.http_build_query([
-            'type' => Competition::class,
+            'type' => \App\Models\Competition::class,
             'id' => $meet['competition']->id,
         ]))
         ->assertOk()

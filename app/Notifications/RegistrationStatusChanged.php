@@ -35,6 +35,7 @@ class RegistrationStatusChanged extends Notification implements ShouldQueue
         /** @var Registration $first */
         $first = $this->registrations->first();
         $competition = $first->competition;
+        $code = $first->submission?->code;
         $count = $this->registrations->count();
 
         if ($this->status === RegistrationStatus::Rejected) {
@@ -51,9 +52,8 @@ class RegistrationStatusChanged extends Notification implements ShouldQueue
                 );
             }
 
-            return $message->action(
-                'Perbaiki pendaftaran',
-                route('coach.registrations.index', $competition),
+            return $message->line(
+                'Hubungi panitia dengan menyebutkan kode pendaftaran '.($code ?? '-').' untuk memperbaikinya.',
             );
         }
 
@@ -61,7 +61,7 @@ class RegistrationStatusChanged extends Notification implements ShouldQueue
             ->subject('Pendaftaran disetujui: '.$competition->name)
             ->line($count === 1
                 ? 'Satu entri pendaftaran disetujui panitia.'
-                : $count.' entri klub Anda disetujui panitia.')
-            ->action('Lihat ringkasan', route('coach.registrations.index', $competition));
+                : $count.' entri pendaftaran Anda disetujui panitia.')
+            ->line('Kode pendaftaran: '.($code ?? '-'));
     }
 }

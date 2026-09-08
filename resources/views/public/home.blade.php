@@ -34,12 +34,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <a href="{{ route('public.competitions.schedule', $competition) }}" class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Jadwal</a>
-                        <a href="{{ route('public.competitions.fees', $competition) }}" class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Biaya</a>
-                        @auth
-                            <a href="{{ route('registrations.create', $competition) }}" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Daftar</a>
-                        @else
-                            <a href="{{ route('login') }}" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Masuk untuk daftar</a>
-                        @endauth
+                        <a href="{{ route('register.create', $competition) }}" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Daftar</a>
                     </div>
                 </div>
             </article>

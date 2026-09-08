@@ -7,7 +7,6 @@ use App\Enums\CompetitionStatus;
 use App\Jobs\GenerateCertificateArchive;
 use App\Models\Certificate;
 use App\Models\CertificateArchive;
-use App\Models\Club;
 use App\Models\Competition;
 use App\Services\Certificate\CertificatePdf;
 use Illuminate\Http\RedirectResponse;
@@ -19,59 +18,33 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CertificateController extends Controller
 {
-    public function index(Request $request, Competition $competition): View
+    public function index(Competition $competition): View
     {
         abort_unless($competition->status === CompetitionStatus::Published, 404);
-
-        $user = $request->user();
-        abort_unless($user !== null, 403);
-
-        if ($user->managesMasterData()) {
-            $certificates = Certificate::query()
-                ->with(['athlete.club', 'event', 'ageGroup'])
-                ->where('competition_id', $competition->id)
-                ->orderBy('type')
-                ->orderBy('id')
-                ->paginate(50);
-
-            return view('admin.certificates.index', [
-                'competition' => $competition,
-                'certificates' => $certificates,
-            ]);
-        }
-
-        abort_unless($user->isPelatih() && $user->club_id, 403);
+        $this->authorize('view', $competition);
 
         $certificates = Certificate::query()
             ->with(['athlete.club', 'event', 'ageGroup'])
             ->where('competition_id', $competition->id)
-            ->whereHas('athlete', fn ($q) => $q->where('club_id', $user->club_id))
             ->orderBy('type')
             ->orderBy('id')
-            ->get();
+            ->paginate(50);
 
-        return view('coach.certificates.index', [
+        return view('admin.certificates.index', [
             'competition' => $competition,
             'certificates' => $certificates,
-            'club' => Club::query()->find($user->club_id),
         ]);
     }
 
-    public function download(Request $request, Certificate $certificate, CertificatePdf $pdf): Response
+    /**
+     * Sertifikat kejuaraan yang sudah dipublikasikan terbuka untuk umum: isinya
+     * sama dengan data yang sudah tampil di halaman hasil, dan peserta tidak punya akun.
+     */
+    public function download(Certificate $certificate, CertificatePdf $pdf): Response
     {
         $certificate->loadMissing(['competition', 'athlete']);
-        $competition = $certificate->competition;
-        abort_unless($competition?->status === CompetitionStatus::Published, 403);
 
-        $user = $request->user();
-        abort_unless($user !== null, 403);
-
-        if (! $user->managesMasterData()) {
-            abort_unless(
-                $user->isPelatih() && $user->club_id === $certificate->athlete?->club_id,
-                403,
-            );
-        }
+        abort_unless($certificate->competition?->status === CompetitionStatus::Published, 404);
 
         return $pdf->download($certificate);
     }
@@ -79,28 +52,14 @@ class CertificateController extends Controller
     public function requestArchive(Request $request, Competition $competition, GenerateCertificates $generator): RedirectResponse
     {
         abort_unless($competition->status === CompetitionStatus::Published, 403);
-
-        $user = $request->user();
-        abort_unless($user !== null, 403);
-
-        $clubId = null;
-
-        if ($user->managesMasterData()) {
-            $clubId = $request->filled('club_id') ? $request->integer('club_id') : null;
-        } else {
-            abort_unless($user->isPelatih() && $user->club_id, 403);
-
-            $requestedClubId = $request->filled('club_id') ? $request->integer('club_id') : $user->club_id;
-            abort_unless($requestedClubId === $user->club_id, 403);
-            $clubId = $user->club_id;
-        }
+        $this->authorize('update', $competition);
 
         $generator->handle($competition);
 
         $archive = CertificateArchive::query()->create([
             'competition_id' => $competition->id,
-            'requested_by' => $user->id,
-            'club_id' => $clubId,
+            'requested_by' => $request->user()?->id,
+            'club_id' => $request->filled('club_id') ? $request->integer('club_id') : null,
             'status' => 'pending',
         ]);
 

@@ -4,30 +4,31 @@ namespace App\Listeners;
 
 use App\Events\RegistrationsStatusUpdated;
 use App\Models\Registration;
-use App\Models\User;
 use App\Notifications\RegistrationStatusChanged;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Notification;
 
+/**
+ * Pendaftar tidak punya akun, jadi pemberitahuan dikirim ke alamat email yang ia
+ * cantumkan saat mengisi form. Satu email ringkasan per pengiriman, bukan per entri.
+ */
 class SendRegistrationStatusNotifications implements ShouldQueue
 {
     public function handle(RegistrationsStatusUpdated $event): void
     {
-        $registrations = Registration::query()
-            ->with(['athlete', 'event', 'competition'])
+        Registration::query()
+            ->with(['athlete', 'event', 'competition', 'submission'])
             ->whereIn('id', $event->registrations->pluck('id'))
-            ->get();
-
-        $registrations
-            ->groupBy(fn (Registration $registration): int => (int) $registration->athlete->club_id)
+            ->whereNotNull('submission_id')
+            ->get()
+            ->filter(fn (Registration $registration): bool => filled($registration->submission?->registrant_email))
+            ->groupBy('submission_id')
             ->each(function ($group) use ($event): void {
-                $userId = $group->first()?->registered_by;
-                $user = $userId ? User::query()->find($userId) : null;
+                /** @var Registration $first */
+                $first = $group->first();
 
-                if ($user === null) {
-                    return;
-                }
-
-                $user->notify(new RegistrationStatusChanged($group->values(), $event->status));
+                Notification::route('mail', $first->submission->registrant_email)
+                    ->notify(new RegistrationStatusChanged($group->values(), $event->status));
             });
     }
 }

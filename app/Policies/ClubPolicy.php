@@ -14,11 +14,7 @@ class ClubPolicy
 
     public function view(User $user, Club $club): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $user->isPelatih() && $user->club_id === $club->id;
+        return $user->managesMasterData();
     }
 
     public function create(User $user): bool
@@ -28,11 +24,7 @@ class ClubPolicy
 
     public function update(User $user, Club $club): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $user->isPelatih() && $user->club_id === $club->id;
+        return $user->managesMasterData();
     }
 
     public function delete(User $user, Club $club): bool

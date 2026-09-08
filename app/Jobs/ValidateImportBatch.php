@@ -38,7 +38,7 @@ class ValidateImportBatch implements ShouldBeUnique, ShouldQueue
         $extension = pathinfo($batch->original_filename, PATHINFO_EXTENSION) ?: 'xlsx';
 
         try {
-            $result = $reader->readAndValidate($path, $extension, $batch->competition, $batch->uploader);
+            $result = $reader->readAndValidate($path, $extension, $batch->competition);
             Cache::put($this->progressKey(), 90, 600);
             $batch->storeResult($result);
             $batch->uploader?->notify(new ImportValidationCompleted($batch->fresh()));

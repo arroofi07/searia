@@ -15,15 +15,6 @@ class StoreAthleteRequest extends FormRequest
         return $this->user()?->can('create', Athlete::class) ?? false;
     }
 
-    protected function prepareForValidation(): void
-    {
-        if ($this->user()?->cannot('manageAny', Athlete::class)) {
-            $this->merge([
-                'club_id' => $this->user()?->club_id,
-            ]);
-        }
-    }
-
     /**
      * @return array<string, list<string|ValidationRule>>
      */

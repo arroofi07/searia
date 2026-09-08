@@ -7,7 +7,6 @@ use App\Enums\RegistrationStatus;
 use App\Exceptions\InvalidSwimTimeException;
 use App\Models\Athlete;
 use App\Models\Registration;
-use App\Models\User;
 use App\Rules\ReasonableSwimTime;
 use App\Support\SwimTime;
 
@@ -19,7 +18,7 @@ class RegistrationValidator
      * @param  list<RegistrationDraft>  $batch
      * @return list<array{code: string, message: string}>
      */
-    public function validate(RegistrationDraft $draft, array $batch = [], ?User $actor = null): array
+    public function validate(RegistrationDraft $draft, array $batch = []): array
     {
         $errors = [];
         $competition = $draft->competition;
@@ -92,13 +91,6 @@ class RegistrationValidator
             }
         }
 
-        $actor ??= $draft->athlete->club?->users()->first();
-        $club = $athlete->club;
-
-        if ($actor?->isPelatih() && $club !== null && ! $club->isVerified()) {
-            $errors[] = $this->error('V-09', 'Akun klub Anda belum diverifikasi panitia');
-        }
-
         return $errors;
     }
 
@@ -106,12 +98,12 @@ class RegistrationValidator
      * @param  list<RegistrationDraft>  $drafts
      * @return array<int, list<array{code: string, message: string}>>
      */
-    public function validateMany(array $drafts, ?User $actor = null): array
+    public function validateMany(array $drafts): array
     {
         $results = [];
 
         foreach ($drafts as $index => $draft) {
-            $results[$index] = $this->validate($draft, $drafts, $actor);
+            $results[$index] = $this->validate($draft, $drafts);
         }
 
         return $results;

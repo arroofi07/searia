@@ -113,6 +113,35 @@ class Event extends Model
         return $name;
     }
 
+    /**
+     * Nama resmi seperti di cetakan susunan acara (huruf besar, tanpa label gender).
+     */
+    public function programName(): string
+    {
+        $stroke = match ($this->stroke) {
+            Stroke::Butterfly => 'GAYA KUPU-KUPU',
+            Stroke::Backstroke => 'GAYA PUNGGUNG',
+            Stroke::Breaststroke => 'GAYA DADA',
+            Stroke::Freestyle => 'GAYA BEBAS',
+            Stroke::Medley => 'GAYA GANTI',
+        };
+
+        $name = $this->distance.' M '.$stroke;
+
+        if ($this->equipment === Equipment::Fins) {
+            $name .= ' (FINS)';
+        } elseif ($this->equipment === Equipment::Kickboard) {
+            $name .= ' (KICKBOARD)';
+        }
+
+        return $name;
+    }
+
+    public function paddedEventNumber(): string
+    {
+        return str_pad((string) $this->event_number, 2, '0', STR_PAD_LEFT);
+    }
+
     public function isSeeded(): bool
     {
         return $this->heats()->exists();

@@ -5,27 +5,30 @@ namespace App\Http\Controllers\Public;
 use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Services\ProgramOrderBuilder;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CompetitionInfoController extends Controller
 {
-    public function schedule(Competition $competition): View
+    public function schedule(Competition $competition, ProgramOrderBuilder $program): View
     {
         $this->ensurePublicInfo($competition);
 
         $events = $competition->events()
+            ->where('is_active', true)
             ->orderBy('session')
             ->orderBy('sort_order')
             ->orderBy('event_number')
-            ->get()
-            ->groupBy(fn ($event) => (int) $event->session);
+            ->get();
+
+        $programRows = collect($program->rows($events))->groupBy('session');
 
         $now = now();
 
         return view('public.schedule', [
             'competition' => $competition,
-            'eventsBySession' => $events,
+            'programBySession' => $programRows,
             'milestones' => [
                 [
                     'label' => 'Masa pendaftaran',

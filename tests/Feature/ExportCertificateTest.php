@@ -23,7 +23,6 @@ use App\Models\Result;
 use App\Models\User;
 use App\Notifications\CertificateArchiveReady;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Maatwebsite\Excel\Facades\Excel;
@@ -135,7 +134,7 @@ it('imports filled blank result sheet into results', function () {
         ->and($lanes[1]->fresh()->result?->status)->toBe(ResultStatus::Dns);
 });
 
-it('rejects certificate download when competition is only finished', function () {
+it('hides certificate download until the competition is published', function () {
     [$competition, $event, $group, $registrations] = seedMeetWithEntrants(2, lanes: 6);
     app(RunSeeding::class)->handle($competition, $event, $group);
     $heat = Heat::query()->where('event_id', $event->id)->firstOrFail();
@@ -160,21 +159,18 @@ it('rejects certificate download when competition is only finished', function ()
 
     $this->actingAs($admin)
         ->get(route('certificates.download', $certificate))
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
-it('dispatches archive job and forbids coach from another club', function () {
+it('lets panitia request a certificate archive and keeps judges out', function () {
     Queue::fake();
     $meet = publishedMeetForExport();
-    $otherClub = Club::factory()->create();
-    $otherCoach = User::factory()->pelatih()->create(['club_id' => $otherClub->id]);
-    $ownCoach = User::factory()->pelatih()->create(['club_id' => $meet['registrations'][0]->athlete->club_id]);
 
-    $this->actingAs($otherCoach)
-        ->post(route('certificates.archive', $meet['competition']), ['club_id' => $meet['registrations'][0]->athlete->club_id])
+    $this->actingAs(User::factory()->juri()->create())
+        ->post(route('certificates.archive', $meet['competition']))
         ->assertForbidden();
 
-    $this->actingAs($ownCoach)
+    $this->actingAs($meet['admin'])
         ->post(route('certificates.archive', $meet['competition']))
         ->assertRedirect();
 

@@ -43,8 +43,8 @@ class StoreCompetitionRequest extends FormRequest
             'pool_length' => ['required', 'integer', Rule::in([25, 50])],
             'max_events_per_athlete' => ['required', 'integer', 'min:1', 'max:20'],
             'seeding_mode' => ['required', Rule::enum(SeedingMode::class)],
-            'fee_per_event' => ['required', 'integer', 'min:0'],
-            'late_fee_per_event' => ['required', 'integer', 'min:0'],
+            'fee_per_event' => ['sometimes', 'integer', 'min:0'],
+            'late_fee_per_event' => ['sometimes', 'integer', 'min:0'],
             'fast_time_input' => ['required', 'boolean'],
             'description' => ['nullable', 'string'],
         ];
@@ -54,6 +54,8 @@ class StoreCompetitionRequest extends FormRequest
     {
         $this->merge([
             'fast_time_input' => $this->boolean('fast_time_input'),
+            'fee_per_event' => (int) ($this->input('fee_per_event') ?? 0),
+            'late_fee_per_event' => (int) ($this->input('late_fee_per_event') ?? 0),
         ]);
     }
 

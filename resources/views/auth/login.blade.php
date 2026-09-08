@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="text-xl font-semibold text-slate-900">Masuk ke SeaRIA</h1>
-    <p class="mt-1 text-sm text-slate-500">Gunakan akun panitia atau pelatih untuk mengelola klub dan atlet.</p>
+    <p class="mt-1 text-sm text-slate-500">Khusus panitia dan juri. Peserta mendaftar lewat form publik tanpa akun.</p>
 
     <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-4">
         @csrf

@@ -43,7 +43,7 @@ it('orders age groups by sort_order youngest first', function () {
         'event' => $event,
         'athlete' => $sample->athlete,
         'group' => $older,
-        'coach' => $sample->registrar,
+        'panitia' => $sample->registrar,
     ];
 
     $olderAthlete = \App\Models\Athlete::factory()->create([

@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\UserRole;
-use App\Models\Club;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -24,8 +23,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => UserRole::Peserta,
-            'club_id' => null,
+            'role' => UserRole::Panitia,
             'phone' => null,
             'is_active' => true,
         ];
@@ -40,34 +38,17 @@ class UserFactory extends Factory
 
     public function superAdmin(): static
     {
-        return $this->state(fn (): array => [
-            'role' => UserRole::SuperAdmin,
-            'club_id' => null,
-        ]);
+        return $this->state(fn (): array => ['role' => UserRole::SuperAdmin]);
     }
 
     public function panitia(): static
     {
-        return $this->state(fn (): array => [
-            'role' => UserRole::Panitia,
-            'club_id' => null,
-        ]);
-    }
-
-    public function pelatih(?Club $club = null): static
-    {
-        return $this->state(fn (): array => [
-            'role' => UserRole::Pelatih,
-            'club_id' => $club?->id ?? Club::factory(),
-        ]);
+        return $this->state(fn (): array => ['role' => UserRole::Panitia]);
     }
 
     public function juri(): static
     {
-        return $this->state(fn (): array => [
-            'role' => UserRole::Juri,
-            'club_id' => null,
-        ]);
+        return $this->state(fn (): array => ['role' => UserRole::Juri]);
     }
 
     public function inactive(): static

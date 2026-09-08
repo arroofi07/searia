@@ -27,7 +27,7 @@ pest()->extend(TestCase::class)
 /**
  * @return array{
  *     club: Club,
- *     coach: User,
+ *     panitia: User,
  *     competition: Competition,
  *     group: AgeGroup,
  *     event: Event,
@@ -37,7 +37,7 @@ pest()->extend(TestCase::class)
 function openRegistrationMeet(): array
 {
     $club = Club::factory()->create(['status' => ClubStatus::Verified]);
-    $coach = User::factory()->pelatih($club)->create();
+    $panitia = User::factory()->panitia()->create();
     $competition = Competition::factory()->status(CompetitionStatus::Registration)->create([
         'max_events_per_athlete' => 3,
         'fee_per_event' => 50_000,
@@ -67,11 +67,11 @@ function openRegistrationMeet(): array
         'full_name' => 'AHZA DANISH RAHMAN',
     ]);
 
-    return compact('club', 'coach', 'competition', 'group', 'event', 'athlete');
+    return compact('club', 'panitia', 'competition', 'group', 'event', 'athlete');
 }
 
 /**
- * @param  array{competition: Competition, event: Event, athlete: Athlete, group: AgeGroup, coach: User}  $meet
+ * @param  array{competition: Competition, event: Event, athlete: Athlete, group: AgeGroup, panitia: User}  $meet
  * @param  array<string, mixed>  $overrides
  */
 function verifiedRegistration(array $meet, array $overrides = []): Registration
@@ -81,7 +81,7 @@ function verifiedRegistration(array $meet, array $overrides = []): Registration
         'event_id' => $meet['event']->id,
         'athlete_id' => $meet['athlete']->id,
         'age_group_id' => $meet['group']->id,
-        'registered_by' => $meet['coach']->id,
+        'registered_by' => $meet['panitia']->id,
         'status' => RegistrationStatus::Verified,
     ], $overrides));
 }

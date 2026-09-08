@@ -95,7 +95,7 @@ class ImportController extends Controller
             $rows[] = $row->excelRow === $excelRow ? $updated : $row;
         }
 
-        $importBatch->storeResult($validator->validateMany($importBatch->competition, $rows, $request->user()));
+        $importBatch->storeResult($validator->validateMany($importBatch->competition, $rows));
 
         return back()->with('status', 'Baris '.$excelRow.' divalidasi ulang.');
     }

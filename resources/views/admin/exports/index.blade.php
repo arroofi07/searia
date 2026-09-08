@@ -3,7 +3,7 @@
 @section('title', 'Export · '.$competition->name)
 
 @section('content')
-    <h1 class="text-2xl font-semibold">Export &amp; sertifikat</h1>
+    <h1 class="text-2xl font-semibold">Export</h1>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'exports'])
 
     @if (session('status'))
@@ -66,37 +66,5 @@
             </div>
             <button class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900">Unggah hasil</button>
         </form>
-    </section>
-
-    <section class="mt-6 rounded-lg border border-slate-200 bg-white p-5">
-        <h2 class="font-medium">Pengaturan sertifikat</h2>
-        <form method="POST" action="{{ route('admin.certificates.settings', $competition) }}" enctype="multipart/form-data" class="mt-4 grid max-w-xl gap-3">
-            @csrf
-            <div>
-                <label class="block text-xs font-medium text-slate-600">Nama penandatangan</label>
-                <input name="certificate_signer_name" value="{{ old('certificate_signer_name', $competition->certificate_signer_name) }}" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-slate-600">Jabatan penandatangan</label>
-                <input name="certificate_signer_title" value="{{ old('certificate_signer_title', $competition->certificate_signer_title) }}" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-slate-600">Gambar latar (opsional)</label>
-                <input type="file" name="certificate_background" accept="image/*" class="mt-1 text-sm">
-            </div>
-            <button class="w-fit rounded-md bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800">Simpan</button>
-        </form>
-
-        @if ($competition->status === \App\Enums\CompetitionStatus::Published)
-            <div class="mt-5 flex flex-wrap gap-2">
-                <a href="{{ route('certificates.index', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">Daftar sertifikat</a>
-                <form method="POST" action="{{ route('certificates.archive', $competition) }}">
-                    @csrf
-                    <button class="rounded-md bg-amber-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-800">Siapkan arsip ZIP seluruh kejuaraan</button>
-                </form>
-            </div>
-        @else
-            <p class="mt-4 text-sm text-slate-500">Sertifikat tersedia setelah kejuaraan berstatus dipublikasikan.</p>
-        @endif
     </section>
 @endsection

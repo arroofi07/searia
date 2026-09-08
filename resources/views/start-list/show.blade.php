@@ -10,6 +10,7 @@
             <h1 class="text-2xl font-semibold">Buku acara</h1>
             <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $competition->venue }}, {{ $competition->city }}</p>
         </div>
+        <a href="{{ route('start-list.pdf', $competition) }}" class="rounded-md bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800">Unduh PDF</a>
     </div>
 
     <form method="GET" action="{{ route('start-list.show', $competition) }}" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-4">

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Competition;
 use App\Models\Event;
-use App\Models\Invoice;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -101,9 +100,7 @@ class ExportCompetition extends Command
             'clubs' => array_values($clubs),
             'athletes' => array_values($athletes),
             'registrations' => $competition->registrations->map->attributesToArray()->all(),
-            'invoices' => $competition->invoices->map(fn (Invoice $invoice) => collect($invoice->attributesToArray())
-                ->except(['proof_path'])
-                ->all())->all(),
+            'invoices' => $competition->invoices->map->attributesToArray()->all(),
             'heats' => $heats,
             'heat_lanes' => $lanes,
             'results' => $results,

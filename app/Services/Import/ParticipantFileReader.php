@@ -7,7 +7,6 @@ use App\Exceptions\MissingImportColumnsException;
 use App\Imports\ParticipantImport;
 use App\Imports\ParticipantSheetImport;
 use App\Models\Competition;
-use App\Models\User;
 use Maatwebsite\Excel\Excel as ExcelFormat;
 use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
@@ -18,7 +17,7 @@ class ParticipantFileReader
         private readonly RowValidator $validator,
     ) {}
 
-    public function readAndValidate(string $path, string $extension, Competition $competition, ?User $actor = null): ImportValidationResult
+    public function readAndValidate(string $path, string $extension, Competition $competition): ImportValidationResult
     {
         $this->raiseMemoryLimits();
 
@@ -34,7 +33,7 @@ class ParticipantFileReader
             );
         }
 
-        return $this->validator->validateMany($competition, $sheet->rows, $actor);
+        return $this->validator->validateMany($competition, $sheet->rows);
     }
 
     private function importSheet(string $path, string $extension): ParticipantSheetImport

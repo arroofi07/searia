@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\CompetitionStatus;
-use App\Models\Athlete;
 use App\Models\Competition;
 use App\Models\SitePage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,6 +36,19 @@ it('returns 200 on home when there are no open competitions', function () {
         ->assertSee('tidak ada kejuaraan');
 });
 
+it('caches public home responses without serializing closures', function () {
+    config(['cache.default' => 'database']);
+    Illuminate\Support\Facades\Cache::flush();
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('tidak ada kejuaraan');
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('tidak ada kejuaraan');
+});
+
 it('serves about and terms pages', function () {
     $this->get(route('about'))->assertOk()->assertSee('Pengenalan');
     $this->get(route('terms'))->assertOk()->assertSee('kebijakan privasi');
@@ -60,14 +72,13 @@ it('shows schedule milestones for a non-draft competition', function () {
 });
 
 it('shows fee unavailable copy when fee is zero', function () {
+    // MVP: halaman biaya publik dihapus.
     $competition = Competition::factory()->status(CompetitionStatus::Registration)->create([
         'fee_per_event' => 0,
         'late_fee_per_event' => 0,
     ]);
 
-    $this->get(route('public.competitions.fees', $competition))
-        ->assertOk()
-        ->assertSee('Harga belum tersedia');
+    $this->get('/competitions/'.$competition->id.'/fees')->assertNotFound();
 });
 
 it('lists only published competitions in the archive', function () {
@@ -117,7 +128,7 @@ it('hides draft competitions from schedule and fees', function () {
     $competition = Competition::factory()->status(CompetitionStatus::Draft)->create();
 
     $this->get(route('public.competitions.schedule', $competition))->assertNotFound();
-    $this->get(route('public.competitions.fees', $competition))->assertNotFound();
+    $this->get('/competitions/'.$competition->id.'/fees')->assertNotFound();
 });
 
 it('serves a sitemap xml document', function () {

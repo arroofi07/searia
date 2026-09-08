@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'terms'],
             [
                 'title' => 'Syarat, ketentuan, dan kebijakan privasi',
-                'body' => "Dengan menggunakan SeaRIA, Anda menyetujui ketentuan berikut.\n\n1. Data peserta dikelola untuk keperluan kejuaraan dan tidak dipublikasikan melebihi kebutuhan (nama, klub, tahun lahir, hasil).\n2. Nomor identitas dan tanggal lahir lengkap tidak ditampilkan di halaman publik.\n3. Hasil resmi baru berlaku setelah kejuaraan berstatus dipublikasikan.\n4. Panitia dapat mengkoreksi hasil dengan jejak audit.\n5. Kebijakan privasi: data pribadi hanya diakses oleh peran yang berwenang (panitia, pelatih klub terkait, juri pada penugasan).\n\nNaskah ini dapat diperbarui oleh panitia tanpa mengubah kode aplikasi.",
+                'body' => "Dengan menggunakan SeaRIA, Anda menyetujui ketentuan berikut.\n\n1. Data peserta dikelola untuk keperluan kejuaraan dan tidak dipublikasikan melebihi kebutuhan (nama, klub, tahun lahir, hasil).\n2. Nomor identitas dan tanggal lahir lengkap tidak ditampilkan di halaman publik.\n3. Hasil resmi baru berlaku setelah kejuaraan berstatus dipublikasikan.\n4. Panitia dapat mengkoreksi hasil dengan jejak audit.\n5. Kebijakan privasi: data pribadi hanya diakses oleh peran yang berwenang (panitia dan juri pada penugasan).\n\nNaskah ini dapat diperbarui oleh panitia tanpa mengubah kode aplikasi.",
             ],
         );
 
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $clubB = Club::query()->create([
+        Club::query()->create([
             'name' => 'Gunung Sport Center',
             'short_name' => 'GSC',
             'type' => ClubType::Perkumpulan,
@@ -82,20 +82,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::query()->create([
-            'name' => 'Pelatih SeaRIA',
-            'email' => 'pelatih@searia.test',
+            'name' => 'Juri Kolam 1',
+            'email' => 'juri@searia.test',
             'password' => Hash::make('password'),
-            'role' => UserRole::Pelatih,
-            'club_id' => $clubA->id,
-            'is_active' => true,
-        ]);
-
-        User::query()->create([
-            'name' => 'Pelatih GSC',
-            'email' => 'pelatih.gsc@searia.test',
-            'password' => Hash::make('password'),
-            'role' => UserRole::Pelatih,
-            'club_id' => $clubB->id,
+            'role' => UserRole::Juri,
             'is_active' => true,
         ]);
 
@@ -129,7 +119,7 @@ class DatabaseSeeder extends Seeder
             'pool_length' => 25,
             'max_events_per_athlete' => 3,
             'seeding_mode' => SeedingMode::Balanced,
-            'fee_per_event' => 50_000,
+            'fee_per_event' => 0,
             'late_fee_per_event' => 0,
             'status' => CompetitionStatus::Registration,
         ]);

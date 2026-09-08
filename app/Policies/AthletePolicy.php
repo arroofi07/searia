@@ -9,35 +9,27 @@ class AthletePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->managesMasterData() || $user->isPelatih();
+        return $user->managesMasterData();
     }
 
     public function view(User $user, Athlete $athlete): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $this->ownsClub($user, $athlete);
+        return $user->managesMasterData();
     }
 
     public function create(User $user): bool
     {
-        return $user->managesMasterData() || $user->isPelatih();
+        return $user->managesMasterData();
     }
 
     public function update(User $user, Athlete $athlete): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $this->ownsClub($user, $athlete);
+        return $user->managesMasterData();
     }
 
     public function delete(User $user, Athlete $athlete): bool
     {
-        return $this->update($user, $athlete);
+        return $user->managesMasterData();
     }
 
     public function manageAny(User $user): bool
@@ -48,10 +40,5 @@ class AthletePolicy
     public function merge(User $user, Athlete $athlete): bool
     {
         return $user->managesMasterData();
-    }
-
-    private function ownsClub(User $user, Athlete $athlete): bool
-    {
-        return $user->isPelatih() && $user->club_id === $athlete->club_id;
     }
 }

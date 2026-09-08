@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use App\Models\Competition;
-use App\Models\Event;
 use App\Services\StartListBuilder;
 use App\Support\SwimTime;
 use Illuminate\Support\Collection;

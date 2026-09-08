@@ -17,8 +17,6 @@
         class="rounded-md px-3 py-1.5 {{ $current === 'readiness' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Kesiapan</a>
     <a href="{{ route('admin.imports.index', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $current === 'imports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Import</a>
-    <a href="{{ route('admin.invoices.index', $competition) }}"
-        class="rounded-md px-3 py-1.5 {{ $current === 'invoices' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Tagihan</a>
     <a href="{{ route('admin.seeding.index', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $current === 'seeding' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Seeding</a>
     <a href="{{ route('admin.start-list.index', $competition) }}"

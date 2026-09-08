@@ -7,8 +7,14 @@ use Illuminate\Support\Facades\Route;
  * Fail the build when a new mutating web route is added without auth.
  */
 it('requires auth middleware on every mutating web route', function () {
-    $exceptions = [
+    // Pendaftaran peserta memang terbuka tanpa akun. Sebagai gantinya setiap rute
+    // publik yang mengubah data wajib punya rate limiter, dicek terpisah di bawah.
+    $publicByDesign = [
         'login',
+        'register.athlete',
+        'register.events.store',
+        'register.store',
+        'register.parse-time',
     ];
 
     $checked = 0;
@@ -22,7 +28,7 @@ it('requires auth middleware on every mutating web route', function () {
         }
 
         $name = $route->getName() ?? $route->uri();
-        if (in_array($name, $exceptions, true)) {
+        if (in_array($name, $publicByDesign, true)) {
             continue;
         }
 
@@ -35,6 +41,23 @@ it('requires auth middleware on every mutating web route', function () {
 
     expect($unprotected)->toBeEmpty()
         ->and($checked)->toBeGreaterThan(10);
+});
+
+it('rate limits every public mutating route', function () {
+    $unlimited = [];
+
+    foreach (['register.athlete', 'register.store', 'register.parse-time'] as $name) {
+        $middleware = Route::getRoutes()->getByName($name)->gatherMiddleware();
+
+        $throttled = collect($middleware)
+            ->contains(fn (mixed $item): bool => is_string($item) && str_starts_with($item, 'throttle:'));
+
+        if (! $throttled) {
+            $unlimited[] = $name;
+        }
+    }
+
+    expect($unlimited)->toBeEmpty();
 });
 
 it('keeps public read routes reachable without authentication', function () {

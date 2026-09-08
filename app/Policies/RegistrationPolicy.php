@@ -2,49 +2,39 @@
 
 namespace App\Policies;
 
-use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\Registration;
 use App\Models\User;
 
+/**
+ * Pendaftaran mandiri oleh peserta berjalan lewat rute publik tanpa akun, sehingga
+ * kebijakan ini hanya mengatur apa yang boleh dilakukan panitia atas entri yang masuk.
+ */
 class RegistrationPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->managesMasterData() || $user->isPelatih();
+        return $user->managesMasterData();
     }
 
     public function view(User $user, Registration $registration): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $user->isPelatih() && $user->club_id === $registration->athlete?->club_id;
+        return $user->managesMasterData();
     }
 
     public function create(User $user, ?Competition $competition = null): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $user->isPelatih() && $user->club_id !== null;
+        return $user->managesMasterData();
     }
 
     public function update(User $user, Registration $registration): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $this->view($user, $registration)
-            && $registration->competition?->status === CompetitionStatus::Registration;
+        return $user->managesMasterData();
     }
 
     public function delete(User $user, Registration $registration): bool
     {
-        return $this->update($user, $registration);
+        return $user->managesMasterData();
     }
 
     public function verify(User $user, Registration $registration): bool

@@ -9,28 +9,17 @@ class InvoicePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->managesMasterData() || $user->isPelatih();
+        return $user->managesMasterData();
     }
 
     public function view(User $user, Invoice $invoice): bool
     {
-        if ($user->managesMasterData()) {
-            return true;
-        }
-
-        return $user->isPelatih() && $user->club_id === $invoice->club_id;
+        return $user->managesMasterData();
     }
 
     public function create(User $user): bool
     {
         return $user->managesMasterData();
-    }
-
-    public function uploadProof(User $user, Invoice $invoice): bool
-    {
-        return $user->isPelatih()
-            && $user->club_id === $invoice->club_id
-            && $invoice->canUploadProof();
     }
 
     public function verify(User $user, Invoice $invoice): bool

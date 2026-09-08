@@ -16,11 +16,11 @@ class Invoice extends Model
     protected $fillable = [
         'competition_id',
         'club_id',
+        'submission_id',
         'invoice_number',
         'item_count',
         'amount',
         'line_items',
-        'proof_path',
         'status',
         'rejection_reason',
         'verified_by',
@@ -59,11 +59,30 @@ class Invoice extends Model
     }
 
     /**
+     * @return BelongsTo<RegistrationSubmission, $this>
+     */
+    public function submission(): BelongsTo
+    {
+        return $this->belongsTo(RegistrationSubmission::class, 'submission_id');
+    }
+
+    /**
      * @return HasMany<Registration, $this>
      */
     public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class);
+    }
+
+    /**
+     * Nama pihak yang ditagih: klub untuk entri hasil import, atau nama pendaftar
+     * untuk pendaftaran mandiri lewat form publik.
+     */
+    public function billedTo(): string
+    {
+        return $this->club?->name
+            ?? $this->submission?->registrant_name
+            ?? 'Pendaftar';
     }
 
     /**
@@ -82,11 +101,6 @@ class Invoice extends Model
     public function canBeReissued(): bool
     {
         return $this->status->canReissue();
-    }
-
-    public function canUploadProof(): bool
-    {
-        return $this->status->canUploadProof();
     }
 
     /**

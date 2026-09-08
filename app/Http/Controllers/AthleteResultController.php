@@ -85,12 +85,7 @@ class AthleteResultController extends Controller
             return;
         }
 
-        $user = $request->user();
-        if ($user?->managesMasterData()) {
-            return;
-        }
-
-        if ($user?->isPelatih() && $user->club_id === $athlete->club_id) {
+        if ($request->user()?->managesMasterData()) {
             return;
         }
 

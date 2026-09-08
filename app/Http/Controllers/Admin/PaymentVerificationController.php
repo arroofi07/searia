@@ -8,11 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RejectInvoiceRequest;
 use App\Models\ActivityLog;
 use App\Models\Invoice;
-use App\Models\User;
 use App\Notifications\InvoiceVerificationResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 
 class PaymentVerificationController extends Controller
@@ -20,8 +20,7 @@ class PaymentVerificationController extends Controller
     public function approve(Request $request, Invoice $invoice): RedirectResponse
     {
         $this->authorize('verify', $invoice);
-        abort_unless($invoice->status === InvoiceStatus::WaitingVerification, Response::HTTP_UNPROCESSABLE_ENTITY);
-        abort_unless(filled($invoice->proof_path), Response::HTTP_UNPROCESSABLE_ENTITY);
+        abort_if($invoice->isPaid(), Response::HTTP_UNPROCESSABLE_ENTITY);
 
         $old = ['status' => $invoice->status->value];
 
@@ -42,7 +41,7 @@ class PaymentVerificationController extends Controller
             $request->ip(),
         );
 
-        $this->notifyCoaches($invoice->fresh(['club.users', 'competition']));
+        $this->notifyRegistrant($invoice->fresh(['submission', 'competition']));
 
         return back()->with('status', 'Tagihan ditandai lunas.');
     }
@@ -50,7 +49,7 @@ class PaymentVerificationController extends Controller
     public function reject(RejectInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         $this->authorize('verify', $invoice);
-        abort_unless($invoice->status === InvoiceStatus::WaitingVerification, Response::HTTP_UNPROCESSABLE_ENTITY);
+        abort_unless($invoice->isPaid(), Response::HTTP_UNPROCESSABLE_ENTITY);
 
         $old = ['status' => $invoice->status->value];
 
@@ -74,9 +73,9 @@ class PaymentVerificationController extends Controller
             $request->ip(),
         );
 
-        $this->notifyCoaches($invoice->fresh(['club.users', 'competition']));
+        $this->notifyRegistrant($invoice->fresh(['submission', 'competition']));
 
-        return back()->with('status', 'Bukti pembayaran ditolak.');
+        return back()->with('status', 'Tagihan dikembalikan ke status belum lunas.');
     }
 
     public function restore(Invoice $invoice): RedirectResponse
@@ -99,10 +98,14 @@ class PaymentVerificationController extends Controller
         return back()->with('status', 'Entri dikembalikan dan tagihan dibuka kembali.');
     }
 
-    private function notifyCoaches(Invoice $invoice): void
+    private function notifyRegistrant(Invoice $invoice): void
     {
-        $invoice->club?->users
-            ->filter(fn (User $user): bool => $user->isPelatih())
-            ->each(fn (User $user) => $user->notify(new InvoiceVerificationResult($invoice)));
+        $email = $invoice->submission?->registrant_email;
+
+        if ($email === null) {
+            return;
+        }
+
+        Notification::route('mail', $email)->notify(new InvoiceVerificationResult($invoice));
     }
 }

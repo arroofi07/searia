@@ -6,9 +6,9 @@ use App\Enums\CompetitionStatus;
 use App\Enums\InvoiceStatus;
 use App\Enums\RegistrationStatus;
 use App\Models\Invoice;
-use App\Models\User;
 use App\Notifications\InvoicePaymentDueSoon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Notification;
 
 class ExpireUnpaidRegistrations extends Command
 {
@@ -37,11 +37,13 @@ class ExpireUnpaidRegistrations extends Command
             ->whereNotNull('due_at')
             ->where('due_at', '>', now())
             ->where('due_at', '<=', now()->addHours($hours))
-            ->with(['club.users', 'competition'])
+            ->with(['submission', 'competition'])
             ->each(function (Invoice $invoice) use (&$count): void {
-                $invoice->club?->users
-                    ->filter(fn (User $user): bool => $user->isPelatih())
-                    ->each(fn (User $user) => $user->notify(new InvoicePaymentDueSoon($invoice)));
+                $email = $invoice->submission?->registrant_email;
+
+                if ($email !== null) {
+                    Notification::route('mail', $email)->notify(new InvoicePaymentDueSoon($invoice));
+                }
 
                 $invoice->update(['reminder_sent_at' => now()]);
                 $count++;

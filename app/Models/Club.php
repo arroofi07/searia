@@ -45,14 +45,6 @@ class Club extends Model
     }
 
     /**
-     * @return HasMany<User, $this>
-     */
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
-
-    /**
      * @return HasMany<Invoice, $this>
      */
     public function invoices(): HasMany

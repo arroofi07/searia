@@ -27,7 +27,7 @@ it('reads headers regardless of extra spaces and letter case', function () {
         'catatan waktu',
     ]);
 
-    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['coach']);
+    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
 
     expect($result->read)->toBe(1)
         ->and($result->rows[0]->row->fullName)->toBe('PESERTA HEADER')
@@ -48,11 +48,11 @@ it('rejects a file that is missing the KODE ACARA column', function () {
         'CATATAN WAKTU',
     ]);
 
-    expect(fn () => app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['coach']))
+    expect(fn () => app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']))
         ->toThrow(MissingImportColumnsException::class);
 
     try {
-        app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['coach']);
+        app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
     } catch (MissingImportColumnsException $exception) {
         expect($exception->columns)->toContain(ImportHeaders::KODE_ACARA)
             ->and($exception->getMessage())->toContain('KODE ACARA');
@@ -67,7 +67,7 @@ it('skips empty rows in the middle of the file', function () {
         ['3', 'PESERTA DUA', 'L', '2016', $meet['club']->name, $meet['club']->city, '13', '00:48.15'],
     ]);
 
-    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['coach']);
+    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
 
     expect($result->read)->toBe(2)
         ->and($result->rows[1]->row->excelRow)->toBe(4);
@@ -77,7 +77,7 @@ it('cancels a batch by deleting every registration that came from it', function 
     $meet = openRegistrationMeet();
     $batch = ImportBatch::factory()->create([
         'competition_id' => $meet['competition']->id,
-        'user_id' => $meet['coach']->id,
+        'user_id' => $meet['panitia']->id,
         'status' => ImportStatus::Committed,
     ]);
     Registration::factory()->create([
@@ -85,7 +85,7 @@ it('cancels a batch by deleting every registration that came from it', function 
         'event_id' => $meet['event']->id,
         'athlete_id' => $meet['athlete']->id,
         'age_group_id' => $meet['group']->id,
-        'registered_by' => $meet['coach']->id,
+        'registered_by' => $meet['panitia']->id,
         'import_batch_id' => $batch->id,
         'status' => RegistrationStatus::Pending,
     ]);
@@ -100,7 +100,7 @@ it('refuses to cancel a batch after an entry has been verified', function () {
     $meet = openRegistrationMeet();
     $batch = ImportBatch::factory()->create([
         'competition_id' => $meet['competition']->id,
-        'user_id' => $meet['coach']->id,
+        'user_id' => $meet['panitia']->id,
         'status' => ImportStatus::Committed,
     ]);
     Registration::factory()->create([
@@ -108,7 +108,7 @@ it('refuses to cancel a batch after an entry has been verified', function () {
         'event_id' => $meet['event']->id,
         'athlete_id' => $meet['athlete']->id,
         'age_group_id' => $meet['group']->id,
-        'registered_by' => $meet['coach']->id,
+        'registered_by' => $meet['panitia']->id,
         'import_batch_id' => $batch->id,
         'status' => RegistrationStatus::Verified,
     ]);

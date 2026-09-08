@@ -31,6 +31,7 @@ class InvoicePaymentDueSoon extends Notification implements ShouldQueue
             ->subject('Pengingat pembayaran: '.$invoice->invoice_number)
             ->line('Tagihan '.$invoice->invoice_number.' untuk '.$invoice->competition?->name.' jatuh tempo pada '.$due.'.')
             ->line('Nominal: Rp '.number_format($invoice->amount, 0, ',', '.'))
-            ->action('Unggah bukti pembayaran', route('coach.invoices.show', $invoice));
+            ->line('Kirim bukti transfer ke panitia dengan menyebutkan kode pendaftaran '
+                .($invoice->submission?->code ?? $invoice->invoice_number).'.');
     }
 }

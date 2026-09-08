@@ -6,7 +6,7 @@ use App\Enums\CompetitionStatus;
 use App\Exceptions\CannotTransitionCompetitionException;
 use App\Models\Competition;
 use App\Models\Heat;
-use App\Models\Registration;
+use App\Models\RegistrationSubmission;
 use App\Models\User;
 use App\Notifications\ResultsPublished;
 use App\Services\CompetitionStatusTransition;
@@ -44,20 +44,28 @@ class PublishResults
             ipAddress: $ipAddress,
         );
 
-        $coachIds = Registration::query()
-            ->where('competition_id', $published->id)
-            ->whereNotNull('registered_by')
-            ->distinct()
-            ->pluck('registered_by');
-
-        $coaches = User::query()->whereIn('id', $coachIds)->get();
-        Notification::send($coaches, new ResultsPublished($published));
+        $this->notifyRegistrants($published);
 
         app(GenerateCertificates::class)->handle($published);
 
         \App\Support\PublicPageCache::bump();
 
         return $published->fresh();
+    }
+
+    /**
+     * Pendaftar tidak punya akun, jadi kabar hasil terbit dikirim ke alamat email
+     * yang dicantumkan pada form pendaftaran. Satu email per pengiriman.
+     */
+    private function notifyRegistrants(Competition $competition): void
+    {
+        RegistrationSubmission::query()
+            ->where('competition_id', $competition->id)
+            ->whereNotNull('registrant_email')
+            ->pluck('registrant_email')
+            ->unique()
+            ->each(fn (string $email) => Notification::route('mail', $email)
+                ->notify(new ResultsPublished($competition)));
     }
 
     public function hasUnlockedHeats(Competition $competition): bool

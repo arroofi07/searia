@@ -55,7 +55,7 @@ class ImportUploadService
             return $batch->fresh();
         }
 
-        $result = $this->reader->readAndValidate($absolute, $extension, $competition, $user);
+        $result = $this->reader->readAndValidate($absolute, $extension, $competition);
         $batch->storeResult($result);
 
         return $batch->fresh();

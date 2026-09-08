@@ -23,10 +23,10 @@ use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
-it('forbids coaches from opening the audit screen', function () {
-    $coach = User::factory()->pelatih()->create();
+it('forbids judges from opening the audit screen', function () {
+    $judge = User::factory()->juri()->create();
 
-    $this->actingAs($coach)
+    $this->actingAs($judge)
         ->get(route('admin.activity-logs.index'))
         ->assertForbidden();
 });

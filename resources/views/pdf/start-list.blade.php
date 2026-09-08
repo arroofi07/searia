@@ -26,23 +26,23 @@
 
         @foreach ($session->events as $event)
             <div class="event-block">
-                <div class="event-title">{{ $event->title() }}</div>
+                <div class="event-title">EVENT {{ $event->eventNumber }}: {{ $event->eventName }}</div>
 
                 @foreach ($event->ageGroups as $ageGroup)
                     <div class="group-title">{{ $ageGroup->name }}</div>
 
                     @foreach ($ageGroup->heats as $heat)
-                        <div class="heat-title">Seri {{ $heat->heatNumber }}</div>
+                        <div class="heat-title">SERI {{ $heat->heatNumber }}</div>
                         <table class="lanes">
                             <thead>
                                 <tr>
-                                    <th style="width:8%">Lint.</th>
-                                    <th>Nama</th>
-                                    <th style="width:8%">Thn</th>
-                                    <th style="width:8%">KU</th>
-                                    <th style="width:18%">Klub</th>
-                                    <th style="width:14%">Kota</th>
-                                    <th style="width:12%">Waktu</th>
+                                    <th style="width:8%">LANE</th>
+                                    <th>NAMA</th>
+                                    <th style="width:8%">YOB</th>
+                                    <th style="width:8%">AGE</th>
+                                    <th style="width:18%">CLUB</th>
+                                    <th style="width:14%">KAB/KOTA</th>
+                                    <th style="width:12%">BEST TIME</th>
                                 </tr>
                             </thead>
                             <tbody>

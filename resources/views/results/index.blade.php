@@ -14,6 +14,7 @@
             @endif
         </div>
         <div class="flex flex-wrap gap-2 text-sm">
+            <a href="{{ route('results.pdf', $competition) }}" class="rounded-md bg-teal-700 px-3 py-1.5 font-medium text-white hover:bg-teal-800">Unduh PDF hasil</a>
             <a href="{{ route('results.medals', $competition) }}" class="text-teal-800 hover:underline">Rekap medali</a>
             <a href="{{ route('results.standings', $competition) }}" class="text-teal-800 hover:underline">Klasemen klub</a>
         </div>

@@ -3,7 +3,6 @@
 use App\Enums\RegistrationStatus;
 use App\Models\Athlete;
 use App\Models\Event;
-use App\Models\Invoice;
 use App\Models\Registration;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,7 +26,7 @@ it('rejects a second registration for the same athlete and event', function () {
     ]);
 })->throws(UniqueConstraintViolationException::class);
 
-it('includes verified unpaid-unbilled entries in the seeding scope and excludes unpaid invoices', function () {
+it('includes only verified registrations in the seeding scope', function () {
     $event = Event::factory()->create();
     $athlete = Athlete::factory()->create();
     $other = Athlete::factory()->create(['club_id' => $athlete->club_id]);
@@ -38,13 +37,6 @@ it('includes verified unpaid-unbilled entries in the seeding scope and excludes 
         'athlete_id' => $athlete->id,
         'age_group_id' => 1,
         'status' => RegistrationStatus::Verified,
-        'invoice_id' => null,
-    ]);
-
-    $invoice = Invoice::factory()->create([
-        'competition_id' => $event->competition_id,
-        'club_id' => $athlete->club_id,
-        'status' => \App\Enums\InvoiceStatus::Unpaid,
     ]);
 
     Registration::factory()->create([
@@ -52,8 +44,7 @@ it('includes verified unpaid-unbilled entries in the seeding scope and excludes 
         'event_id' => Event::factory()->create(['competition_id' => $event->competition_id])->id,
         'athlete_id' => $other->id,
         'age_group_id' => 1,
-        'status' => RegistrationStatus::Verified,
-        'invoice_id' => $invoice->id,
+        'status' => RegistrationStatus::Pending,
     ]);
 
     $ids = Registration::query()->eligibleForSeeding()->pluck('id');

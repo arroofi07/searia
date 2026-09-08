@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Casts\SwimTimeCast;
-use App\Enums\InvoiceStatus;
 use App\Enums\RegistrationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +19,7 @@ class Registration extends Model
         'competition_id',
         'event_id',
         'athlete_id',
+        'submission_id',
         'age_group_id',
         'seed_time_ms',
         'status',
@@ -46,12 +46,7 @@ class Registration extends Model
      */
     public function scopeEligibleForSeeding(Builder $query): Builder
     {
-        return $query
-            ->where('status', RegistrationStatus::Verified)
-            ->where(function (Builder $inner): void {
-                $inner->whereNull('invoice_id')
-                    ->orWhereHas('invoice', fn (Builder $invoice) => $invoice->where('status', InvoiceStatus::Paid));
-            });
+        return $query->where('status', RegistrationStatus::Verified);
     }
 
     /**
@@ -84,6 +79,14 @@ class Registration extends Model
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(Athlete::class);
+    }
+
+    /**
+     * @return BelongsTo<RegistrationSubmission, $this>
+     */
+    public function submission(): BelongsTo
+    {
+        return $this->belongsTo(RegistrationSubmission::class, 'submission_id');
     }
 
     /**

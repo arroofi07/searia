@@ -8,6 +8,15 @@
             <h1 class="text-2xl font-semibold">Tugas saya</h1>
             <p class="mt-1 text-sm text-slate-500">Nomor lomba yang ditugaskan. Halaman disegarkan otomatis.</p>
         </div>
+        @php
+            $firstCompetition = $tasks->first()['event']->competition ?? null;
+        @endphp
+        @if ($firstCompetition)
+            <div class="flex flex-wrap gap-2 text-sm">
+                <a href="{{ route('start-list.pdf', $firstCompetition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF acara</a>
+                <a href="{{ route('results.pdf', $firstCompetition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF hasil</a>
+            </div>
+        @endif
     </div>
 
     @if ($empty)

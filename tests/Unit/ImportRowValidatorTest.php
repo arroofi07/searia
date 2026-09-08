@@ -32,7 +32,7 @@ function importCodes(array $meet, ParticipantRow $row, array $batch = []): array
 {
     $validator = app(RowValidator::class);
     $all = $batch === [] ? [$row] : $batch;
-    $result = $validator->validateMany($meet['competition'], $all, $meet['coach']);
+    $result = $validator->validateMany($meet['competition'], $all, $meet['panitia']);
 
     return collect($result->rows)
         ->first(fn ($item) => $item->row->excelRow === $row->excelRow)
@@ -135,7 +135,7 @@ it('reports E-11 when the athlete is already registered in the event', function 
         'event_id' => $meet['event']->id,
         'athlete_id' => $meet['athlete']->id,
         'age_group_id' => $meet['group']->id,
-        'registered_by' => $meet['coach']->id,
+        'registered_by' => $meet['panitia']->id,
         'status' => RegistrationStatus::Pending,
     ]);
 
@@ -181,7 +181,7 @@ it('reports W-01 when the club name is new', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['club_name' => 'Klub Baru Import']),
-    ], $meet['coach']);
+    ], $meet['panitia']);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-01');
 });
@@ -191,7 +191,7 @@ it('reports W-02 when the club name is similar to an existing club', function ()
     Club::factory()->create(['name' => 'SeaRIA Aquatic Padang']);
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['club_name' => 'SeaRIA Aquatic Pdg']),
-    ], $meet['coach']);
+    ], $meet['panitia']);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-02')
         ->and($result->rows[0]->clubSuggestions)->not->toBeEmpty();
@@ -208,7 +208,7 @@ it('reports W-03 when an athlete name is similar in the same club', function () 
 
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['full_name' => 'AHZA DANISH RAHMAN', 'club_name' => $meet['club']->name]),
-    ], $meet['coach']);
+    ], $meet['panitia']);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-03');
 });
@@ -217,7 +217,7 @@ it('reports W-04 when the seed time is empty', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['seed_time' => '', 'full_name' => 'TANPA WAKTU']),
-    ], $meet['coach']);
+    ], $meet['panitia']);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-04')
         ->and($result->rows[0]->isValid())->toBeTrue();
@@ -227,7 +227,7 @@ it('reports W-05 when the city is empty', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['city' => '', 'full_name' => 'TANPA KOTA']),
-    ], $meet['coach']);
+    ], $meet['panitia']);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-05');
 });
@@ -243,7 +243,7 @@ it('validates two thousand rows in under thirty seconds', function () {
     }
 
     $started = microtime(true);
-    $result = app(RowValidator::class)->validateMany($meet['competition'], $rows, $meet['coach']);
+    $result = app(RowValidator::class)->validateMany($meet['competition'], $rows, $meet['panitia']);
     $elapsed = microtime(true) - $started;
 
     expect($result->valid)->toBe(2000)

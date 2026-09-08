@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-class CannotRecordResultException extends RuntimeException
-{
-}
+class CannotRecordResultException extends RuntimeException {}

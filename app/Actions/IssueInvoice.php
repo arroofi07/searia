@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\DataTransferObjects\InvoiceCalculation;
 use App\Enums\InvoiceStatus;
 use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotReissuePaidInvoiceException;
@@ -10,12 +11,17 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Invoice;
 use App\Models\Registration;
+use App\Models\RegistrationSubmission;
 use App\Services\Invoice\InvoiceNumberGenerator;
 use App\Services\InvoiceCalculator;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Sebuah tagihan dimiliki tepat oleh salah satu dari dua pihak: pengiriman form
+ * publik (`submission_id`) atau klub yang datanya diimport panitia (`club_id`).
+ */
 class IssueInvoice
 {
     public function __construct(
@@ -26,58 +32,37 @@ class IssueInvoice
     public function handle(Competition $competition, Club $club, ?CarbonInterface $dueAt = null): Invoice
     {
         return DB::transaction(function () use ($competition, $club, $dueAt): Invoice {
-            $calculation = $this->calculator->forClub($competition, $club);
-
-            $invoice = Invoice::query()
+            $existing = Invoice::query()
                 ->where('competition_id', $competition->id)
                 ->where('club_id', $club->id)
                 ->lockForUpdate()
                 ->first();
 
-            if ($invoice?->isPaid()) {
-                throw new CannotReissuePaidInvoiceException('Tagihan yang sudah lunas tidak dapat diterbitkan ulang.');
-            }
+            return $this->persist(
+                $competition,
+                $existing,
+                $this->calculator->forClub($competition, $club),
+                ['club_id' => $club->id],
+                $dueAt,
+            );
+        });
+    }
 
-            if ($calculation->isEmpty() && $invoice === null) {
-                throw new EmptyInvoiceException('Tidak ada entri terverifikasi untuk ditagih.');
-            }
+    public function forSubmission(RegistrationSubmission $submission, ?CarbonInterface $dueAt = null): Invoice
+    {
+        return DB::transaction(function () use ($submission, $dueAt): Invoice {
+            $existing = Invoice::query()
+                ->where('submission_id', $submission->id)
+                ->lockForUpdate()
+                ->first();
 
-            $changed = $invoice === null
-                || $invoice->amount !== $calculation->total()
-                || $invoice->item_count !== $calculation->itemCount();
-
-            $status = InvoiceStatus::Unpaid;
-            if ($invoice !== null && $invoice->status === InvoiceStatus::WaitingVerification && ! $changed) {
-                $status = InvoiceStatus::WaitingVerification;
-            }
-
-            $attributes = [
-                'item_count' => $calculation->itemCount(),
-                'amount' => $calculation->total(),
-                'line_items' => $calculation->toArray(),
-                'status' => $status,
-            ];
-
-            if ($dueAt !== null) {
-                $attributes['due_at'] = $dueAt;
-            }
-
-            if ($invoice === null) {
-                $invoice = Invoice::query()->create([
-                    ...$attributes,
-                    'competition_id' => $competition->id,
-                    'club_id' => $club->id,
-                    'invoice_number' => $this->numbers->next($competition),
-                    'due_at' => $dueAt ?? now()->addDays((int) config('searia.invoice.due_days', 7)),
-                ]);
-            } else {
-                $invoice->update($attributes);
-                $invoice = $invoice->fresh();
-            }
-
-            $this->syncRegistrations($invoice, $calculation->registrationIds());
-
-            return $invoice;
+            return $this->persist(
+                $submission->competition,
+                $existing,
+                $this->calculator->forSubmission($submission),
+                ['submission_id' => $submission->id],
+                $dueAt,
+            );
         });
     }
 
@@ -89,7 +74,8 @@ class IssueInvoice
         $clubs = Club::query()
             ->whereHas('athletes.registrations', function ($query) use ($competition): void {
                 $query->where('competition_id', $competition->id)
-                    ->where('status', RegistrationStatus::Verified);
+                    ->where('status', RegistrationStatus::Verified)
+                    ->whereNull('submission_id');
             })
             ->orderBy('name')
             ->get();
@@ -105,6 +91,53 @@ class IssueInvoice
             })
             ->map(fn (Club $club): Invoice => $this->handle($competition, $club, $dueAt))
             ->values();
+    }
+
+    /**
+     * @param  array<string, int>  $owner
+     */
+    private function persist(
+        Competition $competition,
+        ?Invoice $invoice,
+        InvoiceCalculation $calculation,
+        array $owner,
+        ?CarbonInterface $dueAt,
+    ): Invoice {
+        if ($invoice?->isPaid()) {
+            throw new CannotReissuePaidInvoiceException('Tagihan yang sudah lunas tidak dapat diterbitkan ulang.');
+        }
+
+        if ($calculation->isEmpty() && $invoice === null) {
+            throw new EmptyInvoiceException('Tidak ada entri yang bisa ditagih.');
+        }
+
+        $attributes = [
+            'item_count' => $calculation->itemCount(),
+            'amount' => $calculation->total(),
+            'line_items' => $calculation->toArray(),
+            'status' => InvoiceStatus::Unpaid,
+        ];
+
+        if ($dueAt !== null) {
+            $attributes['due_at'] = $dueAt;
+        }
+
+        if ($invoice === null) {
+            $invoice = Invoice::query()->create([
+                ...$attributes,
+                ...$owner,
+                'competition_id' => $competition->id,
+                'invoice_number' => $this->numbers->next($competition),
+                'due_at' => $dueAt ?? now()->addDays((int) config('searia.invoice.due_days', 7)),
+            ]);
+        } else {
+            $invoice->update($attributes);
+            $invoice = $invoice->fresh();
+        }
+
+        $this->syncRegistrations($invoice, $calculation->registrationIds());
+
+        return $invoice;
     }
 
     /**

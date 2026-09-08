@@ -42,6 +42,16 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by($request->ip());
         });
 
+        // Form pendaftaran terbuka tanpa akun, jadi hanya alamat IP yang bisa dipakai
+        // sebagai pembatas. Angkanya longgar agar satu orang tetap bisa mendaftarkan
+        // beberapa atlet berturut-turut dari jaringan yang sama.
+        RateLimiter::for('public-registration', function (Request $request) {
+            return [
+                Limit::perMinute(10)->by($request->ip()),
+                Limit::perHour(60)->by($request->ip()),
+            ];
+        });
+
         RateLimiter::for('uploads', function (Request $request) {
             return Limit::perHour(30)->by((string) ($request->user()?->id ?: $request->ip()));
         });

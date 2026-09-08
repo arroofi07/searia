@@ -25,17 +25,10 @@
                     @can('viewAny', App\Models\Athlete::class)
                         <a href="{{ route('athletes.index') }}" class="{{ request()->routeIs('athletes.*') || request()->routeIs('admin.athletes.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Atlet</a>
                     @endcan
-                    @can('viewAny', App\Models\Registration::class)
-                        <a href="{{ route('registrations.index') }}" class="{{ request()->routeIs('registrations.*') || request()->routeIs('register.*') || request()->routeIs('coach.registrations.*') || request()->routeIs('admin.registrations.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Pendaftaran</a>
-                    @endcan
                     @if (auth()->user()?->isJuri() || auth()->user()?->managesMasterData())
                         <a href="{{ route('judge.tasks') }}" class="{{ request()->routeIs('judge.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Tugas juri</a>
                     @endif
-                    @if (auth()->user()?->club)
-                        @can('view', auth()->user()->club)
-                            <a href="{{ route('coach.club.show', auth()->user()->club) }}" class="{{ request()->routeIs('coach.club.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Profil klub</a>
-                        @endcan
-                    @endif
+                    <a href="{{ route('register.index') }}" class="{{ request()->routeIs('register.*') ? 'font-semibold text-teal-800' : 'text-slate-600 hover:text-teal-800' }}">Form pendaftaran</a>
                 </nav>
                 <div class="flex items-center gap-3 text-sm">
                     <span class="text-slate-500">{{ auth()->user()?->name }}</span>

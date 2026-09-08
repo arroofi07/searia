@@ -7,17 +7,17 @@ Istilah "catatan waktu" dipakai untuk dua hal yang sangat berbeda dalam satu kej
 | | Seed time | Hasil lomba |
 | --- | --- | --- |
 | Nama kolom | `registrations.seed_time_ms` | `results.time_ms` |
-| Diisi oleh | Pelatih atau peserta saat mendaftar | Juri saat lomba berlangsung |
+| Diisi oleh | Pendaftar saat mengisi form | Juri saat lomba berlangsung |
 | Kapan | Masa pendaftaran | Hari lomba |
 | Asalnya | Waktu terbaik atlet pada lomba sebelumnya atau catatan latihan | Diukur di kolam |
 | Fungsi | Mengurutkan peserta ke seri dan lintasan | Menentukan peringkat dan juara |
 | Boleh kosong | Ya, berarti NT | Tidak, kecuali statusnya DNS, DNF, atau DSQ |
-| Bisa diubah | Selama pendaftaran masih terbuka | Hanya oleh panitia lewat koreksi bercatat audit |
+| Bisa diubah | Oleh panitia selama pendaftaran masih terbuka | Hanya oleh panitia lewat koreksi bercatat audit |
 
 ```mermaid
 flowchart LR
     subgraph pendaftaran [Masa Pendaftaran]
-        Pelatih["Pelatih mengisi<br/>seed time"] --> Reg["registrations.seed_time_ms"]
+        Pendaftar["Pendaftar mengisi<br/>seed time"] --> Reg["registrations.seed_time_ms"]
     end
     subgraph seeding [Seeding]
         Reg --> Urut["Urutkan peserta"] --> Lane["heat_lanes<br/>seri + lintasan"]
@@ -103,7 +103,7 @@ Tidak semua peserta menghasilkan angka. Kolom `results.status` menampung keadaan
 | `dnf` | Did Not Finish | Start tetapi tidak sampai finis | `NULL` |
 | `dsq` | Disqualified | Didiskualifikasi karena pelanggaran teknik | `NULL` |
 
-Diskualifikasi wajib disertai kode alasan agar bisa dijelaskan kepada pelatih:
+Diskualifikasi wajib disertai kode alasan agar bisa dijelaskan kepada pendaftar dan pelatih di lapangan:
 
 | Kode | Alasan |
 | --- | --- |
@@ -179,4 +179,4 @@ Setelah hasil dipublikasikan, halaman atlet menampilkan selisih antara hasil dan
 | Hasil lebih lambat | Selisih ditampilkan dengan tanda tambah |
 | Seed time NT | Ditandai sebagai catatan waktu pertama |
 
-Angka ini bernilai untuk pelatih maupun untuk kejuaraan berikutnya, karena hasil resmi terakhir seorang atlet dapat diusulkan otomatis sebagai seed time saat mendaftar acara selanjutnya. Fitur pengusulan otomatis tersebut dijalankan hanya jika kejuaraan asal berjenis Resmi, bukan Fun.
+Angka ini bernilai untuk atlet maupun untuk kejuaraan berikutnya, karena hasil resmi terakhir seorang atlet dapat diusulkan otomatis sebagai seed time saat mendaftar acara selanjutnya. Fitur pengusulan otomatis tersebut dijalankan hanya jika kejuaraan asal berjenis Resmi, bukan Fun.

@@ -6,16 +6,20 @@ Basis data yang dipakai adalah PostgreSQL. Seluruh tabel memakai kunci utama `id
 
 ```mermaid
 erDiagram
-    users ||--o{ registrations : "mendaftarkan"
-    users }o--|| clubs : "official dari"
+    users ||--o{ registrations : "mendaftarkan lewat import"
     clubs ||--o{ athletes : "menaungi"
     athletes ||--o{ registrations : "diikutkan"
+
+    registration_submissions ||--o{ registrations : "mengirim"
+    registration_submissions ||--o| invoices : "ditagih"
+    athletes ||--o{ registration_submissions : "didaftarkan lewat"
 
     competitions ||--o{ age_groups : "memiliki"
     competitions ||--o{ events : "memiliki"
     competitions ||--o{ registrations : "menampung"
     competitions ||--o{ import_batches : "menerima"
     competitions ||--o{ invoices : "menerbitkan"
+    competitions ||--o{ registration_submissions : "menerima"
 
     events ||--o{ event_age_group : "dibatasi"
     age_groups ||--o{ event_age_group : "membatasi"
@@ -51,20 +55,19 @@ flowchart LR
 
 ### users
 
-Akun untuk seluruh peran.
+Akun untuk peran internal saja. Pendaftar tidak punya akun; kontaknya disimpan di `registration_submissions`.
 
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
 | `name` | string(100) | |
 | `email` | string(150) | unik |
 | `password` | string | |
-| `role` | enum | `super_admin`, `panitia`, `pelatih`, `juri`, `peserta` |
-| `club_id` | bigint nullable | Terisi untuk pelatih dan peserta mandiri |
+| `role` | enum | `super_admin`, `panitia`, `juri` |
 | `phone` | string(20) nullable | |
 | `is_active` | boolean | Bawaan `true` |
 | `email_verified_at` | timestamp nullable | |
 
-Indeks: `email` unik, indeks pada `role`, indeks pada `club_id`.
+Indeks: `email` unik, indeks pada `role`.
 
 ### clubs
 
@@ -174,6 +177,22 @@ Matriks kelayakan. Satu baris berarti kelompok umur tersebut boleh mengikuti nom
 
 Indeks: unik pada `event_id + age_group_id`.
 
+### registration_submissions
+
+Satu kali pengisian form pendaftaran publik. Menggantikan akun sebagai pemilik sebuah pendaftaran: dari sinilah panitia tahu siapa yang harus dihubungi, dan ke sinilah pemberitahuan dikirim.
+
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| `competition_id` | bigint | |
+| `athlete_id` | bigint | Atlet yang didaftarkan pada pengiriman ini |
+| `code` | string(12) | unik, misalnya `REG-7QK4M2`. Disebutkan pendaftar saat menghubungi panitia |
+| `registrant_name` | string(100) | |
+| `registrant_phone` | string(20) | |
+| `registrant_email` | string(120) nullable | Tujuan pemberitahuan status dan tagihan |
+| `ip_address` | string(45) nullable | Untuk menelusuri penyalahgunaan form terbuka |
+
+Indeks: `code` unik, indeks pada `competition_id`.
+
 ### registrations
 
 | Kolom | Tipe | Keterangan |
@@ -185,7 +204,8 @@ Indeks: unik pada `event_id + age_group_id`.
 | `seed_time_ms` | integer nullable | `NULL` berarti NT |
 | `status` | enum | `draft`, `pending`, `verified`, `rejected`, `withdrawn` |
 | `rejection_reason` | string nullable | |
-| `registered_by` | bigint | `users.id` |
+| `submission_id` | bigint nullable | Terisi untuk entri dari form publik |
+| `registered_by` | bigint nullable | `users.id`, terisi untuk entri yang dibuat panitia atau hasil import |
 | `import_batch_id` | bigint nullable | |
 | `invoice_id` | bigint nullable | |
 | `verified_by` | bigint nullable | |
@@ -261,22 +281,27 @@ Peringkat tidak disimpan sebagai kolom. Nilainya dihitung saat kueri karena satu
 
 ### invoices
 
-Tagihan biaya pendaftaran, diterbitkan per klub per kejuaraan.
+Tagihan biaya pendaftaran. Pemiliknya salah satu dari dua, tidak pernah keduanya: `submission_id` untuk pendaftaran lewat form publik, atau `club_id` untuk entri hasil import Excel.
 
 | Kolom | Tipe | Keterangan |
 | --- | --- | --- |
 | `competition_id` | bigint | |
-| `club_id` | bigint | |
+| `club_id` | bigint nullable | Terisi untuk tagihan per klub hasil import |
+| `submission_id` | bigint nullable | unik. Terisi untuk tagihan per pengiriman form publik |
 | `invoice_number` | string(30) | unik |
 | `item_count` | integer | Jumlah entri yang ditagih |
 | `amount` | integer | Rupiah |
-| `proof_path` | string nullable | Bukti transfer |
-| `status` | enum | `unpaid`, `waiting_verification`, `paid`, `rejected` |
+| `status` | enum | `unpaid`, `paid` |
+| `rejection_reason` | string nullable | Catatan panitia saat membatalkan status lunas |
 | `verified_by` | bigint nullable | |
 | `verified_at` | timestamp nullable | |
 | `due_at` | datetime nullable | |
 
-Indeks: unik pada `competition_id + club_id`, `invoice_number` unik.
+Indeks: `submission_id` unik, `invoice_number` unik.
+
+Aturan "satu klub satu tagihan per kejuaraan" dulu ditegakkan lewat kunci unik `competition_id + club_id`. Kunci itu dilepas karena kini banyak tagihan pada satu kejuaraan yang tidak punya `club_id` sama sekali. Penegakannya pindah ke `IssueInvoice`, yang menerbitkan ulang tagihan klub yang sudah ada alih-alih membuat baris kedua.
+
+Tidak ada lagi kolom bukti transfer maupun status `waiting_verification` dan `rejected`. Pendaftar tanpa akun tidak mengunggah apa pun; panitia mencocokkan mutasi rekening lalu menandai lunas.
 
 ### activity_logs
 
@@ -344,7 +369,7 @@ Migrasi dibuat mengikuti arah ketergantungan kunci asing.
 
 ```
 0001  clubs
-0002  users            (tambah role dan club_id pada tabel bawaan)
+0002  users            (tambah role pada tabel bawaan)
 0003  athletes
 0004  competitions
 0005  age_groups
@@ -357,18 +382,25 @@ Migrasi dibuat mengikuti arah ketergantungan kunci asing.
 0012  heat_lanes
 0013  results
 0014  activity_logs
+...
+0022  restrict_users_to_internal_roles          (hapus peran pelatih dan peserta, lepas users.club_id)
+0023  create_registration_submissions_table     (tambah registrations.submission_id, longgarkan registered_by)
+0024  attach_invoices_to_submissions            (invoices.submission_id, club_id nullable, hapus proof_path)
 ```
+
+Tiga migrasi terakhir adalah perpindahan ke pendaftaran tanpa akun. Migrasi 0022 memindahkan akun pelatih dan peserta yang tersisa menjadi `panitia` nonaktif alih-alih menghapusnya, supaya jejak audit yang menunjuk ke `users.id` tetap utuh.
 
 ## Model Eloquent
 
 | Model | Relasi utama |
 | --- | --- |
-| `Club` | `hasMany(Athlete)`, `hasMany(User)`, `hasMany(Invoice)` |
+| `Club` | `hasMany(Athlete)`, `hasMany(Invoice)` |
 | `Athlete` | `belongsTo(Club)`, `hasMany(Registration)` |
 | `Competition` | `hasMany(AgeGroup)`, `hasMany(Event)`, `hasMany(Registration)` |
 | `AgeGroup` | `belongsTo(Competition)`, `belongsToMany(Event)` |
 | `Event` | `belongsTo(Competition)`, `belongsToMany(AgeGroup)`, `hasMany(Heat)` |
-| `Registration` | `belongsTo(Athlete)`, `belongsTo(Event)`, `belongsTo(AgeGroup)`, `hasOne(HeatLane)` |
+| `Registration` | `belongsTo(Athlete)`, `belongsTo(Event)`, `belongsTo(AgeGroup)`, `belongsTo(RegistrationSubmission)`, `hasOne(HeatLane)` |
+| `RegistrationSubmission` | `belongsTo(Competition)`, `belongsTo(Athlete)`, `hasMany(Registration)`, `hasOne(Invoice)` |
 | `Heat` | `belongsTo(Event)`, `belongsTo(AgeGroup)`, `hasMany(HeatLane)` |
 | `HeatLane` | `belongsTo(Heat)`, `belongsTo(Registration)`, `hasOne(Result)` |
 | `Result` | `belongsTo(HeatLane)` |

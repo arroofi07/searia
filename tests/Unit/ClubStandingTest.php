@@ -54,7 +54,7 @@ it('ranks a club with one gold above a club with five silvers', function () {
             'event' => $event,
             'athlete' => $athlete,
             'group' => $group,
-            'coach' => $meet['coach'],
+            'panitia' => $meet['panitia'],
         ], ['seed_time_ms' => 40_000]);
 
         $heatLane = HeatLane::factory()->create([
@@ -139,7 +139,7 @@ it('lists clubs without medals below medalists and shows participant counts', fu
             'event' => $event,
             'athlete' => $athlete,
             'group' => $group,
-            'coach' => $meet['coach'],
+            'panitia' => $meet['panitia'],
         ], ['seed_time_ms' => 40_000]);
         $heatLane = HeatLane::factory()->create([
             'heat_id' => $heat->id,
@@ -167,7 +167,7 @@ it('lists clubs without medals below medalists and shows participant counts', fu
         'event' => $event,
         'athlete' => $emptyAthlete,
         'group' => $group,
-        'coach' => $meet['coach'],
+        'panitia' => $meet['panitia'],
     ], ['seed_time_ms' => 45_000]);
 
     $rows = app(ClubStanding::class)->forCompetition(

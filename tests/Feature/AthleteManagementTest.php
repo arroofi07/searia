@@ -6,14 +6,13 @@ use App\Models\Club;
 use App\Models\Registration;
 use App\Models\User;
 
-it('assigns a coach athlete to their own club even if another club_id is posted', function () {
-    $clubA = Club::factory()->create();
-    $clubB = Club::factory()->create();
-    $coach = User::factory()->pelatih($clubA)->create();
+it('lets panitia file an athlete under any club', function () {
+    $club = Club::factory()->create();
+    $panitia = User::factory()->panitia()->create();
 
-    $this->actingAs($coach)
+    $this->actingAs($panitia)
         ->post(route('athletes.store'), [
-            'club_id' => $clubB->id,
+            'club_id' => $club->id,
             'full_name' => 'AHZA DANISH RAHMAN',
             'gender' => Gender::Male->value,
             'birth_year' => 2016,
@@ -23,22 +22,22 @@ it('assigns a coach athlete to their own club even if another club_id is posted'
     $athlete = Athlete::query()->first();
 
     expect($athlete)->not->toBeNull()
-        ->and($athlete->club_id)->toBe($clubA->id)
+        ->and($athlete->club_id)->toBe($club->id)
         ->and($athlete->full_name)->toBe('AHZA DANISH RAHMAN');
 });
 
 it('deactivates an athlete who already has registrations instead of deleting them', function () {
     $club = Club::factory()->create();
     $athlete = Athlete::factory()->create(['club_id' => $club->id]);
-    $coach = User::factory()->pelatih($club)->create();
+    $panitia = User::factory()->panitia()->create();
 
     Registration::factory()->create([
         'athlete_id' => $athlete->id,
-        'registered_by' => $coach->id,
+        'registered_by' => $panitia->id,
         'event_id' => 13,
     ]);
 
-    $this->actingAs($coach)
+    $this->actingAs($panitia)
         ->from(route('athletes.show', $athlete))
         ->delete(route('athletes.destroy', $athlete))
         ->assertRedirect(route('athletes.show', $athlete));

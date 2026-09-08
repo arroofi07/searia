@@ -74,7 +74,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load(['club', 'competition', 'verifier', 'registrations']);
+        $invoice->load(['club', 'submission', 'competition', 'verifier', 'registrations']);
 
         return view('admin.invoices.show', [
             'invoice' => $invoice,

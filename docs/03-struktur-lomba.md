@@ -117,7 +117,7 @@ Hubungan ini disimpan sebagai tabel penghubung `event_age_group`, satu baris unt
 
 Sel dibiarkan kosong pada dokumen ini karena isinya adalah keputusan panitia yang berubah tiap kejuaraan, bukan aturan sistem. Panitia mengisinya lewat layar F-PAN-04 berupa kisi kotak centang dengan bentuk persis seperti tabel di atas, dan hasilnya langsung dipakai sebagai penyaring pada form pendaftaran.
 
-Konsekuensi aturan ini pada alur pendaftaran: setelah pelatih memilih atlet, sistem sudah mengetahui kelompok umurnya dari tahun lahir, sehingga daftar nomor lomba yang ditawarkan hanya berisi nomor yang boleh diikuti grup tersebut. Peserta tidak pernah bisa memilih nomor yang salah.
+Konsekuensi aturan ini pada alur pendaftaran: setelah tahun lahir atlet diisi, sistem sudah mengetahui kelompok umurnya, sehingga daftar nomor lomba yang ditawarkan hanya berisi nomor yang boleh diikuti grup tersebut. Peserta tidak pernah bisa memilih nomor yang salah.
 
 ## Sesi dan Urutan Tampil
 

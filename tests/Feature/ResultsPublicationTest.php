@@ -9,10 +9,12 @@ use App\Enums\CompetitionStatus;
 use App\Enums\ResultStatus;
 use App\Models\Heat;
 use App\Models\HeatLane;
+use App\Models\RegistrationSubmission;
 use App\Models\User;
 use App\Notifications\ResultsPublished;
 use App\Services\ResultAnomalyDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
@@ -93,6 +95,11 @@ it('rejects publishing while a heat is unlocked', function () {
 it('publishes results and opens the public page', function () {
     Notification::fake();
     $meet = finishedMeetWithResults();
+    RegistrationSubmission::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'athlete_id' => $meet['registrations'][0]->athlete_id,
+        'registrant_email' => 'pendaftar@example.test',
+    ]);
 
     $this->actingAs($meet['admin'])
         ->patch(route('admin.competitions.status', $meet['competition']), [
@@ -108,7 +115,10 @@ it('publishes results and opens the public page', function () {
         ->assertOk()
         ->assertSee('Hasil lomba');
 
-    Notification::assertSentTo($meet['registrations'][0]->registrar, ResultsPublished::class);
+    Notification::assertSentOnDemand(
+        ResultsPublished::class,
+        fn ($notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === 'pendaftar@example.test',
+    );
 });
 
 it('bumps the public page cache version when results are published', function () {
@@ -166,7 +176,7 @@ it('shows cross-competition history on the athlete result page', function () {
         'event' => $other['event'],
         'athlete' => $athlete,
         'group' => $other['group'],
-        'coach' => $other['coach'],
+        'panitia' => $other['panitia'],
     ], ['seed_time_ms' => 40_000]);
     $heat = Heat::factory()->create([
         'event_id' => $other['event']->id,

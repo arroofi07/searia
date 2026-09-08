@@ -2,7 +2,7 @@
 
 Fitur ini melayani kebiasaan yang sudah berjalan: klub mengirimkan daftar atletnya dalam berkas Excel lewat pesan instan, dan panitia yang memasukkannya ke sistem. Daripada melawan kebiasaan tersebut, sistem menyediakan template baku dan memvalidasinya secara otomatis.
 
-Kemampuan yang sama diberikan kepada pelatih, tetapi terbatas pada atlet klubnya sendiri.
+Import adalah jalur panitia. Pendaftar perorangan memakai form publik yang dijelaskan di [Alur Pendaftaran](04-alur-pendaftaran.md); keduanya bermuara pada tabel `registrations` yang sama, tetapi tagihannya terbit dengan cara berbeda.
 
 ## Alur
 

@@ -19,6 +19,8 @@ class UpdateCompetitionRequest extends FormRequest
     {
         $this->merge([
             'fast_time_input' => $this->boolean('fast_time_input'),
+            'fee_per_event' => (int) ($this->input('fee_per_event') ?? 0),
+            'late_fee_per_event' => (int) ($this->input('late_fee_per_event') ?? 0),
         ]);
     }
 

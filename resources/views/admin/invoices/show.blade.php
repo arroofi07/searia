@@ -9,7 +9,7 @@
 
 @section('content')
     <h1 class="text-2xl font-semibold">{{ $invoice->invoice_number }}</h1>
-    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $invoice->club->name }}</p>
+    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $invoice->billedTo() }}</p>
 
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'invoices'])
 
@@ -40,12 +40,15 @@
 
     <div class="mt-4 flex flex-wrap gap-3">
         <a href="{{ route('admin.invoices.pdf', $invoice) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Unduh PDF</a>
-        @if ($invoice->status !== InvoiceStatus::Paid)
+        @if ($invoice->club_id && $invoice->status !== InvoiceStatus::Paid)
             <form method="POST" action="{{ route('admin.invoices.store', $competition) }}">
                 @csrf
                 <input type="hidden" name="club_id" value="{{ $invoice->club_id }}">
                 <button class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Terbitkan ulang</button>
             </form>
+        @endif
+        @if ($invoice->submission)
+            <a href="{{ route('admin.submissions.show', $invoice->submission) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Lihat pendaftaran {{ $invoice->submission->code }}</a>
         @endif
     </div>
 
@@ -87,34 +90,25 @@
         </div>
 
         <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 class="font-medium">Bukti pembayaran</h2>
-            @if ($invoice->proof_path)
-                <p class="mt-2 text-sm text-slate-500">Nominal yang harus dicocokkan: Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
-                <a href="{{ route('invoices.proof', $invoice) }}" class="mt-3 inline-block text-sm text-teal-800 hover:underline" target="_blank" rel="noopener">Buka berkas bukti</a>
-                @php
-                    $extension = strtolower(pathinfo($invoice->proof_path, PATHINFO_EXTENSION));
-                @endphp
-                @if (in_array($extension, ['jpg', 'jpeg', 'png'], true))
-                    <img src="{{ route('invoices.proof', $invoice) }}" alt="Bukti transfer" class="mt-4 max-h-96 w-full rounded-md object-contain ring-1 ring-slate-200">
-                @endif
-            @else
-                <p class="mt-2 text-sm text-slate-500">Belum ada bukti yang diunggah.</p>
-            @endif
+            <h2 class="font-medium">Pembayaran</h2>
+            <p class="mt-2 text-sm text-slate-500">
+                Cocokkan transfer masuk sebesar Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                dengan mutasi rekening panitia, lalu tandai lunas di sini.
+            </p>
 
-            @if ($invoice->status === InvoiceStatus::WaitingVerification)
-                <div class="mt-6 space-y-4">
-                    <form method="POST" action="{{ route('admin.invoices.approve', $invoice) }}">
-                        @csrf
-                        <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Tandai lunas</button>
-                    </form>
-                    <form method="POST" action="{{ route('admin.invoices.reject', $invoice) }}" class="space-y-2">
-                        @csrf
-                        <label for="rejection_reason" class="block text-sm font-medium text-slate-700">Alasan penolakan</label>
-                        <textarea id="rejection_reason" name="rejection_reason" rows="2" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">{{ old('rejection_reason') }}</textarea>
-                        @error('rejection_reason') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
-                        <button class="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Tolak bukti</button>
-                    </form>
-                </div>
+            @if ($invoice->status === InvoiceStatus::Paid)
+                <form method="POST" action="{{ route('admin.invoices.reject', $invoice) }}" class="mt-6 space-y-2">
+                    @csrf
+                    <label for="rejection_reason" class="block text-sm font-medium text-slate-700">Alasan membatalkan status lunas</label>
+                    <textarea id="rejection_reason" name="rejection_reason" rows="2" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">{{ old('rejection_reason') }}</textarea>
+                    @error('rejection_reason') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                    <button class="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Batalkan status lunas</button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('admin.invoices.approve', $invoice) }}" class="mt-6">
+                    @csrf
+                    <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Tandai lunas</button>
+                </form>
             @endif
 
             @if ($invoice->verified_at)

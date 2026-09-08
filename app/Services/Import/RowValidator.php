@@ -12,7 +12,6 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Registration;
-use App\Models\User;
 use App\Rules\ReasonableSwimTime;
 use App\Services\AgeGroupResolver;
 use App\Services\AthleteMatcher;
@@ -32,7 +31,7 @@ class RowValidator
     /**
      * @param  list<ParticipantRow>  $rows
      */
-    public function validateMany(Competition $competition, array $rows, ?User $actor = null): ImportValidationResult
+    public function validateMany(Competition $competition, array $rows): ImportValidationResult
     {
         $context = $this->context($competition);
         $firstSeen = [];
@@ -47,7 +46,7 @@ class RowValidator
         $results = [];
 
         foreach ($rows as $row) {
-            $results[] = $this->validate($competition, $row, $rows, $context, $firstSeen, $rowsByAthlete, $actor);
+            $results[] = $this->validate($competition, $row, $rows, $context, $firstSeen, $rowsByAthlete);
         }
 
         return ImportValidationResult::fromRows($results);
@@ -65,7 +64,6 @@ class RowValidator
         array $context,
         array $firstSeen,
         array $rowsByAthlete = [],
-        ?User $actor = null,
     ): ValidatedImportRow {
         $errors = [];
         $warnings = [];
@@ -132,8 +130,6 @@ class RowValidator
             $draftAthlete = $athlete ?? $this->makeTransientAthlete($row, $gender, $year, $club);
             $mapped = $this->registrations->validate(
                 new RegistrationDraft($competition, $draftAthlete, $event, $row->seedTime === '' ? null : $row->seedTime),
-                [],
-                $actor,
             );
 
             foreach ($mapped as $item) {

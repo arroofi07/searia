@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -24,7 +23,6 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'club_id',
         'phone',
         'is_active',
     ];
@@ -48,14 +46,6 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'is_active' => 'boolean',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Club, $this>
-     */
-    public function club(): BelongsTo
-    {
-        return $this->belongsTo(Club::class);
     }
 
     /**
@@ -84,19 +74,9 @@ class User extends Authenticatable
         return $this->role === UserRole::Panitia;
     }
 
-    public function isPelatih(): bool
-    {
-        return $this->role === UserRole::Pelatih;
-    }
-
     public function isJuri(): bool
     {
         return $this->role === UserRole::Juri;
-    }
-
-    public function isPeserta(): bool
-    {
-        return $this->role === UserRole::Peserta;
     }
 
     public function managesMasterData(): bool

@@ -15,6 +15,7 @@ class Result extends Model
 {
     /** @use HasFactory<\Database\Factories\ResultFactory> */
     use HasFactory;
+
     use LogsActivity;
 
     protected $fillable = [

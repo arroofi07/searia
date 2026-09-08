@@ -41,7 +41,9 @@
 | --- | --- |
 | Kejuaraan | Satu acara lengkap. Satu instalasi sistem menampung banyak kejuaraan |
 | Klub | Perkumpulan renang atau sekolah yang menaungi atlet |
-| Official | Perwakilan resmi klub, dalam sistem ini diperlakukan sama dengan pelatih |
+| Pendaftar | Orang yang mengisi form pendaftaran publik: pelatih, orang tua, atau atlet sendiri. Tidak punya akun |
+| Kode pendaftaran | Kode unik satu pengiriman form, misalnya `REG-7QK4M2`. Dipakai pendaftar saat menghubungi panitia |
+| Pengiriman | Satu baris `registration_submissions`: satu kali pengisian form untuk satu atlet, bisa mencakup beberapa nomor lomba |
 | Pendaftaran / entri | Satu baris yang menghubungkan satu atlet dengan satu nomor lomba |
 | Matriks kelayakan | Tabel yang menentukan kelompok umur mana boleh mengikuti nomor lomba mana |
 | Mode `balanced` | Pembagian seri yang meratakan jumlah peserta antar seri |
@@ -67,8 +69,7 @@
 | Awalan | Arti | Contoh |
 | --- | --- | --- |
 | `F-PUB-` | Fitur halaman publik | F-PUB-05 buku acara publik |
-| `F-PEL-` | Fitur pelatih | F-PEL-05 pendaftaran nomor lomba |
-| `F-PES-` | Fitur peserta | F-PES-06 lihat hasil pribadi |
+| `F-DAF-` | Fitur pendaftar tanpa akun | F-DAF-04 pilih nomor lomba |
 | `F-PAN-` | Fitur panitia | F-PAN-10 jalankan seeding |
 | `F-JUR-` | Fitur juri | F-JUR-02 layar input per seri |
 | `F-ADM-` | Fitur super admin | F-ADM-04 mundurkan status kejuaraan |

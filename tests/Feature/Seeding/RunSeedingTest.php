@@ -85,7 +85,7 @@ it('reseeds locked heats when force is true', function () {
 it('seeds one thousand registrations in under ten seconds', function () {
     $meet = openRegistrationMeet();
     $meet['competition']->update(['pool_lanes' => 8]);
-    $coachId = $meet['coach']->id;
+    $registrarId = $meet['panitia']->id;
     $rows = [];
 
     for ($i = 0; $i < 1000; $i++) {
@@ -101,7 +101,7 @@ it('seeds one thousand registrations in under ten seconds', function () {
             'age_group_id' => $meet['group']->id,
             'seed_time_ms' => 25_000 + $i,
             'status' => RegistrationStatus::Verified->value,
-            'registered_by' => $coachId,
+            'registered_by' => $registrarId,
             'created_at' => now(),
             'updated_at' => now(),
         ];

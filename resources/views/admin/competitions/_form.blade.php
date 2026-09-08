@@ -115,19 +115,9 @@
 </div>
 
 <div class="grid gap-4 sm:grid-cols-2">
-    <div>
-        <label for="fee_per_event" class="block text-sm font-medium text-slate-700">Biaya per nomor (rupiah)</label>
-        <input id="fee_per_event" name="fee_per_event" type="number" min="0" required
-            value="{{ old('fee_per_event', $competition?->fee_per_event ?? 0) }}"
-            class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-        @error('fee_per_event') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-    </div>
-    <div>
-        <label for="late_fee_per_event" class="block text-sm font-medium text-slate-700">Denda keterlambatan</label>
-        <input id="late_fee_per_event" name="late_fee_per_event" type="number" min="0" required
-            value="{{ old('late_fee_per_event', $competition?->late_fee_per_event ?? 0) }}"
-            class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-    </div>
+    {{-- MVP tanpa pembayaran: nilai disimpan 0 lewat field tersembunyi --}}
+    <input type="hidden" name="fee_per_event" value="{{ old('fee_per_event', $competition?->fee_per_event ?? 0) }}">
+    <input type="hidden" name="late_fee_per_event" value="{{ old('late_fee_per_event', $competition?->late_fee_per_event ?? 0) }}">
 </div>
 
 <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">

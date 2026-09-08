@@ -31,13 +31,14 @@ class InvoiceVerificationResult extends Notification implements ShouldQueue
             return (new MailMessage)
                 ->subject('Pembayaran diverifikasi: '.$invoice->invoice_number)
                 ->line('Tagihan '.$invoice->invoice_number.' untuk '.$competition.' telah ditandai lunas.')
-                ->action('Lihat tagihan', route('coach.invoices.show', $invoice));
+                ->line('Atlet Anda kini memenuhi syarat untuk masuk pembagian seri dan lintasan.');
         }
 
         return (new MailMessage)
-            ->subject('Pembayaran ditolak: '.$invoice->invoice_number)
-            ->line('Bukti pembayaran tagihan '.$invoice->invoice_number.' untuk '.$competition.' ditolak.')
-            ->line('Alasan: '.(string) $invoice->rejection_reason)
-            ->action('Unggah ulang bukti', route('coach.invoices.show', $invoice));
+            ->subject('Tagihan dibuka kembali: '.$invoice->invoice_number)
+            ->line('Tagihan '.$invoice->invoice_number.' untuk '.$competition.' dikembalikan ke status belum lunas.')
+            ->line('Alasan: '.($invoice->rejection_reason ?: 'Tidak dicantumkan'))
+            ->line('Hubungi panitia dengan menyebutkan kode pendaftaran '
+                .($invoice->submission?->code ?? $invoice->invoice_number).'.');
     }
 }

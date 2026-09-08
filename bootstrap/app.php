@@ -15,7 +15,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('imports:prune')->daily();
-        $schedule->command('invoices:expire-unpaid')->daily();
         $schedule->command('competition:backup-meet-day')->dailyAt('01:30');
         $schedule->command('queue:prune-failed --hours=168')->weekly();
     })

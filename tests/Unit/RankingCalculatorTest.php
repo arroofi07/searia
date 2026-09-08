@@ -2,13 +2,9 @@
 
 use App\Enums\DisqualificationCode;
 use App\Enums\ResultStatus;
-use App\Models\AgeGroup;
 use App\Models\Athlete;
-use App\Models\Club;
-use App\Models\Event;
 use App\Models\Heat;
 use App\Models\HeatLane;
-use App\Models\Registration;
 use App\Models\Result;
 use App\Models\User;
 use App\Services\MedalTally;
@@ -51,7 +47,7 @@ function rankingFixture(): array
             'event' => $event,
             'athlete' => $athlete,
             'group' => $group,
-            'coach' => $meet['coach'],
+            'panitia' => $meet['panitia'],
         ], ['seed_time_ms' => $seed]);
 
         $heatLane = HeatLane::factory()->create([
