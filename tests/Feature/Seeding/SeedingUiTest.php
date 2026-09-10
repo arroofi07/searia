@@ -6,6 +6,19 @@ use App\Models\Heat;
 use App\Models\HeatLane;
 use App\Models\User;
 
+it('explains seeding in plain Indonesian for panitia', function () {
+    $meet = openRegistrationMeet();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Pembagian seri dan lintasan')
+        ->assertSee('catatan waktu saat daftar')
+        ->assertSee('lintasan tengah')
+        ->assertSee('Yang harus panitia kerjakan')
+        ->assertSee('Bagi seri seluruh kejuaraan');
+});
+
 it('locks every heat for a competition', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(6);
     app(RunSeeding::class)->handle($competition, $event, $group);

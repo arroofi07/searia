@@ -39,13 +39,14 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-slate-700">Seed time (opsional)</label>
-            <input type="text" name="seed_time" value="{{ old('seed_time') }}" placeholder="mm:ss.SS atau kosong = NT"
+            <label class="block text-sm font-medium text-slate-700">Catatan waktu (opsional)</label>
+            <input type="text" name="seed_time" value="{{ old('seed_time') }}" placeholder="013470 atau 00:52.20 · kosong = NT"
                 class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+            <p class="mt-1 text-xs text-slate-500">Waktu terbaik atlet untuk membagi seri dan lintasan, bukan hasil lomba. Kosong = NT.</p>
         </div>
         <label class="flex items-center gap-2 text-sm">
             <input type="checkbox" name="verify_now" value="1" @checked(old('verify_now', true)) class="h-4 w-4">
-            Langsung verifikasi (siap seeding)
+            Langsung setujui (ikut pembagian seri)
         </label>
         <div class="flex flex-wrap gap-3">
             <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Simpan</button>

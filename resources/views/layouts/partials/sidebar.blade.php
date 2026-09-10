@@ -31,7 +31,7 @@
                 @can('viewAny', App\Models\Registration::class)
                     <a href="{{ AdminNavigation::url('admin.registrations.index') }}" class="{{ AdminNavigation::linkClass($current === 'registrations') }}">Pendaftaran</a>
                 @endcan
-                <a href="{{ AdminNavigation::url('admin.seeding.index') }}" class="{{ AdminNavigation::linkClass($current === 'seeding') }}">Seeding</a>
+                    <a href="{{ AdminNavigation::url('admin.seeding.index') }}" class="{{ AdminNavigation::linkClass($current === 'seeding') }}">Pembagian seri</a>
                 <a href="{{ AdminNavigation::url('admin.start-list.index') }}" class="{{ AdminNavigation::linkClass($current === 'start-list') }}">Buku acara</a>
                 <a href="{{ AdminNavigation::url('admin.results.index') }}" class="{{ AdminNavigation::linkClass($current === 'results') }}">Hasil</a>
                 @can('viewAny', App\Models\Club::class)

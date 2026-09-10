@@ -8,7 +8,7 @@ it('shows a short consistent sidebar of primary features only', function () {
     $labels = [
         'Dasbor',
         'Pendaftaran',
-        'Seeding',
+        'Pembagian seri',
         'Buku acara',
         'Hasil',
         'Klub',

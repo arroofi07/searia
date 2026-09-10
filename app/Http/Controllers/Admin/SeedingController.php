@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\RunSeeding;
+use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotLockSeedingException;
 use App\Exceptions\CannotReseedLockedHeatsException;
 use App\Exceptions\UnsupportedLaneCountException;
@@ -40,12 +41,20 @@ class SeedingController extends Controller
 
         $unseeded = collect($pairs)->where('seeded', false)->count();
         $unlocked = collect($pairs)->where('seeded', true)->where('locked', false)->count();
+        $pendingCount = $competition->registrations()
+            ->where('status', RegistrationStatus::Pending)
+            ->count();
+        $verifiedCount = $competition->registrations()
+            ->eligibleForSeeding()
+            ->count();
 
         return view('admin.seeding.index', [
             'competition' => $competition,
             'pairs' => $pairs,
             'unseeded' => $unseeded,
             'unlocked' => $unlocked,
+            'pendingCount' => $pendingCount,
+            'verifiedCount' => $verifiedCount,
         ]);
     }
 

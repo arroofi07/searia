@@ -78,12 +78,17 @@
         </select>
     </div>
     <div>
-        <label for="seeding_mode" class="block text-sm font-medium text-slate-700">Mode seeding</label>
+        <label for="seeding_mode" class="block text-sm font-medium text-slate-700">Cara membagi seri</label>
         <select id="seeding_mode" name="seeding_mode" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             @foreach (SeedingMode::cases() as $mode)
                 <option value="{{ $mode->value }}" @selected(old('seeding_mode', $competition?->seeding_mode?->value) === $mode->value)>{{ $mode->label() }}</option>
             @endforeach
         </select>
+        <p class="mt-1 text-xs leading-5 text-slate-500">
+            Ini yang sering disebut <strong>seeding</strong>: menyusun siapa berenang di seri berapa dan lintasan berapa, dari catatan waktu saat daftar.
+            <strong>Seimbang</strong> membuat jumlah per seri merata (bawaan).
+            <strong>Isi dari seri terakhir</strong> mengisi penuh seri akhir dulu.
+        </p>
     </div>
 </div>
 

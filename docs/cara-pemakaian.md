@@ -26,7 +26,7 @@ flowchart TD
     B --> C["3. Peserta daftar tanpa akun<br/>atau panitia/admin unggah Excel"]
     C --> D["4. Panitia verifikasi entri"]
     D --> E["5. Tutup pendaftaran"]
-    E --> F["6. Seeding seri dan lintasan"]
+    E --> F["6. Bagi seri dan lintasan"]
     F --> G["7. Cetak buku acara"]
     G --> H["8. Hari lomba: juri input hasil"]
     H --> I["9. Panitia verifikasi hasil"]
@@ -138,7 +138,7 @@ Langkah:
 6. Perbaiki baris bermasalah di layar, atau unduh laporan kesalahan untuk dikembalikan ke klub.
 7. Tekan **Import … baris valid**. Data masuk sebagai pendaftaran `pending`.
 
-Setelah itu tetap lewat **verifikasi** (Bagian D) sebelum ikut seeding.
+Setelah itu tetap lewat **verifikasi** (Bagian D) sebelum ikut pembagian seri.
 
 Berkas di atas 200 baris divalidasi di latar belakang; halaman akan menyegarkan diri sampai selesai.
 
@@ -152,7 +152,7 @@ Di **Pendaftaran** → **Tambah manual** (atlet × nomor lomba). Bisa ubah seed 
 
 Sidebar **Pendaftaran** → **Antrean verifikasi**.
 
-- **Setujui** → status `verified`. Hanya entri ini yang masuk seeding.
+- **Setujui** → status `verified`. Hanya entri ini yang masuk pembagian seri.
 - **Tolak** → wajib isi alasan. Pendaftar tidak mengedit sendiri; panitia yang memperbaiki.
 
 Bisa saring per klub, nomor, atau kelompok umur. Penyetujuan massal tersedia.
@@ -161,15 +161,19 @@ Setelah semua data rapi, di **Ringkasan** lanjutkan status ke **Pendaftaran ditu
 
 ---
 
-## Bagian E — Seeding dan buku acara
+## Bagian E — Pembagian seri dan buku acara
 
-### Seeding
+### Pembagian seri (seeding)
 
-Sidebar **Seeding**.
+Menu kiri: **Pembagian seri**.
 
-1. Jalankan seeding. Sistem membagi seri dan lintasan dari seed time (NT di belakang).
-2. Cek pratinjau per nomor × kelompok umur. Tukar lintasan atau pindah seri jika perlu.
-3. **Kunci** seeding jika susunan sudah final.
+Ini menyusun siapa berenang di seri berapa dan lintasan berapa, dari catatan waktu saat daftar (bukan hasil lomba). Hanya entri yang sudah disetujui yang masuk. NT (tanpa catatan waktu) di seri belakang. Yang lebih cepat biasanya di lintasan tengah dan seri terakhir.
+
+1. Tutup pendaftaran di Ringkasan.
+2. Setujui semua entri di **Pendaftaran**.
+3. Tekan **Bagi seri seluruh kejuaraan**.
+4. Cek susunan per nomor × kelompok umur. Tukar lintasan atau keluarkan peserta jika perlu.
+5. **Kunci** jika susunan sudah final.
 
 Lalu di **Ringkasan** lanjutkan status ke **Sudah diseeding**.
 
@@ -227,7 +231,7 @@ Tab **Export** untuk unduh Excel peserta, start list, hasil, medali.
 | Langkah | Siapa |
 | --- | --- |
 | Siapkan kejuaraan, grup, nomor, matriks | Panitia |
-| Buka / tutup pendaftaran, seeding, publish | Panitia |
+| Buka / tutup pendaftaran, bagi seri, publish | Panitia |
 | Isi form `/daftar` | Pendaftar (tanpa akun) |
 | Import Excel / input manual | Panitia dan Super Admin |
 | Verifikasi entri | Panitia |
@@ -239,8 +243,8 @@ Tab **Export** untuk unduh Excel peserta, start list, hasil, medali.
 ## Yang sering terlewat
 
 - Form publik **tidak muncul** selama kejuaraan masih Draf. Buka status dulu.
-- Peserta yang belum **disetujui** tidak masuk seeding.
-- Seeding dihitung **per nomor lomba × kelompok umur**, bukan per nomor saja.
+- Peserta yang belum **disetujui** tidak masuk pembagian seri.
+- Pembagian seri dihitung **per nomor lomba × kelompok umur**, bukan per nomor saja.
 - Seed time (catatan waktu pendaftaran) **bukan** hasil lomba. Hasil diisi juri di hari lomba.
 - Satu atlet satu kali per nomor. Atlet yang ikut tiga nomor = tiga baris (form, Excel, maupun manual).
 - Setelah dikirim, pendaftar tidak mengedit lagi; koreksi di sisi panitia.

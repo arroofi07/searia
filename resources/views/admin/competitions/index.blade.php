@@ -6,7 +6,7 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-semibold">Pilih acara</h1>
-            <p class="text-sm text-slate-500">Buka acara untuk mengelola pendaftaran, seeding, dan hasil.</p>
+            <p class="text-sm text-slate-500">Buka acara untuk mengelola pendaftaran, pembagian seri, dan hasil.</p>
         </div>
         @can('create', App\Models\Competition::class)
             <a href="{{ route('admin.competitions.create') }}" class="rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-teal-800">Tambah acara</a>
