@@ -2,15 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Actions\FillDefaultProgram;
 use App\Enums\ClubStatus;
 use App\Enums\ClubType;
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionType;
-use App\Enums\Equipment;
-use App\Enums\EventGender;
 use App\Enums\Gender;
 use App\Enums\SeedingMode;
-use App\Enums\Stroke;
 use App\Enums\UserRole;
 use App\Models\AgeGroup;
 use App\Models\Athlete;
@@ -128,27 +126,6 @@ class DatabaseSeeder extends Seeder
             $competition->ageGroups()->create($definition);
         }
 
-        $putra = $competition->events()->create([
-            'event_number' => 13,
-            'gender' => EventGender::Male,
-            'distance' => 50,
-            'stroke' => Stroke::Breaststroke,
-            'equipment' => Equipment::None,
-            'session' => 1,
-            'sort_order' => 1,
-        ]);
-        $putri = $competition->events()->create([
-            'event_number' => 14,
-            'gender' => EventGender::Female,
-            'distance' => 50,
-            'stroke' => Stroke::Breaststroke,
-            'equipment' => Equipment::None,
-            'session' => 1,
-            'sort_order' => 2,
-        ]);
-
-        $groupIds = $competition->ageGroups()->pluck('id');
-        $putra->ageGroups()->attach($groupIds);
-        $putri->ageGroups()->attach($groupIds);
+        app(FillDefaultProgram::class)->handle($competition);
     }
 }

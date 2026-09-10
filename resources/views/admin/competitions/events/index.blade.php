@@ -12,7 +12,40 @@
     <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'events'])
 
-    <p class="mt-4 text-sm text-slate-500">Nama nomor disusun dari jarak, gaya, alat bantu, dan gender. Seret baris untuk mengubah urutan tampil.</p>
+    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 17 nomor lomba, 34 nomor acara (PA ganjil, PI genap).</p>
+
+    <form method="POST" action="{{ route('admin.competitions.events.quick-fill', $competition) }}" class="mt-4">
+        @csrf
+        <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Isi susunan acara baku</button>
+    </form>
+
+    @if ($programRows !== [])
+        <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
+            <div class="border-b border-slate-200 bg-slate-900 px-4 py-3 text-center">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">Susunan Acara Perlombaan</p>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="bg-teal-800 text-xs font-semibold uppercase tracking-wide text-white">
+                        <th class="w-20 px-3 py-3 text-center">PA</th>
+                        <th class="px-3 py-3 text-center">Nomor Perlombaan</th>
+                        <th class="w-20 px-3 py-3 text-center">PI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($programRows as $row)
+                        <tr class="border-t border-slate-100 {{ $loop->even ? 'bg-slate-50/80' : 'bg-white' }}">
+                            <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pa']?->paddedEventNumber() ?? '—' }}</td>
+                            <td class="px-3 py-2.5 text-center font-medium tracking-wide">{{ $row['label'] }}</td>
+                            <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pi']?->paddedEventNumber() ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+
+    <p class="mt-6 text-sm text-slate-500">Nama nomor disusun dari jarak, gaya, alat bantu, dan gender. Seret baris untuk mengubah urutan tampil.</p>
 
     <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table class="min-w-full text-left text-sm">

@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function (): void {
         Route::post('competitions/{competition}/age-groups/quick-fill', [AgeGroupController::class, 'quickFill'])->name('competitions.age-groups.quick-fill');
         Route::resource('competitions.age-groups', AgeGroupController::class)->except(['show', 'create', 'edit']);
 
+        Route::post('competitions/{competition}/events/quick-fill', [EventController::class, 'quickFill'])->name('competitions.events.quick-fill');
         Route::post('competitions/{competition}/events/reorder', [EventController::class, 'reorder'])->name('competitions.events.reorder');
         Route::resource('competitions.events', EventController::class)->except(['show', 'create', 'edit']);
 

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\FillDefaultProgram;
 use App\Enums\EventGender;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ReorderEventsRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Models\Competition;
 use App\Models\Event;
+use App\Services\ProgramOrderBuilder;
 use App\Support\DatabaseError;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -17,13 +19,29 @@ use Illuminate\View\View;
 
 class EventController extends Controller
 {
-    public function index(Competition $competition): View
+    public function index(Competition $competition, ProgramOrderBuilder $program): View
     {
         $this->authorize('update', $competition);
 
         $competition->load('events');
 
-        return view('admin.competitions.events.index', compact('competition'));
+        return view('admin.competitions.events.index', [
+            'competition' => $competition,
+            'programRows' => $program->rows($competition->events),
+        ]);
+    }
+
+    public function quickFill(Competition $competition, FillDefaultProgram $fill): RedirectResponse
+    {
+        $this->authorize('update', $competition);
+
+        $created = $fill->handle($competition);
+
+        $message = $created === 0
+            ? 'Susunan acara baku sudah lengkap (34 nomor).'
+            : "{$created} nomor acara baku ditambahkan sesuai susunan PA/PI.";
+
+        return back()->with('status', $message);
     }
 
     public function store(StoreEventRequest $request, Competition $competition): RedirectResponse

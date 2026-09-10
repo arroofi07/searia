@@ -72,7 +72,7 @@ Di **Dasbor**, buka acara. Di halaman ringkasan, **Pengaturan acara** → **Kelo
 
 ### 4. Nomor lomba
 
-Di ringkasan acara, **Pengaturan acara** → **Nomor lomba**.
+Di ringkasan acara, **Pengaturan acara** → **Nomor lomba**. Tekan **Isi susunan acara baku** untuk 34 nomor PA/PI sesuai brosur Fun Swimming SeaRIA.
 
 - Tambah nomor acara: nomor urut, gender (Putra/Putri), jarak, gaya, alat.
 - Contoh: nomor 13 = 50 m gaya dada putra.
