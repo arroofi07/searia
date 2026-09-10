@@ -11,8 +11,8 @@
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau</div>
     @endif
 
-    <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table class="min-w-full text-left text-sm">
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table class="stack-table min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                     <th class="px-3 py-2">Acara</th>
@@ -26,15 +26,15 @@
             <tbody>
                 @foreach ($rows as $row)
                     <tr class="border-t border-slate-100">
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2" data-label="Acara">
                             @if ($row['event'])
                                 {{ $row['event']->event_number }} {{ $row['event']->formattedName() }}
                             @endif
                             <div class="text-xs text-slate-400">Seri {{ $row['heat_number'] }} Lint {{ $row['lane_number'] }}</div>
                         </td>
-                        <td class="px-3 py-2">{{ $row['age_group']?->name }}</td>
-                        <td class="px-3 py-2">{{ ($formatTime)($row['seed_ms']) }}</td>
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2" data-label="Kelompok umur">{{ $row['age_group']?->name }}</td>
+                        <td class="px-3 py-2 font-mono" data-label="Catatan waktu">{{ ($formatTime)($row['seed_ms']) }}</td>
+                        <td class="px-3 py-2" data-label="Hasil">
                             {{ ($formatTime)($row['time_ms']) }}
                             @if ($row['is_pb'])
                                 <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">PB</span>
@@ -43,7 +43,7 @@
                                 <span class="text-xs text-slate-500">{{ $row['status']->label() }}</span>
                             @endif
                         </td>
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2" data-label="Selisih">
                             @if ($row['delta_ms'] === null)
                                 —
                             @elseif ($row['delta_ms'] < 0)
@@ -54,7 +54,7 @@
                                 sama
                             @endif
                         </td>
-                        <td class="px-3 py-2">{{ $row['rank'] ?? '—' }}</td>
+                        <td class="px-3 py-2" data-label="Peringkat">{{ $row['rank'] ?? '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>

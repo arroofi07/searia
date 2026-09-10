@@ -11,8 +11,8 @@
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>
     @endif
 
-    <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table class="min-w-full text-left text-sm">
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <table class="stack-table min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                     <th class="px-3 py-2">#</th>
@@ -27,18 +27,18 @@
             <tbody>
                 @foreach ($rows as $index => $row)
                     <tr class="border-t border-slate-100 {{ $row['has_medals'] ? '' : 'text-slate-500' }}">
-                        <td class="px-3 py-2">{{ $index + 1 }}</td>
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2" data-label="Peringkat">{{ $index + 1 }}</td>
+                        <td class="px-3 py-2" data-label="Klub">
                             {{ $row['club_name'] }}
                             @if ($row['city'])
                                 <span class="text-xs text-slate-400">· {{ $row['city'] }}</span>
                             @endif
                         </td>
-                        <td class="px-3 py-2">{{ $row['gold'] }}</td>
-                        <td class="px-3 py-2">{{ $row['silver'] }}</td>
-                        <td class="px-3 py-2">{{ $row['bronze'] }}</td>
-                        <td class="px-3 py-2">{{ $row['total'] }}</td>
-                        <td class="px-3 py-2">{{ $row['participants'] }}</td>
+                        <td class="px-3 py-2" data-label="Emas">{{ $row['gold'] }}</td>
+                        <td class="px-3 py-2" data-label="Perak">{{ $row['silver'] }}</td>
+                        <td class="px-3 py-2" data-label="Perunggu">{{ $row['bronze'] }}</td>
+                        <td class="px-3 py-2" data-label="Total">{{ $row['total'] }}</td>
+                        <td class="px-3 py-2" data-label="Peserta">{{ $row['participants'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

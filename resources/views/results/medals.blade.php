@@ -19,8 +19,8 @@
 
     <section id="per-klub" class="mt-8">
         <h2 class="text-lg font-semibold">Per klub</h2>
-        <div class="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <table class="min-w-full text-left text-sm">
+        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <table class="stack-table min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
                         <th class="px-3 py-2">Klub</th>
@@ -33,15 +33,15 @@
                 <tbody>
                     @forelse ($byClub as $row)
                         <tr class="border-t border-slate-100">
-                            <td class="px-3 py-2">{{ $row['club_name'] }}</td>
-                            <td class="px-3 py-2">{{ $row['gold'] }}</td>
-                            <td class="px-3 py-2">{{ $row['silver'] }}</td>
-                            <td class="px-3 py-2">{{ $row['bronze'] }}</td>
-                            <td class="px-3 py-2">{{ $row['total'] }}</td>
+                            <td class="px-3 py-2" data-label="Klub">{{ $row['club_name'] }}</td>
+                            <td class="px-3 py-2" data-label="Emas">{{ $row['gold'] }}</td>
+                            <td class="px-3 py-2" data-label="Perak">{{ $row['silver'] }}</td>
+                            <td class="px-3 py-2" data-label="Perunggu">{{ $row['bronze'] }}</td>
+                            <td class="px-3 py-2" data-label="Total">{{ $row['total'] }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-3 py-4 text-slate-500">Belum ada medali.</td>
+                            <td colspan="5" class="px-3 py-4 text-slate-500" data-label="Catatan">Belum ada medali.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -51,8 +51,8 @@
 
     <section id="per-ku" class="mt-8">
         <h2 class="text-lg font-semibold">Per kelompok umur</h2>
-        <div class="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <table class="min-w-full text-left text-sm">
+        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <table class="stack-table min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
                         <th class="px-3 py-2">Kelompok umur</th>
@@ -66,12 +66,12 @@
                 <tbody>
                     @forelse ($byAgeGroup as $row)
                         <tr class="border-t border-slate-100">
-                            <td class="px-3 py-2">{{ $row['age_group_name'] }}</td>
-                            <td class="px-3 py-2">{{ $row['gold'] }}</td>
-                            <td class="px-3 py-2">{{ $row['silver'] }}</td>
-                            <td class="px-3 py-2">{{ $row['bronze'] }}</td>
-                            <td class="px-3 py-2">{{ $row['total'] }}</td>
-                            <td class="px-3 py-2 text-xs text-amber-800">
+                            <td class="px-3 py-2" data-label="Kelompok umur">{{ $row['age_group_name'] }}</td>
+                            <td class="px-3 py-2" data-label="Emas">{{ $row['gold'] }}</td>
+                            <td class="px-3 py-2" data-label="Perak">{{ $row['silver'] }}</td>
+                            <td class="px-3 py-2" data-label="Perunggu">{{ $row['bronze'] }}</td>
+                            <td class="px-3 py-2" data-label="Total">{{ $row['total'] }}</td>
+                            <td class="px-3 py-2 text-xs text-amber-800" data-label="Catatan">
                                 @if ($row['small_fields'] > 0)
                                     {{ $row['small_fields'] }} nomor &lt; 3 peserta
                                 @else
@@ -81,7 +81,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-3 py-4 text-slate-500">Belum ada medali.</td>
+                            <td colspan="6" class="px-3 py-4 text-slate-500" data-label="Catatan">Belum ada medali.</td>
                         </tr>
                     @endforelse
                 </tbody>

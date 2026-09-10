@@ -9,3 +9,91 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@layer components {
+    .public-input {
+        @apply mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15;
+    }
+
+    .public-btn {
+        @apply inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-teal-700 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 sm:w-auto;
+    }
+
+    .public-btn-secondary {
+        @apply inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-base font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 sm:w-auto;
+    }
+
+    .seed-digit {
+        @apply flex h-11 w-8 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-white font-mono text-lg font-semibold text-slate-300 sm:h-12 sm:w-9 sm:text-xl;
+    }
+
+    .seed-digit.filled {
+        @apply border-solid border-teal-600 bg-teal-50 text-teal-900;
+    }
+
+    [data-event-card].selected {
+        @apply border-teal-200 bg-teal-50/70;
+    }
+
+    [data-public-nav-panel] {
+        display: none;
+    }
+
+    [data-public-nav-panel].open {
+        display: block;
+        position: fixed;
+        inset: 4.3rem 0 auto;
+        z-index: 50;
+        max-height: calc(100dvh - 4.3rem);
+        overflow-y: auto;
+    }
+
+    [data-seed-preview][data-state='ok'] {
+        @apply text-teal-800;
+    }
+
+    [data-seed-preview][data-state='error'] {
+        @apply text-red-600;
+    }
+
+    @media (min-width: 768px) {
+        [data-public-nav-panel],
+        [data-public-nav-panel].open {
+            display: contents;
+            position: static;
+            inset: auto;
+            max-height: none;
+            overflow: visible;
+        }
+    }
+}
+
+@media (max-width: 639px) {
+    .stack-table thead {
+        display: none;
+    }
+
+    .stack-table tbody tr {
+        display: block;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem 0;
+    }
+
+    .stack-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.2rem 1rem;
+        text-align: right;
+    }
+
+    .stack-table tbody td::before {
+        content: attr(data-label);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #64748b;
+        text-align: left;
+    }
+}

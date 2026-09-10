@@ -1,4 +1,4 @@
-<table class="min-w-full text-left text-sm">
+<table class="stack-table min-w-full text-left text-sm">
     <thead class="bg-slate-50 text-xs uppercase text-slate-500">
         <tr>
             <th class="px-3 py-2">Peringkat</th>
@@ -23,13 +23,13 @@
                 };
             @endphp
             <tr class="border-t border-slate-100 {{ $rowClass }}">
-                <td class="px-3 py-2 font-medium {{ $podium ? 'text-teal-900' : '' }}">
+                <td class="px-3 py-2 font-medium {{ $podium ? 'text-teal-900' : '' }}" data-label="Peringkat">
                     {{ $entry->rank ?? '—' }}
                     @if ($entry->status !== \App\Enums\ResultStatus::Ok)
                         <span class="text-xs font-normal text-slate-500">{{ $entry->status->label() }}</span>
                     @endif
                 </td>
-                <td class="px-3 py-2">
+                <td class="px-3 py-2" data-label="Nama">
                     @if ($entry->athleteId)
                         <a href="{{ route('results.athlete', [$competition, $entry->athleteId]) }}" class="hover:underline">{{ $entry->athleteName }}</a>
                     @else
@@ -39,10 +39,10 @@
                         <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">PB</span>
                     @endif
                 </td>
-                <td class="px-3 py-2">{{ $entry->clubName }}</td>
-                <td class="px-3 py-2">{{ $entry->city ?? '—' }}</td>
-                <td class="px-3 py-2">{{ ($formatTime)($entry->timeMs) }}</td>
-                <td class="px-3 py-2 text-slate-600">
+                <td class="px-3 py-2" data-label="Klub">{{ $entry->clubName }}</td>
+                <td class="px-3 py-2" data-label="Kota">{{ $entry->city ?? '—' }}</td>
+                <td class="px-3 py-2 font-mono" data-label="Waktu">{{ ($formatTime)($entry->timeMs) }}</td>
+                <td class="px-3 py-2 text-slate-600" data-label="Selisih">
                     @if ($entry->gapToFirstMs === null)
                         —
                     @elseif ($entry->gapToFirstMs === 0)
@@ -51,8 +51,8 @@
                         +{{ ($formatTime)($entry->gapToFirstMs) }}
                     @endif
                 </td>
-                <td class="px-3 py-2">{{ $entry->heatNumber }}</td>
-                <td class="px-3 py-2">{{ $entry->laneNumber }}</td>
+                <td class="px-3 py-2" data-label="Seri">{{ $entry->heatNumber }}</td>
+                <td class="px-3 py-2" data-label="Lintasan">{{ $entry->laneNumber }}</td>
             </tr>
         @endforeach
     </tbody>

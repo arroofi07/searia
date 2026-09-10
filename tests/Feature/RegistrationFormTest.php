@@ -177,6 +177,20 @@ it('blocks a submission that filled the honeypot field', function () {
         ->assertSessionHasErrors('website');
 });
 
+it('explains seed time in plain language on the event picker', function () {
+    $meet = openRegistrationMeet();
+
+    submitStep1($meet);
+
+    $this->get(route('register.events', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Catatan waktu')
+        ->assertSee('6 angka')
+        ->assertSee('paling kiri')
+        ->assertSee('013470')
+        ->assertSee('menyusun seri dan lintasan');
+});
+
 it('lists open competitions on the public landing page', function () {
     $meet = openRegistrationMeet();
 
