@@ -4,11 +4,16 @@
 
 @section('content')
     <h1 class="text-2xl font-semibold">Import peserta dari Excel</h1>
-    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · unduh template, isi lembar PESERTA, lalu unggah di sini.</p>
+    <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · jalur panitia dan Super Admin. Peserta perorangan memakai form publik.</p>
 
     @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'imports'])
 
-    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mt-6 max-w-3xl rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+        <p>Unduh template, isi lembar <strong>PESERTA</strong>, lalu unggah di sini. Satu baris = satu atlet pada satu nomor lomba.</p>
+        <p class="mt-2">Lembar <strong>NOMOR LOMBA</strong> terkunci, hanya rujukan. Salin <strong>KODE ACARA</strong> ke PESERTA. Jangan ubah NOMOR PERLOMBAAN, GENDER, atau GRUP YANG BOLEH IKUT — grup diubah di Matriks kelayakan di aplikasi.</p>
+    </div>
+
+    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <a href="{{ route('admin.imports.template', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Unduh template Excel</a>
     </div>
 

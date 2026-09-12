@@ -127,6 +127,10 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('competitions.age-groups', AgeGroupController::class)->except(['show', 'create', 'edit']);
 
         Route::post('competitions/{competition}/events/quick-fill', [EventController::class, 'quickFill'])->name('competitions.events.quick-fill');
+        Route::get('competitions/{competition}/events/template', [EventController::class, 'template'])->name('competitions.events.template');
+        Route::post('competitions/{competition}/events/import', [EventController::class, 'import'])
+            ->middleware('throttle:uploads')
+            ->name('competitions.events.import');
         Route::post('competitions/{competition}/events/reorder', [EventController::class, 'reorder'])->name('competitions.events.reorder');
         Route::resource('competitions.events', EventController::class)->except(['show', 'create', 'edit']);
 

@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\FillDefaultProgram;
+use App\Actions\ImportEventProgram;
 use App\Enums\EventGender;
+use App\Exceptions\MissingImportColumnsException;
+use App\Exports\EventProgramExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportEventProgramRequest;
 use App\Http\Requests\ReorderEventsRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Models\Competition;
@@ -16,6 +20,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class EventController extends Controller
 {
@@ -42,6 +48,54 @@ class EventController extends Controller
             : "{$created} nomor acara baku ditambahkan sesuai susunan PA/PI.";
 
         return back()->with('status', $message);
+    }
+
+    public function template(Competition $competition): BinaryFileResponse
+    {
+        $this->authorize('update', $competition);
+
+        return Excel::download(
+            new EventProgramExport($competition),
+            'nomor-lomba-'.$competition->slug.'.xlsx',
+        );
+    }
+
+    public function import(ImportEventProgramRequest $request, Competition $competition, ImportEventProgram $import): RedirectResponse
+    {
+        $file = $request->file('file');
+        $path = $file?->getRealPath();
+
+        if ($file === null || $path === false || $path === '') {
+            return back()->withErrors(['file' => 'Berkas tidak dapat dibaca.']);
+        }
+
+        try {
+            $result = $import->handle($competition, $path, $file->getClientOriginalExtension());
+        } catch (MissingImportColumnsException $exception) {
+            return back()->withErrors(['file' => $exception->getMessage()]);
+        }
+
+        if ($result['created'] === 0 && $result['updated'] === 0) {
+            return back()
+                ->with('import_errors', $result['errors'])
+                ->withErrors([
+                    'file' => $result['errors'][0] ?? 'Tidak ada nomor lomba yang diimpor.',
+                ]);
+        }
+
+        $parts = [];
+
+        if ($result['created'] > 0) {
+            $parts[] = $result['created'].' nomor ditambahkan';
+        }
+
+        if ($result['updated'] > 0) {
+            $parts[] = $result['updated'].' nomor diperbarui';
+        }
+
+        return back()
+            ->with('status', implode(', ', $parts).'.')
+            ->with('import_errors', $result['errors']);
     }
 
     public function store(StoreEventRequest $request, Competition $competition): RedirectResponse

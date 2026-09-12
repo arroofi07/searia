@@ -130,8 +130,8 @@ Fitur ini hanya ada di bagian pendaftaran, bukan di Dasbor. Tidak ada di halaman
 
 Langkah:
 
-1. **Unduh template** Excel. Template sudah menyesuaikan kejuaraan ini (daftar nomor di lembar `NOMOR LOMBA`, petunjuk di lembar `PETUNJUK`).
-2. Isi lembar `PESERTA`. Satu baris = satu atlet pada satu nomor lomba. Atlet yang ikut tiga nomor ditulis tiga kali.
+1. **Unduh template** Excel. Template sudah menyesuaikan kejuaraan ini. Lembar `NOMOR LOMBA` (KODE ACARA, nama nomor, gender, grup) **terkunci** — hanya rujukan. Jangan diubah.
+2. Isi lembar `PESERTA`. Satu baris = satu atlet pada satu nomor lomba. Atlet yang ikut tiga nomor ditulis tiga kali. Salin `KODE ACARA` dari lembar `NOMOR LOMBA`.
 3. Kolom wajib: nama lengkap, L/P, tahun lahir, klub/sekolah, kode acara. Catatan waktu boleh kosong (NT).
 4. Unggah berkas `.xlsx` atau `.csv` (maksimal 5 MB, 2.000 baris).
 5. Sistem menampilkan pratinjau: baris valid, baris bermasalah, dan peringatan (misalnya nama klub mirip).

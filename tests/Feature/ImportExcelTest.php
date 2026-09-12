@@ -48,6 +48,8 @@ it('shows import excel only inside the registration section', function () {
         ->get(route('admin.imports.index', $meet['competition']))
         ->assertOk()
         ->assertSee('Import peserta dari Excel')
+        ->assertSee('jalur panitia dan Super Admin')
+        ->assertSeeText('Lembar NOMOR LOMBA terkunci, hanya rujukan')
         ->assertSee('Unggah .xlsx atau .csv');
 });
 
@@ -69,6 +71,14 @@ it('downloads a template with the three required sheet names', function () {
     $spreadsheet = IOFactory::load($path);
 
     expect($spreadsheet->getSheetNames())->toBe(['PESERTA', 'NOMOR LOMBA', 'PETUNJUK']);
+
+    $petunjuk = $spreadsheet->getSheetByName('PETUNJUK')->toArray();
+    $joined = collect($petunjuk)->flatten()->filter()->implode(' ');
+
+    expect($joined)
+        ->toContain('Panitia dan Super Admin')
+        ->toContain('GRUP YANG BOLEH IKUT')
+        ->toContain('Matriks kelayakan');
 });
 
 it('shows all four invalid rows from an uploaded file', function () {

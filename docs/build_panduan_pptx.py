@@ -259,7 +259,7 @@ def build():
     content_header(s, "Panitia · pendaftaran terbuka", "Tiga cara data peserta masuk")
     ways = [
         ("Form publik", "Peserta buka Beranda atau /daftar. Tanpa akun. Dapat kode REG-…"),
-        ("Import Excel", "Pendaftaran → Import Excel. Unduh template, isi, unggah. Jalur utama jika klub kirim daftar lewat chat."),
+        ("Import Excel", "Panitia & Super Admin. Pendaftaran → Import Excel. Unduh template, isi PESERTA, unggah. NOMOR LOMBA hanya rujukan terkunci."),
         ("Input manual", "Pendaftaran → Tambah manual. Untuk koreksi kecil, bukan daftar klub utuh."),
     ]
     for i, (title, body) in enumerate(ways):
@@ -270,14 +270,13 @@ def build():
 
     # 11 Import
     s = new()
-    content_header(s, "Panitia · Pendaftaran → Import Excel", "Cara unggah daftar klub")
+    content_header(s, "Panitia & Super Admin · Pendaftaran → Import Excel", "Cara unggah daftar klub")
     add_bullets(s, Inches(0.55), Inches(1.45), Inches(12.2), Inches(5.3), [
-        "Unduh template. Sudah menyesuaikan kejuaraan (lembar NOMOR LOMBA dan PETUNJUK).",
-        "Isi lembar PESERTA. Satu baris = satu atlet pada satu nomor. Ikut tiga nomor = tiga baris.",
-        "Wajib: nama lengkap, L/P, tahun lahir, klub/sekolah, kode acara. Catatan waktu boleh kosong (NT).",
-        "Unggah .xlsx atau .csv (maks. 5 MB, 2.000 baris).",
-        "Cek pratinjau: baris valid, baris bermasalah, peringatan nama klub mirip.",
-        "Perbaiki di layar atau unduh laporan kesalahan untuk dikembalikan ke klub.",
+        "Hanya panitia dan Super Admin yang mengunggah. Peserta memakai form publik.",
+        "Unduh template. Isi lembar PESERTA. Lembar NOMOR LOMBA terkunci (kode, nama, gender, grup).",
+        "Salin KODE ACARA dari NOMOR LOMBA. Jangan ubah GRUP YANG BOLEH IKUT di Excel.",
+        "Satu baris = satu atlet pada satu nomor. Ikut tiga nomor = tiga baris. Catatan waktu boleh kosong (NT).",
+        "Unggah .xlsx atau .csv (maks. 5 MB, 2.000 baris). Cek pratinjau, perbaiki baris bermasalah.",
         "Tekan Import … baris valid. Lalu tetap verifikasi sebelum pembagian seri.",
     ], 18, SLATE, 10)
 

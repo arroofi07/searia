@@ -12,12 +12,40 @@
     <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'events'])
 
-    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 17 nomor lomba, 34 nomor acara (PA ganjil, PI genap).</p>
+    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 17 nomor lomba, 34 nomor acara (PA ganjil, PI genap). Panitia dan Super Admin juga bisa mengisi lewat Excel.</p>
 
     <form method="POST" action="{{ route('admin.competitions.events.quick-fill', $competition) }}" class="mt-4">
         @csrf
         <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Isi susunan acara baku</button>
     </form>
+
+    <div class="mt-6 max-w-3xl rounded-lg border border-slate-200 bg-white p-5">
+        <h2 class="font-medium">Import Excel</h2>
+        <p class="mt-1 text-sm leading-6 text-slate-600">
+            Unduh template, isi lembar <strong>NOMOR LOMBA</strong> (KODE ACARA, NOMOR PERLOMBAAN, GENDER, GRUP YANG BOLEH IKUT), lalu unggah.
+            Lembar ini <strong>boleh diubah</strong>. Grup dipisah koma, misalnya Group 1, Group 2, Group 3.
+            Nomor yang sudah punya pendaftaran tidak diubah.
+        </p>
+        <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <a href="{{ route('admin.competitions.events.template', $competition) }}" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm hover:bg-slate-50">Unduh template Excel</a>
+            <form method="POST" action="{{ route('admin.competitions.events.import', $competition) }}" enctype="multipart/form-data" class="flex flex-1 flex-col gap-2 sm:flex-row sm:items-end">
+                @csrf
+                <div class="flex-1">
+                    <label for="event-program-file" class="block text-sm font-medium text-slate-700">Unggah .xlsx atau .csv</label>
+                    <input id="event-program-file" type="file" name="file" accept=".xlsx,.csv" required class="mt-1 block w-full text-sm">
+                    @error('file') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Unggah</button>
+            </form>
+        </div>
+        @if (session('import_errors'))
+            <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-amber-800">
+                @foreach (session('import_errors') as $importError)
+                    <li>{{ $importError }}</li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
 
     @if ($programRows !== [])
         <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">

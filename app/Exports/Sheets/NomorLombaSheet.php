@@ -13,7 +13,10 @@ use Maatwebsite\Excel\Events\AfterSheet;
 
 class NomorLombaSheet implements FromArray, ShouldAutoSize, WithEvents, WithHeadings, WithTitle
 {
-    public function __construct(private readonly Competition $competition) {}
+    public function __construct(
+        private readonly Competition $competition,
+        private readonly bool $protect = true,
+    ) {}
 
     public function title(): string
     {
@@ -58,7 +61,19 @@ class NomorLombaSheet implements FromArray, ShouldAutoSize, WithEvents, WithHead
     {
         return [
             AfterSheet::class => function (AfterSheet $event): void {
-                $protection = $event->sheet->getDelegate()->getProtection();
+                if (! $this->protect) {
+                    return;
+                }
+
+                $sheet = $event->sheet->getDelegate();
+                $note = $sheet->getComment('A1');
+                $note->getText()->createTextRun(
+                    'Lembar rujukan terkunci. Salin KODE ACARA ke lembar PESERTA. Unggah peserta lewat Pendaftaran → Import Excel. Susunan nomor dan grup diubah di halaman Nomor lomba.'
+                );
+                $note->setWidth('280px');
+                $note->setHeight('90px');
+
+                $protection = $sheet->getProtection();
                 $protection->setPassword('searia');
                 $protection->setSheet(true);
             },
