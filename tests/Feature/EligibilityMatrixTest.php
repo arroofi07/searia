@@ -8,6 +8,22 @@ use App\Models\Registration;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
+it('explains the eligibility matrix on the page', function () {
+    $competition = Competition::factory()->create();
+    AgeGroup::factory()->create(['competition_id' => $competition->id, 'code' => '3', 'name' => 'Group 3']);
+    Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 13]);
+    $panitia = User::factory()->panitia()->create();
+
+    $this->actingAs($panitia)
+        ->get(route('admin.competitions.eligibility', $competition))
+        ->assertOk()
+        ->assertSee('Apa fungsi matriks ini?')
+        ->assertSee('kelompok umur mana yang boleh ikut nomor lomba mana')
+        ->assertSee('hanya menampilkan kombinasi yang dicentang')
+        ->assertSee('Izinkan semua grup ikut nomor')
+        ->assertDontSee('>kolom</button>', false);
+});
+
 it('saves the eligibility matrix as matching event_age_group rows', function () {
     $competition = Competition::factory()->create();
     $groupA = AgeGroup::factory()->create(['competition_id' => $competition->id, 'code' => '3']);
