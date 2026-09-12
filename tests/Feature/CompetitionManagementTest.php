@@ -64,6 +64,15 @@ it('duplicates a competition with the same events and no registrations', functio
         ->and($copy->status)->toBe(CompetitionStatus::Draft);
 });
 
+it('explains the max events per athlete field on the create form', function () {
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.competitions.create'))
+        ->assertOk()
+        ->assertSee('Batas nomor per atlet')
+        ->assertSee('Jumlah nomor lomba maksimal yang boleh diikuti satu atlet')
+        ->assertSee('form daftar, import Excel, dan input manual');
+});
+
 it('rejects changing pool lanes after the competition leaves draft', function () {
     $competition = Competition::factory()->status(CompetitionStatus::Seeded)->create([
         'pool_lanes' => 8,

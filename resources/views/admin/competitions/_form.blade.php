@@ -115,7 +115,11 @@
         <label for="max_events_per_athlete" class="block text-sm font-medium text-slate-700">Batas nomor per atlet</label>
         <input id="max_events_per_athlete" name="max_events_per_athlete" type="number" min="1" max="20" required
             value="{{ old('max_events_per_athlete', $competition?->max_events_per_athlete ?? 3) }}"
+            aria-describedby="max-events-hint"
             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <p id="max-events-hint" class="mt-1 text-xs leading-5 text-slate-500">
+            Jumlah nomor lomba maksimal yang boleh diikuti satu atlet (misalnya 50 m dada dan 25 m bebas dihitung dua nomor). Bawaan 3. Berlaku di form daftar, import Excel, dan input manual.
+        </p>
     </div>
 </div>
 

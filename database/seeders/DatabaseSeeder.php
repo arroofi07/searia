@@ -39,29 +39,29 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        $clubA = Club::query()->create([
-            'name' => 'SeaRIA Aquatic Padang',
-            'short_name' => 'SAP',
-            'type' => ClubType::Perkumpulan,
-            'city' => 'Padang',
-            'province' => 'Sumatera Barat',
-            'contact_name' => 'Official SeaRIA',
-            'contact_phone' => '081234567890',
-            'status' => ClubStatus::Verified,
-            'is_active' => true,
-        ]);
+        // $clubA = Club::query()->create([
+        //     'name' => 'SeaRIA Aquatic Padang',
+        //     'short_name' => 'SAP',
+        //     'type' => ClubType::Perkumpulan,
+        //     'city' => 'Padang',
+        //     'province' => 'Sumatera Barat',
+        //     'contact_name' => 'Official SeaRIA',
+        //     'contact_phone' => '081234567890',
+        //     'status' => ClubStatus::Verified,
+        //     'is_active' => true,
+        // ]);
 
-        Club::query()->create([
-            'name' => 'Gunung Sport Center',
-            'short_name' => 'GSC',
-            'type' => ClubType::Perkumpulan,
-            'city' => 'Padang',
-            'province' => 'Sumatera Barat',
-            'contact_name' => 'Official GSC',
-            'contact_phone' => '081298765432',
-            'status' => ClubStatus::Pending,
-            'is_active' => true,
-        ]);
+        // Club::query()->create([
+        //     'name' => 'Gunung Sport Center',
+        //     'short_name' => 'GSC',
+        //     'type' => ClubType::Perkumpulan,
+        //     'city' => 'Padang',
+        //     'province' => 'Sumatera Barat',
+        //     'contact_name' => 'Official GSC',
+        //     'contact_phone' => '081298765432',
+        //     'status' => ClubStatus::Pending,
+        //     'is_active' => true,
+        // ]);
 
         User::query()->create([
             'name' => 'Super Admin',
@@ -87,45 +87,45 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Athlete::query()->create([
-            'club_id' => $clubA->id,
-            'full_name' => 'AHZA DANISH RAHMAN',
-            'gender' => Gender::Male,
-            'birth_year' => 2016,
-            'is_active' => true,
-        ]);
+        // Athlete::query()->create([
+        //     'club_id' => $clubA->id,
+        //     'full_name' => 'AHZA DANISH RAHMAN',
+        //     'gender' => Gender::Male,
+        //     'birth_year' => 2016,
+        //     'is_active' => true,
+        // ]);
 
-        Athlete::query()->create([
-            'club_id' => $clubA->id,
-            'full_name' => 'MUTYA ZAHIRA TANJUNG',
-            'gender' => Gender::Female,
-            'birth_year' => 2017,
-            'is_active' => true,
-        ]);
+        // Athlete::query()->create([
+        //     'club_id' => $clubA->id,
+        //     'full_name' => 'MUTYA ZAHIRA TANJUNG',
+        //     'gender' => Gender::Female,
+        //     'birth_year' => 2017,
+        //     'is_active' => true,
+        // ]);
 
-        $competition = Competition::query()->create([
-            'name' => 'SeaRIA Aquatic Championship 2026',
-            'venue' => 'Kolam Renang Painan',
-            'city' => 'Pesisir Selatan',
-            'start_date' => '2026-10-12',
-            'end_date' => '2026-10-13',
-            'registration_opens_at' => '2026-09-01 08:00:00',
-            'registration_closes_at' => '2026-10-10 23:59:00',
-            'technical_meeting_at' => '2026-10-11 19:00:00',
-            'type' => CompetitionType::Official,
-            'pool_lanes' => 6,
-            'pool_length' => 25,
-            'max_events_per_athlete' => 3,
-            'seeding_mode' => SeedingMode::Balanced,
-            'fee_per_event' => 0,
-            'late_fee_per_event' => 0,
-            'status' => CompetitionStatus::Registration,
-        ]);
+        // $competition = Competition::query()->create([
+        //     'name' => 'SeaRIA Aquatic Championship 2026',
+        //     'venue' => 'Kolam Renang Painan',
+        //     'city' => 'Pesisir Selatan',
+        //     'start_date' => '2026-10-12',
+        //     'end_date' => '2026-10-13',
+        //     'registration_opens_at' => '2026-09-01 08:00:00',
+        //     'registration_closes_at' => '2026-10-10 23:59:00',
+        //     'technical_meeting_at' => '2026-10-11 19:00:00',
+        //     'type' => CompetitionType::Official,
+        //     'pool_lanes' => 6,
+        //     'pool_length' => 25,
+        //     'max_events_per_athlete' => 3,
+        //     'seeding_mode' => SeedingMode::Balanced,
+        //     'fee_per_event' => 0,
+        //     'late_fee_per_event' => 0,
+        //     'status' => CompetitionStatus::Registration,
+        // ]);
 
-        foreach (AgeGroup::defaultDefinitions(2026) as $definition) {
-            $competition->ageGroups()->create($definition);
-        }
+        // foreach (AgeGroup::defaultDefinitions(2026) as $definition) {
+        //     $competition->ageGroups()->create($definition);
+        // }
 
-        app(FillDefaultProgram::class)->handle($competition);
+        // app(FillDefaultProgram::class)->handle($competition);
     }
 }
