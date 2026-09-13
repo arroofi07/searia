@@ -124,6 +124,10 @@ Route::middleware('auth')->group(function (): void {
         Route::put('competitions/{competition}/eligibility', [EligibilityMatrixController::class, 'update'])->name('competitions.eligibility.update');
 
         Route::post('competitions/{competition}/age-groups/quick-fill', [AgeGroupController::class, 'quickFill'])->name('competitions.age-groups.quick-fill');
+        Route::get('competitions/{competition}/age-groups/template', [AgeGroupController::class, 'template'])->name('competitions.age-groups.template');
+        Route::post('competitions/{competition}/age-groups/import', [AgeGroupController::class, 'import'])
+            ->middleware('throttle:uploads')
+            ->name('competitions.age-groups.import');
         Route::resource('competitions.age-groups', AgeGroupController::class)->except(['show', 'create', 'edit']);
 
         Route::post('competitions/{competition}/events/quick-fill', [EventController::class, 'quickFill'])->name('competitions.events.quick-fill');

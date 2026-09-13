@@ -92,13 +92,21 @@ class EventProgramParser
 
             $key = $this->groupKey($token);
 
-            if (! isset($index[$key])) {
-                $unknown[] = $token;
+            if (isset($index[$key])) {
+                $ids[] = $index[$key];
 
                 continue;
             }
 
-            $ids[] = $index[$key];
+            $code = $this->matchDefaultGroupCode($token);
+
+            if ($code !== null && isset($index[$this->groupKey($code)])) {
+                $ids[] = $index[$this->groupKey($code)];
+
+                continue;
+            }
+
+            $unknown[] = $token;
         }
 
         return [
@@ -118,6 +126,99 @@ class EventProgramParser
         $number = (int) $trimmed;
 
         return $number >= 1 && $number <= 9999 ? $number : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function groupTokens(string $raw): array
+    {
+        $trimmed = trim($raw);
+
+        if ($trimmed === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[,;\/|]+/u', $trimmed) ?: [];
+        $tokens = [];
+
+        foreach ($parts as $part) {
+            $token = trim($part);
+
+            if ($token !== '') {
+                $tokens[] = $token;
+            }
+        }
+
+        return $tokens;
+    }
+
+    public function matchDefaultGroupCode(string $token): ?string
+    {
+        $compact = $this->compactGroupKey($token);
+
+        foreach (AgeGroup::defaultDefinitions(2000) as $definition) {
+            foreach ($this->defaultGroupAliases($definition) as $alias) {
+                if ($this->compactGroupKey($alias) === $compact) {
+                    return $definition['code'];
+                }
+            }
+        }
+
+        if (preg_match('/^(.+?)([1-6])$/u', $compact, $matches) !== 1) {
+            return null;
+        }
+
+        if (preg_match('/^\d+$/u', $matches[1]) === 1) {
+            return null;
+        }
+
+        return $matches[2];
+    }
+
+    public function isDefaultGroupAlias(string $token): bool
+    {
+        $code = $this->matchDefaultGroupCode($token);
+
+        if ($code === null) {
+            return false;
+        }
+
+        $compact = $this->compactGroupKey($token);
+
+        foreach (AgeGroup::defaultDefinitions(2000) as $definition) {
+            if ($definition['code'] !== $code) {
+                continue;
+            }
+
+            foreach ($this->defaultGroupAliases($definition) as $alias) {
+                if ($this->compactGroupKey($alias) === $compact) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array{code: string, name: string, display_code: string, birth_year_start: int, birth_year_end: int, sort_order: int}  $definition
+     * @return list<string>
+     */
+    private function defaultGroupAliases(array $definition): array
+    {
+        return [
+            $definition['name'],
+            $definition['code'],
+            $definition['display_code'],
+            'group '.$definition['code'],
+            'grup '.$definition['code'],
+        ];
+    }
+
+    private function compactGroupKey(string $value): string
+    {
+        return str_replace(' ', '', $this->groupKey($value));
     }
 
     private function parseStroke(string $value): ?Stroke

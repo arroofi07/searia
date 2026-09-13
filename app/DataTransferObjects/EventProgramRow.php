@@ -9,7 +9,7 @@ use App\Enums\Stroke;
 class EventProgramRow
 {
     /**
-     * @param  list<int>|null  $ageGroupIds  null = jangan mengubah grup yang sudah tersimpan
+     * @param  list<string>  $groupTokens
      */
     public function __construct(
         public int $excelRow,
@@ -18,6 +18,7 @@ class EventProgramRow
         public int $distance,
         public Stroke $stroke,
         public Equipment $equipment,
-        public ?array $ageGroupIds,
+        public array $groupTokens,
+        public bool $syncGroups,
     ) {}
 }

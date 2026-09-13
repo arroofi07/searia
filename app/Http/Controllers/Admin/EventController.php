@@ -75,7 +75,7 @@ class EventController extends Controller
             return back()->withErrors(['file' => $exception->getMessage()]);
         }
 
-        if ($result['created'] === 0 && $result['updated'] === 0) {
+        if ($result['created'] === 0 && $result['updated'] === 0 && $result['groups_created'] === 0) {
             return back()
                 ->with('import_errors', $result['errors'])
                 ->withErrors([
@@ -84,6 +84,10 @@ class EventController extends Controller
         }
 
         $parts = [];
+
+        if ($result['groups_created'] > 0) {
+            $parts[] = $result['groups_created'].' kelompok umur dibuat';
+        }
 
         if ($result['created'] > 0) {
             $parts[] = $result['created'].' nomor ditambahkan';

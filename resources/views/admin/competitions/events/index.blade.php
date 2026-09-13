@@ -22,8 +22,9 @@
     <div class="mt-6 max-w-3xl rounded-lg border border-slate-200 bg-white p-5">
         <h2 class="font-medium">Import Excel</h2>
         <p class="mt-1 text-sm leading-6 text-slate-600">
-            Unduh template, isi lembar <strong>NOMOR LOMBA</strong> (KODE ACARA, NOMOR PERLOMBAAN, GENDER, GRUP YANG BOLEH IKUT), lalu unggah.
-            Lembar ini <strong>boleh diubah</strong>. Grup dipisah koma, misalnya Group 1, Group 2, Group 3.
+            Unduh template, isi atau sesuaikan lembar <strong>NOMOR LOMBA</strong>, lalu unggah.
+            Satu berkas bisa mengisi <strong>nomor lomba dan kelompok umur sekaligus</strong>.
+            Jika grup belum dibuat, tulis nama yang berakhiran <strong>1–6</strong> di kolom GRUP YANG BOLEH IKUT (misalnya Group 1 atau Searia1) — sistem membuat grup baku (tahun lahir) otomatis.
             Nomor yang sudah punya pendaftaran tidak diubah.
         </p>
         <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">

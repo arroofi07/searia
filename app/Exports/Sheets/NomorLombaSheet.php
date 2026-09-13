@@ -2,6 +2,7 @@
 
 namespace App\Exports\Sheets;
 
+use App\Enums\EventGender;
 use App\Models\Competition;
 use App\Models\Event;
 use Maatwebsite\Excel\Concerns\FromArray;
@@ -16,6 +17,7 @@ class NomorLombaSheet implements FromArray, ShouldAutoSize, WithEvents, WithHead
     public function __construct(
         private readonly Competition $competition,
         private readonly bool $protect = true,
+        private readonly bool $seedDefaults = false,
     ) {}
 
     public function title(): string
@@ -36,7 +38,13 @@ class NomorLombaSheet implements FromArray, ShouldAutoSize, WithEvents, WithHead
      */
     public function array(): array
     {
-        return $this->competition->events
+        $events = $this->competition->events;
+
+        if ($events->isEmpty() && $this->seedDefaults) {
+            return $this->defaultRows();
+        }
+
+        return $events
             ->map(function (Event $event): array {
                 $groups = $event->ageGroups
                     ->sortBy('sort_order')
@@ -52,6 +60,45 @@ class NomorLombaSheet implements FromArray, ShouldAutoSize, WithEvents, WithHead
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @return list<list<string>>
+     */
+    private function defaultRows(): array
+    {
+        $rows = [];
+
+        foreach (Event::defaultProgram() as $pair) {
+            $groups = collect(Event::defaultEligibleGroupCodes(
+                $pair['distance'],
+                $pair['stroke'],
+                $pair['equipment'],
+            ))
+                ->map(fn (string $code): string => 'Group '.$code)
+                ->implode(', ');
+
+            $sample = new Event([
+                'distance' => $pair['distance'],
+                'stroke' => $pair['stroke'],
+                'equipment' => $pair['equipment'],
+            ]);
+
+            $rows[] = [
+                (string) $pair['male_number'],
+                $sample->shortName(),
+                EventGender::Male->label(),
+                $groups,
+            ];
+            $rows[] = [
+                (string) $pair['female_number'],
+                $sample->shortName(),
+                EventGender::Female->label(),
+                $groups,
+            ];
+        }
+
+        return $rows;
     }
 
     /**

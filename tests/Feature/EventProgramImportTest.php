@@ -56,7 +56,9 @@ it('downloads an unlocked event program template', function () {
     $spreadsheet = IOFactory::load($path);
 
     expect($spreadsheet->getSheetNames())->toBe(['NOMOR LOMBA', 'PETUNJUK'])
-        ->and($spreadsheet->getSheetByName('NOMOR LOMBA')->getProtection()->getSheet())->not->toBeTrue();
+        ->and($spreadsheet->getSheetByName('NOMOR LOMBA')->getProtection()->getSheet())->not->toBeTrue()
+        ->and($spreadsheet->getSheetByName('NOMOR LOMBA')->toArray()[1][0] ?? null)->toBe('1')
+        ->and($spreadsheet->getSheetByName('NOMOR LOMBA')->toArray()[1][3] ?? '')->toContain('Group');
 });
 
 it('imports events and eligible groups from excel', function () {
@@ -132,6 +134,81 @@ it('updates groups on an existing event without registrations', function () {
         ->assertRedirect();
 
     expect($event->fresh()->ageGroups()->pluck('age_groups.id')->all())->toEqualCanonicalizing([$group3->id]);
+});
+
+it('creates custom-named age groups from excel when none exist yet', function () {
+    $competition = Competition::factory()->create(['start_date' => '2026-10-12']);
+    $panitia = User::factory()->panitia()->create();
+    $path = writeEventProgramCsv([
+        ['1', '50 M Gaya Kupu-Kupu', 'Putra', 'Searia1, Searia2, Searia3'],
+        ['2', '50 M Gaya Kupu-Kupu', 'Putri', 'Searia1'],
+    ]);
+
+    $this->actingAs($panitia)
+        ->from(route('admin.competitions.events.index', $competition))
+        ->post(route('admin.competitions.events.import', $competition), [
+            'file' => new UploadedFile($path, 'nomor.csv', 'text/csv', null, true),
+        ])
+        ->assertRedirect(route('admin.competitions.events.index', $competition))
+        ->assertSessionHas('status');
+
+    $groups = $competition->ageGroups()->orderBy('code')->get();
+    $putra = $competition->events()->where('event_number', 1)->first();
+
+    expect($groups)->toHaveCount(3)
+        ->and($groups->pluck('name')->all())->toEqual(['Searia1', 'Searia2', 'Searia3'])
+        ->and($groups->pluck('code')->all())->toEqual(['1', '2', '3'])
+        ->and($groups[0]->birth_year_start)->toBe(2019)
+        ->and($putra?->ageGroups()->pluck('age_groups.name')->all())->toEqualCanonicalizing(['Searia1', 'Searia2', 'Searia3']);
+});
+
+it('maps custom group labels to existing default groups', function () {
+    $competition = Competition::factory()->create();
+    $group1 = AgeGroup::factory()->create([
+        'competition_id' => $competition->id,
+        'code' => '1',
+        'name' => 'Group 1',
+        'sort_order' => 1,
+    ]);
+    $panitia = User::factory()->panitia()->create();
+    $path = writeEventProgramCsv([
+        ['1', '50 M Gaya Kupu-Kupu', 'Putra', 'Searia1'],
+    ]);
+
+    $this->actingAs($panitia)
+        ->post(route('admin.competitions.events.import', $competition), [
+            'file' => new UploadedFile($path, 'nomor.csv', 'text/csv', null, true),
+        ])
+        ->assertRedirect();
+
+    expect($competition->ageGroups()->count())->toBe(1)
+        ->and($competition->events()->where('event_number', 1)->first()?->ageGroups()->pluck('age_groups.id')->all())
+        ->toEqualCanonicalizing([$group1->id]);
+});
+
+it('creates default age groups from excel when none exist yet', function () {
+    $competition = Competition::factory()->create();
+    $panitia = User::factory()->panitia()->create();
+    $path = writeEventProgramCsv([
+        ['1', '50 M Gaya Kupu-Kupu', 'Putra', 'Group 1, Group 2'],
+        ['2', '50 M Gaya Kupu-Kupu', 'Putri', 'Group 1'],
+    ]);
+
+    $this->actingAs($panitia)
+        ->from(route('admin.competitions.events.index', $competition))
+        ->post(route('admin.competitions.events.import', $competition), [
+            'file' => new UploadedFile($path, 'nomor.csv', 'text/csv', null, true),
+        ])
+        ->assertRedirect(route('admin.competitions.events.index', $competition))
+        ->assertSessionHas('status');
+
+    $groups = $competition->ageGroups()->orderBy('code')->get();
+    $putra = $competition->events()->where('event_number', 1)->first();
+
+    expect($groups)->toHaveCount(2)
+        ->and($groups->pluck('name')->all())->toEqual(['Group 1', 'Group 2'])
+        ->and($competition->events()->count())->toBe(2)
+        ->and($putra?->ageGroups()->pluck('age_groups.name')->all())->toEqualCanonicalizing(['Group 1', 'Group 2']);
 });
 
 it('does not change an event that already has registrations', function () {

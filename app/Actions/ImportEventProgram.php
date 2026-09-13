@@ -6,6 +6,7 @@ use App\DataTransferObjects\EventProgramRow;
 use App\Exceptions\MissingImportColumnsException;
 use App\Imports\EventProgramSheetImport;
 use App\Imports\EventProgramWorkbookImport;
+use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Services\EventProgram\EventProgramParser;
@@ -20,7 +21,7 @@ class ImportEventProgram
     public function __construct(private readonly EventProgramParser $parser) {}
 
     /**
-     * @return array{created: int, updated: int, errors: list<string>}
+     * @return array{created: int, updated: int, groups_created: int, errors: list<string>}
      */
     public function handle(Competition $competition, string $path, string $extension): array
     {
@@ -31,45 +32,34 @@ class ImportEventProgram
         }
 
         if ($sheet->tooManyRows) {
-            return [
-                'created' => 0,
-                'updated' => 0,
-                'errors' => ['Berkas melebihi 200 baris.'],
-            ];
+            return $this->emptyResult(['Berkas melebihi 200 baris.']);
         }
 
         if ($sheet->rows === []) {
-            return [
-                'created' => 0,
-                'updated' => 0,
-                'errors' => ['Tidak ada baris nomor lomba yang bisa dibaca.'],
-            ];
+            return $this->emptyResult(['Tidak ada baris nomor lomba yang bisa dibaca.']);
         }
 
         $competition->load(['ageGroups', 'events.registrations']);
         $parsed = $this->parseRows($sheet->rows, $competition->ageGroups);
 
         if ($parsed['errors'] !== []) {
-            return [
-                'created' => 0,
-                'updated' => 0,
-                'errors' => $parsed['errors'],
-            ];
+            return $this->emptyResult($parsed['errors']);
         }
 
-        return $this->commit($competition, $parsed['rows']);
+        return $this->commit($competition, $parsed['rows'], $parsed['group_names']);
     }
 
     /**
      * @param  list<array{excel_row: int, kode: string, nama: string, gender: string, grup: string}>  $rows
-     * @param  Collection<int, \App\Models\AgeGroup>  $ageGroups
-     * @return array{rows: list<EventProgramRow>, errors: list<string>}
+     * @param  Collection<int, AgeGroup>  $ageGroups
+     * @return array{rows: list<EventProgramRow>, errors: list<string>, group_names: array<string, string>}
      */
     private function parseRows(array $rows, Collection $ageGroups): array
     {
         $errors = [];
         $parsed = [];
         $seen = [];
+        $neededGroups = [];
 
         foreach ($rows as $row) {
             $line = 'Baris '.$row['excel_row'].': ';
@@ -104,10 +94,29 @@ class ImportEventProgram
                 continue;
             }
 
-            $groups = $this->parser->parseGroups($row['grup'], $ageGroups);
+            $tokens = $this->parser->groupTokens($row['grup']);
+            $unknown = [];
 
-            if ($groups['unknown'] !== []) {
-                $errors[] = $line.'Grup tidak ditemukan: '.implode(', ', $groups['unknown']).'. Isi kelompok umur dulu, atau pakai nama yang sama persis.';
+            foreach ($tokens as $token) {
+                $existing = $this->parser->parseGroups($token, $ageGroups);
+
+                if ($existing['ids'] !== null && $existing['ids'] !== []) {
+                    continue;
+                }
+
+                $code = $this->parser->matchDefaultGroupCode($token);
+
+                if ($code === null) {
+                    $unknown[] = $token;
+
+                    continue;
+                }
+
+                $this->rememberGroupName($neededGroups, $code, $token);
+            }
+
+            if ($unknown !== []) {
+                $errors[] = $line.'Grup tidak dikenali: '.implode(', ', $unknown).'. Pakai Group 1–6, nama seperti Searia1 (angka 1–6), atau nama grup yang sudah ada.';
 
                 continue;
             }
@@ -119,26 +128,36 @@ class ImportEventProgram
                 distance: $name['distance'],
                 stroke: $name['stroke'],
                 equipment: $name['equipment'],
-                ageGroupIds: $groups['ids'],
+                groupTokens: $tokens,
+                syncGroups: $tokens !== [],
             );
         }
 
-        return ['rows' => $parsed, 'errors' => $errors];
+        return [
+            'rows' => $parsed,
+            'errors' => $errors,
+            'group_names' => $neededGroups,
+        ];
     }
 
     /**
      * @param  list<EventProgramRow>  $rows
-     * @return array{created: int, updated: int, errors: list<string>}
+     * @param  array<string, string>  $groupNames
+     * @return array{created: int, updated: int, groups_created: int, errors: list<string>}
      */
-    private function commit(Competition $competition, array $rows): array
+    private function commit(Competition $competition, array $rows, array $groupNames): array
     {
         $created = 0;
         $updated = 0;
+        $groupsCreated = 0;
         $skipped = [];
         $existing = $competition->events->keyBy('event_number');
         $maxSort = (int) $competition->events->max('sort_order');
 
-        DB::transaction(function () use ($competition, $rows, $existing, &$created, &$updated, &$skipped, &$maxSort): void {
+        DB::transaction(function () use ($competition, $rows, $groupNames, $existing, &$created, &$updated, &$groupsCreated, &$skipped, &$maxSort): void {
+            $groupsCreated = $this->ensureDefaultGroups($competition, $groupNames);
+            $ageGroups = $competition->ageGroups()->get();
+
             foreach ($rows as $row) {
                 /** @var Event|null $event */
                 $event = $existing->get($row->eventNumber);
@@ -175,8 +194,9 @@ class ImportEventProgram
                     $created++;
                 }
 
-                if ($row->ageGroupIds !== null) {
-                    $event->ageGroups()->sync($row->ageGroupIds);
+                if ($row->syncGroups) {
+                    $resolved = $this->parser->parseGroups(implode(', ', $row->groupTokens), $ageGroups);
+                    $event->ageGroups()->sync($resolved['ids'] ?? []);
                 }
             }
         });
@@ -184,7 +204,83 @@ class ImportEventProgram
         return [
             'created' => $created,
             'updated' => $updated,
+            'groups_created' => $groupsCreated,
             'errors' => $skipped,
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $namesByCode
+     */
+    private function rememberGroupName(array &$namesByCode, string $code, string $token): void
+    {
+        $custom = ! $this->parser->isDefaultGroupAlias($token);
+        $name = $custom ? mb_substr(trim($token), 0, 50) : null;
+
+        if (! isset($namesByCode[$code])) {
+            $namesByCode[$code] = $name ?? $this->defaultGroupName($code);
+
+            return;
+        }
+
+        if ($custom && $this->parser->isDefaultGroupAlias($namesByCode[$code])) {
+            $namesByCode[$code] = $name ?? $namesByCode[$code];
+        }
+    }
+
+    private function defaultGroupName(string $code): string
+    {
+        foreach (AgeGroup::defaultDefinitions(2000) as $definition) {
+            if ($definition['code'] === $code) {
+                return $definition['name'];
+            }
+        }
+
+        return 'Group '.$code;
+    }
+
+    /**
+     * @param  array<string, string>  $namesByCode
+     */
+    private function ensureDefaultGroups(Competition $competition, array $namesByCode): int
+    {
+        if ($namesByCode === []) {
+            return 0;
+        }
+
+        $existing = $competition->ageGroups()->pluck('code')->all();
+        $defaults = collect(AgeGroup::defaultDefinitions($competition->year()))->keyBy('code');
+        $created = 0;
+
+        foreach ($namesByCode as $code => $name) {
+            $code = (string) $code;
+
+            if (in_array($code, $existing, true) || ! $defaults->has($code)) {
+                continue;
+            }
+
+            $definition = $defaults->get($code);
+            $definition['name'] = $name !== '' ? $name : $definition['name'];
+            $competition->ageGroups()->create($definition);
+            $created++;
+        }
+
+        $competition->unsetRelation('ageGroups');
+
+        return $created;
+    }
+
+    /**
+     * @param  list<string>  $errors
+     * @return array{created: int, updated: int, groups_created: int, errors: list<string>}
+     */
+    private function emptyResult(array $errors): array
+    {
+        return [
+            'created' => 0,
+            'updated' => 0,
+            'groups_created' => 0,
+            'errors' => $errors,
         ];
     }
 
