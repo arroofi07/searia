@@ -19,6 +19,15 @@ it('explains seeding in plain Indonesian for panitia', function () {
         ->assertSee('Bagi seri seluruh kejuaraan');
 });
 
+it('lets panitia filter seeding rows by status', function () {
+    $meet = openRegistrationMeet();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.index', [$meet['competition'], 'status' => 'locked']))
+        ->assertOk()
+        ->assertSee('Tidak ada baris yang cocok dengan saringan');
+});
+
 it('locks every heat for a competition', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(6);
     app(RunSeeding::class)->handle($competition, $event, $group);

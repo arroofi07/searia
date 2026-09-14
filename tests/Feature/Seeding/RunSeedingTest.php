@@ -1,11 +1,14 @@
 <?php
 
 use App\Actions\RunSeeding;
+use App\Enums\Gender;
 use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotReseedLockedHeatsException;
 use App\Models\Athlete;
+use App\Models\Event;
 use App\Models\Heat;
 use App\Models\HeatLane;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -70,6 +73,39 @@ it('rejects reseeding locked heats without force', function () {
 
     $seeding->handle($competition, $event, $group);
 })->throws(CannotReseedLockedHeatsException::class);
+
+it('skips locked pairs when seeding the whole competition', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    $seeding = app(RunSeeding::class);
+    $seeding->handle($competition, $event, $group)->each->lock();
+
+    $other = Event::factory()->create([
+        'competition_id' => $competition->id,
+        'event_number' => 99,
+        'gender' => $event->gender,
+    ]);
+    $other->ageGroups()->attach($group->id);
+
+    $clubId = Athlete::query()->value('club_id');
+    $meet = [
+        'competition' => $competition,
+        'event' => $other,
+        'athlete' => Athlete::factory()->create([
+            'club_id' => $clubId,
+            'gender' => Gender::Male,
+            'birth_year' => 2016,
+        ]),
+        'group' => $group,
+        'panitia' => User::factory()->panitia()->create(),
+    ];
+    verifiedRegistration($meet);
+
+    $created = $seeding->handle($competition);
+
+    expect($created)->not->toBeEmpty()
+        ->and(Heat::query()->where('event_id', $event->id)->whereNull('locked_at')->count())->toBe(0)
+        ->and(Heat::query()->where('event_id', $other->id)->count())->toBeGreaterThan(0);
+});
 
 it('reseeds locked heats when force is true', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(6);

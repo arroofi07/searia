@@ -15,33 +15,36 @@ use App\Models\Heat;
 use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class SeedingController extends Controller
 {
-    public function index(Competition $competition): View
+    public function index(Request $request, Competition $competition): View
     {
         $this->authorize('seed', $competition);
 
         $events = $competition->events()->with(['heats.ageGroup', 'ageGroups'])->get();
-        $ageGroups = $competition->ageGroups;
 
-        $pairs = [];
+        $pairs = collect();
         foreach ($events as $event) {
             foreach ($event->ageGroups as $group) {
                 $heats = $event->heats->where('age_group_id', $group->id)->sortBy('heat_number');
-                $pairs[] = [
+                $pairs->push([
                     'event' => $event,
                     'ageGroup' => $group,
                     'heatCount' => $heats->count(),
                     'locked' => $heats->isNotEmpty() && $heats->every(fn (Heat $heat): bool => $heat->isLocked()),
                     'seeded' => $heats->isNotEmpty(),
-                ];
+                ]);
             }
         }
 
-        $unseeded = collect($pairs)->where('seeded', false)->count();
-        $unlocked = collect($pairs)->where('seeded', true)->where('locked', false)->count();
+        $unseeded = $pairs->where('seeded', false)->count();
+        $unlocked = $pairs->where('seeded', true)->where('locked', false)->count();
+        $lockedCount = $pairs->where('locked', true)->count();
+        $seededCount = $pairs->where('seeded', true)->count();
+        $pairTotal = $pairs->count();
         $pendingCount = $competition->registrations()
             ->where('status', RegistrationStatus::Pending)
             ->count();
@@ -51,11 +54,22 @@ class SeedingController extends Controller
 
         return view('admin.seeding.index', [
             'competition' => $competition,
-            'pairs' => ListPaginator::for($pairs),
+            'pairs' => ListPaginator::for($this->filterPairs($pairs, $request)),
+            'pairTotal' => $pairTotal,
+            'seededCount' => $seededCount,
+            'lockedCount' => $lockedCount,
             'unseeded' => $unseeded,
             'unlocked' => $unlocked,
             'pendingCount' => $pendingCount,
             'verifiedCount' => $verifiedCount,
+            'filterEvents' => $events,
+            'filterAgeGroups' => $competition->ageGroups,
+            'filters' => [
+                'q' => trim((string) $request->query('q', '')),
+                'event_id' => $request->query('event_id', ''),
+                'age_group_id' => $request->query('age_group_id', ''),
+                'status' => $request->query('status', ''),
+            ],
         ]);
     }
 
@@ -116,7 +130,12 @@ class SeedingController extends Controller
             return back()->withErrors(['seeding' => $exception->getMessage()]);
         }
 
-        return back()->with('status', $heats->count().' seri dihasilkan.');
+        return back()->with(
+            'status',
+            $heats->count() > 0
+                ? $heats->count().' seri dihasilkan.'
+                : 'Tidak ada seri baru. Nomor yang sudah dikunci dilewati.',
+        );
     }
 
     public function lock(Request $request, Competition $competition): RedirectResponse
@@ -139,6 +158,45 @@ class SeedingController extends Controller
         \App\Support\PublicPageCache::bump();
 
         return back()->with('status', 'Seri dikunci.');
+    }
+
+    /**
+     * @param  Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool}>  $pairs
+     * @return Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool}>
+     */
+    private function filterPairs(Collection $pairs, Request $request): Collection
+    {
+        $search = mb_strtolower(trim((string) $request->query('q', '')));
+        $eventId = $request->integer('event_id');
+        $ageGroupId = $request->integer('age_group_id');
+        $status = (string) $request->query('status', '');
+
+        return $pairs
+            ->when($search !== '', function (Collection $items) use ($search): Collection {
+                return $items->filter(function (array $pair) use ($search): bool {
+                    $haystack = mb_strtolower(trim(
+                        $pair['event']->event_number.' '.$pair['event']->formattedName().' '.$pair['ageGroup']->name
+                    ));
+
+                    return str_contains($haystack, $search);
+                })->values();
+            })
+            ->when($eventId > 0, fn (Collection $items): Collection => $items
+                ->filter(fn (array $pair): bool => $pair['event']->id === $eventId)
+                ->values())
+            ->when($ageGroupId > 0, fn (Collection $items): Collection => $items
+                ->filter(fn (array $pair): bool => $pair['ageGroup']->id === $ageGroupId)
+                ->values())
+            ->when($status !== '', function (Collection $items) use ($status): Collection {
+                return $items->filter(function (array $pair) use ($status): bool {
+                    return match ($status) {
+                        'unseeded' => ! $pair['seeded'],
+                        'preview' => $pair['seeded'] && ! $pair['locked'],
+                        'locked' => $pair['locked'],
+                        default => true,
+                    };
+                })->values();
+            });
     }
 
     private function lockCompetition(Competition $competition): void

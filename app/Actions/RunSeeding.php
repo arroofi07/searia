@@ -45,12 +45,14 @@ class RunSeeding
             ? collect([$ageGroup])
             : $competition->ageGroups()->orderBy('sort_order')->get();
 
-        return DB::transaction(function () use ($competition, $events, $ageGroups, $force, $actor, $ipAddress): Collection {
+        $skipLocked = $event === null && $ageGroup === null && ! $force;
+
+        return DB::transaction(function () use ($competition, $events, $ageGroups, $force, $actor, $ipAddress, $skipLocked): Collection {
             $created = collect();
 
             foreach ($events as $currentEvent) {
                 foreach ($ageGroups as $currentGroup) {
-                    $heats = $this->seedPair($competition, $currentEvent, $currentGroup, $force);
+                    $heats = $this->seedPair($competition, $currentEvent, $currentGroup, $force, $skipLocked);
                     $created = $created->concat($heats);
                 }
             }
@@ -83,6 +85,7 @@ class RunSeeding
         Event $event,
         AgeGroup $ageGroup,
         bool $force,
+        bool $skipLocked = false,
     ): Collection {
         $existing = Heat::query()
             ->where('event_id', $event->id)
@@ -92,6 +95,10 @@ class RunSeeding
             ->get();
 
         if ($existing->contains(fn (Heat $heat): bool => $heat->isLocked()) && ! $force) {
+            if ($skipLocked) {
+                return collect();
+            }
+
             throw new CannotReseedLockedHeatsException(
                 'Seri sudah dikunci. Jalankan ulang hanya dengan penanda paksa.',
             );
