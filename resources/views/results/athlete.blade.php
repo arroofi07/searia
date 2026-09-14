@@ -61,6 +61,8 @@
         </table>
     </div>
 
+    @include('partials.pagination', ['paginator' => $rows])
+
     @if ($history->isNotEmpty())
         <h2 class="mt-8 text-lg font-semibold">Riwayat kejuaraan lain</h2>
         <ul class="mt-3 space-y-2 text-sm">

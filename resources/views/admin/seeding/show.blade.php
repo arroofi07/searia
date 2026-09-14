@@ -1,7 +1,5 @@
 @php
     use App\Support\SwimTime;
-
-    $anyLocked = $heats->contains(fn ($heat) => $heat->isLocked());
 @endphp
 
 @extends('layouts.app')
@@ -133,4 +131,6 @@
             Belum ada seri untuk kombinasi ini. Kembali ke daftar, lalu tekan <strong>Bagi seri ini</strong>.
         </p>
     @endforelse
+
+    @include('partials.pagination', ['paginator' => $heats])
 @endsection

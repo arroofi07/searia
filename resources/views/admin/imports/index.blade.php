@@ -61,4 +61,6 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $batches])
 @endsection

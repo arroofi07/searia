@@ -54,7 +54,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($competition->ageGroups as $group)
+                @forelse ($ageGroups as $group)
                     <tr class="border-t border-slate-100">
                         <td class="px-4 py-3">{{ $group->code }}</td>
                         <td class="px-4 py-3">{{ $group->name }}</td>
@@ -76,6 +76,8 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $ageGroups])
 
     <form method="POST" action="{{ route('admin.competitions.age-groups.store', $competition) }}" class="mt-6 max-w-3xl space-y-4 rounded-lg border border-slate-200 bg-white p-5">
         @csrf
@@ -107,7 +109,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-slate-700">Urutan</label>
-                <input name="sort_order" type="number" min="1" value="{{ old('sort_order', $competition->ageGroups->count() + 1) }}" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <input name="sort_order" type="number" min="1" value="{{ old('sort_order', ((int) $competition->ageGroups()->max('sort_order')) + 1) }}" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             </div>
         </div>
         <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Tambah grup</button>

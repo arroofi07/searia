@@ -11,6 +11,7 @@
     <form method="POST" action="{{ route('admin.judges.update', $competition) }}" class="mt-6 space-y-4">
         @csrf
         @method('PUT')
+        <input type="hidden" name="page" value="{{ $events->currentPage() }}">
 
         @foreach ($events as $event)
             <div class="rounded-lg border border-slate-200 bg-white p-4">
@@ -31,6 +32,8 @@
                 </div>
             </div>
         @endforeach
+
+        @include('partials.pagination', ['paginator' => $events])
 
         <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Simpan penugasan</button>
     </form>

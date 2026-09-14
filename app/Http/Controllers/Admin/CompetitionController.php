@@ -21,7 +21,8 @@ class CompetitionController extends Controller
         $competitions = Competition::query()
             ->withCount(['ageGroups', 'events', 'registrations'])
             ->orderByDesc('start_date')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return view('admin.competitions.index', compact('competitions'));
     }

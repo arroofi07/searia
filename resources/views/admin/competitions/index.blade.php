@@ -45,5 +45,5 @@
         </table>
     </div>
 
-    <div class="mt-4">{{ $competitions->links() }}</div>
+    @include('partials.pagination', ['paginator' => $competitions])
 @endsection

@@ -55,5 +55,6 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['paginator' => $results])
     </section>
 @endsection

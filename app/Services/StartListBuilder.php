@@ -16,10 +16,14 @@ use Illuminate\Support\Collection;
 
 class StartListBuilder
 {
+    /**
+     * @param  list<int>|null  $eventIds
+     */
     public function build(
         Competition $competition,
         ?int $session = null,
         ?int $eventId = null,
+        ?array $eventIds = null,
         ?int $ageGroupId = null,
         ?int $clubId = null,
     ): StartListDocument {
@@ -43,6 +47,8 @@ class StartListBuilder
 
         if ($eventId !== null) {
             $eventsQuery->whereKey($eventId);
+        } elseif ($eventIds !== null) {
+            $eventsQuery->whereIn('id', $eventIds === [] ? [0] : $eventIds);
         }
 
         $events = $eventsQuery->get();

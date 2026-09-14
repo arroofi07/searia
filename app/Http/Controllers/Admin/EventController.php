@@ -15,6 +15,7 @@ use App\Models\Competition;
 use App\Models\Event;
 use App\Services\ProgramOrderBuilder;
 use App\Support\DatabaseError;
+use App\Support\ListPaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -29,11 +30,14 @@ class EventController extends Controller
     {
         $this->authorize('update', $competition);
 
-        $competition->load('events');
+        $allEvents = $competition->events()->get();
 
         return view('admin.competitions.events.index', [
             'competition' => $competition,
-            'programRows' => $program->rows($competition->events),
+            'events' => $competition->events()
+                ->paginate(ListPaginator::PER_PAGE)
+                ->withQueryString(),
+            'programRows' => $program->rows($allEvents),
         ]);
     }
 
@@ -183,11 +187,14 @@ class EventController extends Controller
 
     public function reorder(ReorderEventsRequest $request, Competition $competition): JsonResponse
     {
+        $page = max(1, $request->integer('page', 1));
+        $offset = ($page - 1) * ListPaginator::PER_PAGE;
+
         foreach ($request->validated('order') as $position => $eventId) {
             Event::query()
                 ->where('competition_id', $competition->id)
                 ->where('id', $eventId)
-                ->update(['sort_order' => $position + 1]);
+                ->update(['sort_order' => $offset + $position + 1]);
         }
 
         return response()->json(['ok' => true]);

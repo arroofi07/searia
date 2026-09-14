@@ -12,6 +12,7 @@ use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Heat;
 use App\Models\Result;
+use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,8 @@ class ResultCorrectionController extends Controller
             ])
             ->orderBy('age_group_id')
             ->orderBy('heat_number')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.results.show', [
             'competition' => $competition,

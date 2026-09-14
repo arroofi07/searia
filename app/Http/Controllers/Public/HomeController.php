@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Support\ListPaginator;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -13,7 +14,8 @@ class HomeController extends Controller
         $open = Competition::query()
             ->openRegistration()
             ->orderBy('registration_closes_at')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         $recent = Competition::query()
             ->published()

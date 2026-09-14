@@ -17,6 +17,7 @@ use App\Models\Competition;
 use App\Models\ImportBatch;
 use App\Services\Import\ImportUploadService;
 use App\Services\Import\RowValidator;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -33,7 +34,8 @@ class ImportController extends Controller
         $batches = ImportBatch::query()
             ->where('competition_id', $competition->id)
             ->latest()
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.imports.index', compact('competition', 'batches'));
     }
@@ -69,6 +71,8 @@ class ImportController extends Controller
             'competition' => $importBatch->competition,
             'result' => $result,
             'progress' => $progress,
+            'invalidRows' => ListPaginator::for($result->invalidRows(), pageName: 'invalid_page'),
+            'validRows' => ListPaginator::for($result->validRows(), pageName: 'valid_page'),
         ]);
     }
 

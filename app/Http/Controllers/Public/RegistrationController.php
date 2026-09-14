@@ -19,6 +19,7 @@ use App\Services\Registration\PublicRegistrationWizard;
 use App\Services\RegistrationDraft;
 use App\Services\RegistrationValidator;
 use App\Services\SeedTimeSuggester;
+use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,8 @@ class RegistrationController extends Controller
         $competitions = Competition::query()
             ->where('status', CompetitionStatus::Registration)
             ->orderBy('start_date')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('register.index', compact('competitions'));
     }

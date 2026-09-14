@@ -77,4 +77,6 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $clubs])
 @endsection

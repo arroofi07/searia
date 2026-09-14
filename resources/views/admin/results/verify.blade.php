@@ -7,7 +7,7 @@
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'verify'])
 
-    <p class="mt-4 text-sm text-slate-600">{{ $pendingHeats->count() }} seri masih punya hasil belum diverifikasi.</p>
+    <p class="mt-4 text-sm text-slate-600">{{ $pendingCount }} seri masih punya hasil belum diverifikasi.</p>
 
     <div class="mt-6 space-y-4">
         @foreach ($rows as $row)
@@ -47,4 +47,6 @@
             </section>
         @endforeach
     </div>
+
+    @include('partials.pagination', ['paginator' => $rows])
 @endsection

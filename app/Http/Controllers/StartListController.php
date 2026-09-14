@@ -6,6 +6,7 @@ use App\Enums\CompetitionStatus;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Services\StartListBuilder;
+use App\Support\ListPaginator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,9 +17,24 @@ class StartListController extends Controller
     {
         $this->ensurePubliclyVisible($competition);
 
+        $eventId = $request->filled('event_id') ? $request->integer('event_id') : null;
+        $eventPages = null;
+        $eventIds = null;
+
+        if ($eventId === null) {
+            $eventPages = $competition->events()
+                ->orderBy('session')
+                ->orderBy('sort_order')
+                ->orderBy('event_number')
+                ->paginate(ListPaginator::PER_PAGE)
+                ->withQueryString();
+            $eventIds = $eventPages->getCollection()->modelKeys();
+        }
+
         $document = $builder->build(
             competition: $competition,
-            eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
+            eventId: $eventId,
+            eventIds: $eventIds,
             ageGroupId: $request->filled('age_group_id') ? $request->integer('age_group_id') : null,
             clubId: $request->filled('club_id') ? $request->integer('club_id') : null,
         );
@@ -28,6 +44,7 @@ class StartListController extends Controller
         return view('start-list.show', [
             'competition' => $competition,
             'document' => $document,
+            'eventPages' => $eventPages,
             'events' => $competition->events()->orderBy('session')->orderBy('sort_order')->orderBy('event_number')->get(),
             'ageGroups' => $competition->ageGroups()->orderBy('sort_order')->get(),
             'clubs' => Club::query()->orderBy('name')->get(),

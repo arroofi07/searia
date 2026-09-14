@@ -108,4 +108,8 @@
     @empty
         <p class="mt-8 text-sm text-slate-500">Belum ada susunan seri untuk ditampilkan.</p>
     @endforelse
+
+    @if ($eventPages)
+        @include('partials.pagination', ['paginator' => $eventPages])
+    @endif
 @endsection

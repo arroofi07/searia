@@ -37,5 +37,7 @@
                 @endif
             @endforelse
         </ul>
+
+        @include('partials.pagination', ['paginator' => $athletes])
     </div>
 @endsection

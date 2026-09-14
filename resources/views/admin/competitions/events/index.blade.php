@@ -86,8 +86,8 @@
                     <th class="px-4 py-3 font-medium"></th>
                 </tr>
             </thead>
-            <tbody id="event-rows" data-reorder-url="{{ route('admin.competitions.events.reorder', $competition) }}">
-                @forelse ($competition->events as $event)
+            <tbody id="event-rows" data-reorder-url="{{ route('admin.competitions.events.reorder', $competition) }}" data-page="{{ $events->currentPage() }}">
+                @forelse ($events as $event)
                     <tr draggable="true" data-id="{{ $event->id }}" class="border-t border-slate-100 cursor-grab">
                         <td class="px-4 py-3 font-medium">{{ $event->event_number }}</td>
                         <td class="px-4 py-3">{{ $event->formattedName() }}</td>
@@ -108,6 +108,8 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $events])
 
     <form method="POST" action="{{ route('admin.competitions.events.store', $competition) }}" class="mt-6 max-w-3xl space-y-4 rounded-lg border border-slate-200 bg-white p-5">
         @csrf
@@ -193,7 +195,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ order }),
+                    body: JSON.stringify({ order, page: Number(body.dataset.page || 1) }),
                 });
             }
         })();

@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\Heat;
 use App\Models\Result;
 use App\Services\ResultAnomalyDetector;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -30,9 +31,10 @@ class ResultVerificationController extends Controller
             ->orderBy('event_id')
             ->orderBy('age_group_id')
             ->orderBy('heat_number')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
-        $rows = $heats->map(function (Heat $heat) use ($detector) {
+        $rows = $heats->getCollection()->map(function (Heat $heat) use ($detector) {
             $results = $heat->lanes->map->result->filter();
             $unverified = $results->filter(fn (?Result $result) => $result && $result->verified_at === null)->count();
 
@@ -45,10 +47,15 @@ class ResultVerificationController extends Controller
             ];
         });
 
+        $heats->setCollection($rows->values());
+
         return view('admin.results.verify', [
             'competition' => $competition,
-            'rows' => $rows,
-            'pendingHeats' => $rows->filter(fn (array $row) => $row['unverified'] > 0),
+            'rows' => $heats,
+            'pendingCount' => Heat::query()
+                ->whereHas('event', fn ($q) => $q->where('competition_id', $competition->id))
+                ->whereHas('lanes.result', fn ($q) => $q->whereNull('verified_at'))
+                ->count(),
         ]);
     }
 

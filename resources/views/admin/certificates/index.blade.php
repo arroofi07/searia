@@ -31,5 +31,5 @@
         </tbody>
     </table>
 
-    <div class="mt-4">{{ $certificates->links() }}</div>
+    @include('partials.pagination', ['paginator' => $certificates])
 @endsection

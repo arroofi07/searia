@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Heat;
 use App\Models\User;
+use App\Support\ListPaginator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -53,9 +54,13 @@ class TaskListController extends Controller
             ];
         });
 
+        $empty = $tasks->isEmpty();
+        $firstCompetition = $tasks->first()['event']->competition ?? null;
+
         return view('judge.tasks.index', [
-            'tasks' => $tasks,
-            'empty' => $tasks->isEmpty(),
+            'tasks' => ListPaginator::for($tasks),
+            'empty' => $empty,
+            'firstCompetition' => $firstCompetition,
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SitePage;
+use App\Support\ListPaginator;
 use App\Support\PublicPageCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,10 @@ class SitePageController extends Controller
         $this->authorize('viewAny', \App\Models\Competition::class);
 
         return view('admin.site-pages.index', [
-            'pages' => SitePage::query()->orderBy('slug')->get(),
+            'pages' => SitePage::query()
+                ->orderBy('slug')
+                ->paginate(ListPaginator::PER_PAGE)
+                ->withQueryString(),
         ]);
     }
 

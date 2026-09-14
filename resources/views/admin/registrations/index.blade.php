@@ -90,7 +90,7 @@
         <button class="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800">Tolak yang dipilih</button>
     </form>
 
-    <div class="mt-4">{{ $registrations->links() }}</div>
+    @include('partials.pagination', ['paginator' => $registrations])
 
     <script>
         const boxes = [...document.querySelectorAll('.row-check')];

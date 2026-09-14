@@ -7,6 +7,7 @@ use App\Enums\ResultStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Athlete;
 use App\Models\Result;
+use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,7 +17,7 @@ class AthleteSearchController extends Controller
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
-        $athletes = collect();
+        $athletes = ListPaginator::for([]);
 
         if (mb_strlen($q) >= 2) {
             $athletes = Athlete::query()
@@ -25,8 +26,8 @@ class AthleteSearchController extends Controller
                 ->where('full_name', 'like', '%'.$q.'%')
                 ->whereHas('registrations.competition', fn ($query) => $query->where('status', CompetitionStatus::Published))
                 ->orderBy('full_name')
-                ->limit(30)
-                ->get(['id', 'club_id', 'full_name', 'gender', 'birth_year']);
+                ->paginate(ListPaginator::PER_PAGE, ['id', 'club_id', 'full_name', 'gender', 'birth_year'])
+                ->withQueryString();
         }
 
         return view('public.athletes.search', [
@@ -70,7 +71,7 @@ class AthleteSearchController extends Controller
 
         return view('public.athletes.show', [
             'athlete' => $athlete->load('club'),
-            'results' => $results,
+            'results' => ListPaginator::for($results),
             'bestByEvent' => array_values($bestByEvent),
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);

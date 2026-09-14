@@ -74,5 +74,5 @@
         </table>
     </div>
 
-    <div class="mt-4">{{ $clubs->links() }}</div>
+    @include('partials.pagination', ['paginator' => $clubs])
 @endsection

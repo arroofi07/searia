@@ -43,5 +43,5 @@
         <p class="mt-8 text-sm text-slate-500">Belum ada arsip hasil.</p>
     @endforelse
 
-    <div class="mt-8">{{ $competitions->links() }}</div>
+    @include('partials.pagination', ['paginator' => $competitions])
 @endsection

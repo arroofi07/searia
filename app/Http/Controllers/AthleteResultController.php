@@ -7,6 +7,7 @@ use App\Models\Athlete;
 use App\Models\Competition;
 use App\Models\Result;
 use App\Services\RankingCalculator;
+use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -57,6 +58,8 @@ class AthleteResultController extends Controller
                 'lane_number' => $result->heatLane?->lane_number,
             ];
         })->sortBy(fn (array $row) => $row['event']?->event_number ?? 0)->values();
+
+        $rows = ListPaginator::for($rows);
 
         $history = Result::query()
             ->with(['heatLane.heat.event.competition', 'heatLane.registration'])

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
+use App\Support\ListPaginator;
 use Illuminate\View\View;
 
 class ResultOverviewController extends Controller
@@ -20,7 +21,8 @@ class ResultOverviewController extends Controller
             ->orderBy('session')
             ->orderBy('sort_order')
             ->orderBy('event_number')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.results.index', [
             'competition' => $competition,

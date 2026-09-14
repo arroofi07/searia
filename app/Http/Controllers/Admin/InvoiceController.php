@@ -14,6 +14,7 @@ use App\Models\Competition;
 use App\Models\Invoice;
 use App\Models\Registration;
 use App\Services\Invoice\InvoicePdf;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -34,7 +35,11 @@ class InvoiceController extends Controller
 
         $invoices = $competition->invoices()->with('club')->get()->keyBy('club_id');
         $clubIds = $verifiedByClub->keys()->merge($invoices->keys())->unique()->filter();
-        $clubs = Club::query()->whereIn('id', $clubIds)->orderBy('name')->get();
+        $clubs = Club::query()
+            ->whereIn('id', $clubIds)
+            ->orderBy('name')
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.invoices.index', [
             'competition' => $competition,

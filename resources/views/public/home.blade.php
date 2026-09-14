@@ -67,6 +67,8 @@
                 Saat ini tidak ada kejuaraan yang membuka pendaftaran. Lihat arsip hasil atau cari atlet di menu atas.
             </p>
         @endforelse
+
+        @include('partials.pagination', ['paginator' => $openCompetitions])
     </section>
 
     <section class="mt-10">

@@ -17,4 +17,6 @@
             </li>
         @endforeach
     </ul>
+
+    @include('partials.pagination', ['paginator' => $pages])
 @endsection

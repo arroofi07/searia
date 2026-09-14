@@ -35,7 +35,9 @@
             </div>
             @include('results._table', ['table' => $table, 'formatTime' => $formatTime, 'competition' => $competition])
         </section>
-    @empty
-        <p class="mt-8 text-sm text-slate-500">Belum ada hasil.</p>
-    @endforelse
+        @empty
+            <p class="mt-8 text-sm text-slate-500">Belum ada hasil.</p>
+        @endforelse
+
+    @include('partials.pagination', ['paginator' => $tables])
 @endsection

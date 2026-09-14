@@ -28,7 +28,8 @@ class CertificateController extends Controller
             ->where('competition_id', $competition->id)
             ->orderBy('type')
             ->orderBy('id')
-            ->paginate(50);
+            ->paginate(50)
+            ->withQueryString();
 
         return view('admin.certificates.index', [
             'competition' => $competition,

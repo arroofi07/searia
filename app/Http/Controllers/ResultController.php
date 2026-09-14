@@ -11,6 +11,7 @@ use App\Models\Result;
 use App\Services\ClubStanding;
 use App\Services\MedalTally;
 use App\Services\RankingCalculator;
+use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,19 +24,27 @@ class ResultController extends Controller
     {
         $this->authorizePublicOrPreview($request, $competition);
 
-        $events = $competition->events()->with('ageGroups')->get();
-        $tables = [];
+        $events = $competition->events()->with(['ageGroups', 'heats'])->get();
+        $pairs = [];
 
         foreach ($events as $event) {
-            $ageGroupIds = $event->heats()->distinct()->pluck('age_group_id');
+            $ageGroupIds = $event->heats->pluck('age_group_id')->unique()->filter()->values();
             foreach ($ageGroupIds as $ageGroupId) {
-                $ageGroup = AgeGroup::query()->find($ageGroupId);
+                $ageGroup = $event->ageGroups->firstWhere('id', $ageGroupId)
+                    ?? AgeGroup::query()->find($ageGroupId);
                 if ($ageGroup === null) {
                     continue;
                 }
-                $tables[] = $ranking->forEventAgeGroup($event, $ageGroup);
+                $pairs[] = ['event' => $event, 'ageGroup' => $ageGroup];
             }
         }
+
+        $tables = ListPaginator::for($pairs);
+        $tables->setCollection(
+            $tables->getCollection()
+                ->map(fn (array $pair) => $ranking->forEventAgeGroup($pair['event'], $pair['ageGroup']))
+                ->values()
+        );
 
         return view('results.index', [
             'competition' => $competition,

@@ -12,6 +12,7 @@ use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Heat;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -50,7 +51,7 @@ class SeedingController extends Controller
 
         return view('admin.seeding.index', [
             'competition' => $competition,
-            'pairs' => $pairs,
+            'pairs' => ListPaginator::for($pairs),
             'unseeded' => $unseeded,
             'unlocked' => $unlocked,
             'pendingCount' => $pendingCount,
@@ -64,13 +65,21 @@ class SeedingController extends Controller
         abort_unless($event->competition_id === $competition->id, 404);
         abort_unless($ageGroup->competition_id === $competition->id, 404);
 
+        $anyLocked = Heat::query()
+            ->where('event_id', $event->id)
+            ->where('age_group_id', $ageGroup->id)
+            ->where('round', 'final')
+            ->whereNotNull('locked_at')
+            ->exists();
+
         $heats = Heat::query()
             ->where('event_id', $event->id)
             ->where('age_group_id', $ageGroup->id)
             ->where('round', 'final')
             ->with(['lanes.registration.athlete.club'])
             ->orderBy('heat_number')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.seeding.show', [
             'competition' => $competition,
@@ -78,6 +87,7 @@ class SeedingController extends Controller
             'ageGroup' => $ageGroup,
             'heats' => $heats,
             'laneCount' => $competition->pool_lanes,
+            'anyLocked' => $anyLocked,
         ]);
     }
 

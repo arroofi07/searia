@@ -56,4 +56,6 @@
             </p>
         @endforelse
     </div>
+
+    @include('partials.pagination', ['paginator' => $competitions])
 @endsection

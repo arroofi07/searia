@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
-use App\Models\Event;
 use App\Models\User;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,7 +27,8 @@ class JudgeAssignmentController extends Controller
             ->orderBy('session')
             ->orderBy('sort_order')
             ->orderBy('event_number')
-            ->get();
+            ->paginate(ListPaginator::PER_PAGE)
+            ->withQueryString();
 
         return view('admin.judges.edit', [
             'competition' => $competition,
@@ -47,9 +48,17 @@ class JudgeAssignmentController extends Controller
         ]);
 
         $assignments = $data['assignments'] ?? [];
+        $page = max(1, $request->integer('page', 1));
 
-        foreach ($competition->events as $event) {
-            /** @var Event $event */
+        $events = $competition->events()
+            ->orderBy('session')
+            ->orderBy('sort_order')
+            ->orderBy('event_number')
+            ->skip(($page - 1) * ListPaginator::PER_PAGE)
+            ->take(ListPaginator::PER_PAGE)
+            ->get();
+
+        foreach ($events as $event) {
             $userIds = collect($assignments[(string) $event->id] ?? [])
                 ->map(fn ($id): int => (int) $id)
                 ->unique()

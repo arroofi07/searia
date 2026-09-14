@@ -122,4 +122,6 @@
             </section>
         @endforeach
     </div>
+
+    @include('partials.pagination', ['paginator' => $heats])
 @endsection

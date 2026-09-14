@@ -172,4 +172,6 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $pairs])
 @endsection

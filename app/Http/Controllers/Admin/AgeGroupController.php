@@ -10,6 +10,7 @@ use App\Http\Requests\ImportAgeGroupsRequest;
 use App\Http\Requests\StoreAgeGroupRequest;
 use App\Models\AgeGroup;
 use App\Models\Competition;
+use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -21,9 +22,12 @@ class AgeGroupController extends Controller
     {
         $this->authorize('update', $competition);
 
-        $competition->load('ageGroups');
-
-        return view('admin.competitions.age-groups.index', compact('competition'));
+        return view('admin.competitions.age-groups.index', [
+            'competition' => $competition,
+            'ageGroups' => $competition->ageGroups()
+                ->paginate(ListPaginator::PER_PAGE)
+                ->withQueryString(),
+        ]);
     }
 
     public function template(Competition $competition): BinaryFileResponse
