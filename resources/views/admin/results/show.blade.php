@@ -71,13 +71,13 @@
                                                 <input type="text" name="time" value="{{ $result->time_ms ? ($formatTime)($result->time_ms) : '' }}" placeholder="Waktu" class="w-full rounded-md border border-slate-300 px-2 py-1.5">
                                                 <select name="status" class="w-full rounded-md border border-slate-300 px-2 py-1.5">
                                                     @foreach ($statuses as $status)
-                                                        <option value="{{ $status->value }}" @selected($result->status === $status)>{{ $status->label() }}</option>
+                                                        <option value="{{ $status->value }}" @selected($result->status === $status)>{{ $status->optionLabel() }}</option>
                                                     @endforeach
                                                 </select>
                                                 <select name="dsq_code" class="w-full rounded-md border border-slate-300 px-2 py-1.5">
-                                                    <option value="">Kode DSQ</option>
+                                                    <option value="">Pilih kode DSQ</option>
                                                     @foreach ($dsqCodes as $code)
-                                                        <option value="{{ $code->value }}" @selected($result->dsq_code === $code)>{{ $code->value }}</option>
+                                                        <option value="{{ $code->value }}" @selected($result->dsq_code === $code)>{{ $code->optionLabel() }}</option>
                                                     @endforeach
                                                 </select>
                                                 <input type="text" name="reason" required placeholder="Alasan koreksi" class="w-full rounded-md border border-slate-300 px-2 py-1.5">

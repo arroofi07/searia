@@ -11,15 +11,25 @@ enum DisqualificationCode: string
     case Na = 'NA';
     case Ot = 'OT';
 
-    public function label(): string
+    public function description(): string
     {
         return match ($this) {
-            self::Sf => 'SF · Start mendahului aba-aba',
-            self::St => 'ST · Gerakan tidak sesuai gaya',
-            self::Tn => 'TN · Pembalikan tidak sah',
-            self::Fn => 'FN · Sentuhan finis tidak sah',
-            self::Na => 'NA · Tidak mencapai dinding',
-            self::Ot => 'OT · Lainnya',
+            self::Sf => 'Start mendahului aba-aba',
+            self::St => 'Gerakan tidak sesuai gaya',
+            self::Tn => 'Pembalikan tidak sah',
+            self::Fn => 'Sentuhan finis tidak sah',
+            self::Na => 'Tidak mencapai dinding',
+            self::Ot => 'Lainnya',
         };
+    }
+
+    public function label(): string
+    {
+        return $this->value.' · '.$this->description();
+    }
+
+    public function optionLabel(): string
+    {
+        return $this->label();
     }
 }

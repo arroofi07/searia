@@ -19,6 +19,21 @@ enum ResultStatus: string
         };
     }
 
+    public function description(): string
+    {
+        return match ($this) {
+            self::Ok => 'Selesai dengan waktu sah',
+            self::Dns => 'Tidak start (Did Not Start)',
+            self::Dnf => 'Tidak finis (Did Not Finish)',
+            self::Dsq => 'Diskualifikasi — wajib pilih kode alasan',
+        };
+    }
+
+    public function optionLabel(): string
+    {
+        return $this->label().' · '.$this->description();
+    }
+
     public function requiresTime(): bool
     {
         return $this === self::Ok;

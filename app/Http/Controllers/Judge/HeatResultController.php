@@ -63,11 +63,14 @@ class HeatResultController extends Controller
             'dsqCodes' => DisqualificationCode::cases(),
             'previous' => $previous,
             'next' => $next,
+            'siblings' => $siblings,
             'heatIndex' => $index === false ? 0 : $index + 1,
             'heatTotal' => $siblings->count(),
             'fastInput' => $competition->allowsFastTimeInput(),
             'canLock' => $heat->isFullyRecorded() && ! $heat->isResultsLocked(),
             'locked' => $heat->isResultsLocked(),
+            'occupiedCount' => collect($rows)->where('empty', false)->count(),
+            'recordedCount' => collect($rows)->filter(fn (array $row): bool => ! $row['empty'] && $row['lane']?->result !== null)->count(),
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);
     }

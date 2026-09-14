@@ -39,9 +39,13 @@ if (!board) {
 
     const needsTime = status === 'ok';
     const needsDsq = status === 'dsq';
+    const dsqWrap = row.querySelector('[data-dsq-wrap]');
+    const timeWrap = row.querySelector('[data-time-wrap]');
 
     timeInput.disabled = locked || !needsTime;
     dsqInput.disabled = locked || !needsDsq;
+    dsqWrap?.classList.toggle('hidden', !needsDsq);
+    timeWrap?.classList.toggle('opacity-50', !needsTime);
 
     if (!needsTime) {
       timeInput.value = '';
@@ -77,7 +81,7 @@ if (!board) {
       return;
     }
     if (status === 'dsq' && dsqCode === '') {
-      setState(row, 'error', 'Kode DSQ wajib');
+      setState(row, 'error', 'Pilih alasan diskualifikasi');
       return;
     }
 
@@ -110,8 +114,12 @@ if (!board) {
       pending.delete(row);
 
       const lockButton = document.getElementById('lock-heat-button');
+      const lockHint = document.querySelector('[data-lock-hint]');
       if (lockButton && payload.heat_fully_recorded) {
         lockButton.disabled = false;
+        if (lockHint) {
+          lockHint.textContent = 'Semua lintasan terisi sudah tercatat. Kunci seri jika yakin hasil benar.';
+        }
       }
     } catch (error) {
       setState(row, 'error', error.message);
@@ -132,6 +140,9 @@ if (!board) {
     row.querySelector('[data-status-input]')?.addEventListener('change', () => {
       syncTimeEnabled(row);
       setState(row, 'dirty');
+      if (row.querySelector('[data-status-input]')?.value === 'dsq') {
+        row.querySelector('[data-dsq-input]')?.focus();
+      }
       saveRow(row);
     });
 

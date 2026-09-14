@@ -168,6 +168,33 @@ it('shows an empty explanation when a judge has no assignments', function () {
         ->assertSee('Belum ada nomor lomba yang ditugaskan');
 });
 
+it('points the judge to the next unlocked heat', function () {
+    $meet = seededHeatMeet();
+
+    $this->actingAs($meet['judge'])
+        ->get(route('judge.tasks'))
+        ->assertOk()
+        ->assertSee('Langkah berikutnya: input hasil')
+        ->assertSee('Buka seri ini')
+        ->assertSee('Perlu input');
+});
+
+it('explains abbreviated result statuses and DSQ codes on the heat screen', function () {
+    $meet = seededHeatMeet();
+
+    $this->actingAs($meet['judge'])
+        ->get(route('judge.heats.show', $meet['heat']))
+        ->assertOk()
+        ->assertSee('OK · Selesai dengan waktu sah')
+        ->assertSee('DNS · Tidak start (Did Not Start)')
+        ->assertSee('DNF · Tidak finis (Did Not Finish)')
+        ->assertSee('DSQ · Diskualifikasi — wajib pilih kode alasan')
+        ->assertSee('SF · Start mendahului aba-aba')
+        ->assertSee('ST · Gerakan tidak sesuai gaya')
+        ->assertSee('TN · Pembalikan tidak sah')
+        ->assertSee('Pilih kode diskualifikasi');
+});
+
 it('lets panitia open any heat input screen', function () {
     $meet = seededHeatMeet();
     $admin = User::factory()->panitia()->create();
