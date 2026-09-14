@@ -192,7 +192,8 @@ it('explains abbreviated result statuses and DSQ codes on the heat screen', func
         ->assertSee('SF · Start mendahului aba-aba')
         ->assertSee('ST · Gerakan tidak sesuai gaya')
         ->assertSee('TN · Pembalikan tidak sah')
-        ->assertSee('Pilih kode diskualifikasi');
+        ->assertSee('Pilih kode diskualifikasi')
+        ->assertSee('Kembali ke tugas');
 });
 
 it('lets panitia open any heat input screen', function () {

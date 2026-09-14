@@ -7,11 +7,12 @@
 @section('title', 'Input hasil · Seri '.$heat->heat_number)
 
 @section('content')
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <a href="{{ route('judge.tasks') }}" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">
+        ← Kembali ke tugas
+    </a>
+
+    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-            <p class="text-sm text-slate-500">
-                <a href="{{ route('judge.tasks') }}" class="text-teal-800 hover:underline">Tugas juri</a>
-            </p>
             <h1 class="text-xl font-semibold sm:text-2xl">
                 <span class="font-mono text-teal-800">{{ $heat->event->paddedEventNumber() }}</span>
                 {{ $heat->event->formattedName() }}
@@ -203,6 +204,10 @@
         @else
             <p class="text-sm text-slate-600">Hasil seri ini sudah dikunci.</p>
         @endunless
+
+        <a href="{{ route('judge.tasks') }}" class="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">
+            ← Kembali ke tugas
+        </a>
     </div>
 @endsection
 
