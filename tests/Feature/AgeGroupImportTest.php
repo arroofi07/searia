@@ -56,8 +56,9 @@ it('downloads a seeded age group template when none exist yet', function () {
         ->and($rows[0][0] ?? null)->toBe('KODE')
         ->and((string) ($rows[1][0] ?? ''))->toBe('1')
         ->and($rows[1][1] ?? null)->toBe('Group 1')
-        ->and((string) ($rows[1][3] ?? ''))->toBe('2019')
-        ->and($rows[6][1] ?? null)->toBe('Group 6');
+        ->and((string) ($rows[1][3] ?? ''))->toBe('1950')
+        ->and((string) ($rows[1][4] ?? ''))->toBe('2011')
+        ->and($rows[9][1] ?? null)->toBe('Group 9');
 });
 
 it('imports custom-named age groups from excel', function () {

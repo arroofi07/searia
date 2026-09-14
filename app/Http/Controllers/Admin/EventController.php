@@ -43,8 +43,9 @@ class EventController extends Controller
 
         $created = $fill->handle($competition);
 
+        $officialCount = count(Event::defaultProgram()) * 2;
         $message = $created === 0
-            ? 'Susunan acara baku sudah lengkap (34 nomor).'
+            ? "Susunan acara baku sudah lengkap ({$officialCount} nomor)."
             : "{$created} nomor acara baku ditambahkan sesuai susunan PA/PI.";
 
         return back()->with('status', $message);

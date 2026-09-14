@@ -57,18 +57,19 @@ it('resolves group names and codes', function () {
     expect($unknown['unknown'])->toBe(['Group 9']);
 });
 
-it('maps group tokens to the default six-group codes', function () {
+it('maps group tokens to the default nine-group codes', function () {
     $parser = new EventProgramParser;
 
     expect($parser->matchDefaultGroupCode('Group 1'))->toBe('1')
         ->and($parser->matchDefaultGroupCode('grup 3'))->toBe('3')
         ->and($parser->matchDefaultGroupCode('VI'))->toBe('6')
+        ->and($parser->matchDefaultGroupCode('IX'))->toBe('9')
         ->and($parser->matchDefaultGroupCode('Group1'))->toBe('1')
         ->and($parser->matchDefaultGroupCode('Searia1'))->toBe('1')
         ->and($parser->matchDefaultGroupCode('Searia 2'))->toBe('2')
         ->and($parser->matchDefaultGroupCode('SEARIA-3'))->toBe('3')
-        ->and($parser->matchDefaultGroupCode('Group 9'))->toBeNull()
-        ->and($parser->matchDefaultGroupCode('Searia7'))->toBeNull()
+        ->and($parser->matchDefaultGroupCode('Group 9'))->toBe('9')
+        ->and($parser->matchDefaultGroupCode('Searia7'))->toBe('7')
         ->and($parser->matchDefaultGroupCode('12'))->toBeNull();
 
     expect($parser->isDefaultGroupAlias('Group 1'))->toBeTrue()

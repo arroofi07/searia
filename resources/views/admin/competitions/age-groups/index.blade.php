@@ -10,7 +10,7 @@
         <p class="text-sm text-slate-500">Rentang tahun lahir antar grup tidak boleh tumpang tindih. Label cetak (Romawi) tampil di kolom AGE buku acara.</p>
         <form method="POST" action="{{ route('admin.competitions.age-groups.quick-fill', $competition) }}">
             @csrf
-            <button class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Isi cepat 6 grup baku</button>
+            <button class="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">Isi cepat 9 grup baku</button>
         </form>
     </div>
 
@@ -18,7 +18,7 @@
         <h2 class="font-medium">Import Excel</h2>
         <p class="mt-1 text-sm leading-6 text-slate-600">
             Unduh template, sesuaikan nama (misalnya Searia1) dan tahun lahir, lalu unggah.
-            Kode 1–6 tetap disarankan agar Excel nomor lomba bisa memakai nama itu.
+            Kode 1–9 tetap disarankan agar Excel nomor lomba bisa memakai nama itu.
             Grup yang sudah punya pendaftaran tidak boleh diubah tahun lahirnya.
         </p>
         <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">

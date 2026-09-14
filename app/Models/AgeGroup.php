@@ -34,62 +34,40 @@ class AgeGroup extends Model
     }
 
     /**
-     * Enam grup baku: Group 1 termuda sampai Group 6 tertua, dihitung dari tahun lomba.
+     * Sembilan grup baku Fun Swimming SeaRIA: Group 1 tertua sampai Group 9 termuda.
      *
      * @return list<array{code: string, name: string, display_code: string, birth_year_start: int, birth_year_end: int, sort_order: int}>
      */
     public static function defaultDefinitions(int $year): array
     {
-        return [
-            [
-                'code' => '1',
-                'name' => 'Group 1',
-                'display_code' => 'I',
-                'birth_year_start' => $year - 7,
-                'birth_year_end' => $year,
-                'sort_order' => 1,
-            ],
-            [
-                'code' => '2',
-                'name' => 'Group 2',
-                'display_code' => 'II',
-                'birth_year_start' => $year - 9,
-                'birth_year_end' => $year - 8,
-                'sort_order' => 2,
-            ],
-            [
-                'code' => '3',
-                'name' => 'Group 3',
-                'display_code' => 'III',
-                'birth_year_start' => $year - 11,
-                'birth_year_end' => $year - 10,
-                'sort_order' => 3,
-            ],
-            [
-                'code' => '4',
-                'name' => 'Group 4',
-                'display_code' => 'IV',
-                'birth_year_start' => $year - 13,
-                'birth_year_end' => $year - 12,
-                'sort_order' => 4,
-            ],
-            [
-                'code' => '5',
-                'name' => 'Group 5',
-                'display_code' => 'V',
-                'birth_year_start' => $year - 15,
-                'birth_year_end' => $year - 14,
-                'sort_order' => 5,
-            ],
-            [
-                'code' => '6',
-                'name' => 'Group 6',
-                'display_code' => 'VI',
-                'birth_year_start' => 1950,
-                'birth_year_end' => $year - 16,
-                'sort_order' => 6,
-            ],
+        $romans = ['1' => 'I', '2' => 'II', '3' => 'III', '4' => 'IV', '5' => 'V', '6' => 'VI', '7' => 'VII', '8' => 'VIII', '9' => 'IX'];
+        $ranges = [
+            '1' => [1950, $year - 15],
+            '2' => [$year - 14, $year - 13],
+            '3' => [$year - 12, $year - 12],
+            '4' => [$year - 11, $year - 11],
+            '5' => [$year - 10, $year - 10],
+            '6' => [$year - 9, $year - 9],
+            '7' => [$year - 8, $year - 8],
+            '8' => [$year - 7, $year - 7],
+            '9' => [$year - 6, $year],
         ];
+
+        $definitions = [];
+
+        foreach ($ranges as $code => [$start, $end]) {
+            $code = (string) $code;
+            $definitions[] = [
+                'code' => $code,
+                'name' => 'Group '.$code,
+                'display_code' => $romans[$code],
+                'birth_year_start' => $start,
+                'birth_year_end' => $end,
+                'sort_order' => (int) $code,
+            ];
+        }
+
+        return $definitions;
     }
 
     /**

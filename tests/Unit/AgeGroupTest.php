@@ -51,3 +51,19 @@ it('finds exactly one age group for a birth year', function () {
     expect($matched)->toHaveCount(1)
         ->and($matched->first()->code)->toBe('3');
 });
+
+it('defines nine official groups with Group 1 oldest for the meet year', function () {
+    $groups = collect(AgeGroup::defaultDefinitions(2026))->keyBy('code');
+
+    expect($groups)->toHaveCount(9)
+        ->and($groups['1']['birth_year_start'])->toBe(1950)
+        ->and($groups['1']['birth_year_end'])->toBe(2011)
+        ->and($groups['2']['birth_year_start'])->toBe(2012)
+        ->and($groups['2']['birth_year_end'])->toBe(2013)
+        ->and($groups['3']['birth_year_start'])->toBe(2014)
+        ->and($groups['3']['birth_year_end'])->toBe(2014)
+        ->and($groups['8']['birth_year_start'])->toBe(2019)
+        ->and($groups['9']['birth_year_start'])->toBe(2020)
+        ->and($groups['9']['birth_year_end'])->toBe(2026)
+        ->and($groups['9']['display_code'])->toBe('IX');
+});

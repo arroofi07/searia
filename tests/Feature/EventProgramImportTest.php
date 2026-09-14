@@ -158,7 +158,7 @@ it('creates custom-named age groups from excel when none exist yet', function ()
     expect($groups)->toHaveCount(3)
         ->and($groups->pluck('name')->all())->toEqual(['Searia1', 'Searia2', 'Searia3'])
         ->and($groups->pluck('code')->all())->toEqual(['1', '2', '3'])
-        ->and($groups[0]->birth_year_start)->toBe(2019)
+        ->and($groups[0]->birth_year_start)->toBe(1950)
         ->and($putra?->ageGroups()->pluck('age_groups.name')->all())->toEqualCanonicalizing(['Searia1', 'Searia2', 'Searia3']);
 });
 

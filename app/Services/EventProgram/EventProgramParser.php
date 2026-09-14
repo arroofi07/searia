@@ -165,7 +165,7 @@ class EventProgramParser
             }
         }
 
-        if (preg_match('/^(.+?)([1-6])$/u', $compact, $matches) !== 1) {
+        if (preg_match('/^(.+?)([1-9])$/u', $compact, $matches) !== 1) {
             return null;
         }
 

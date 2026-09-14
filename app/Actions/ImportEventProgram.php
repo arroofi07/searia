@@ -116,7 +116,7 @@ class ImportEventProgram
             }
 
             if ($unknown !== []) {
-                $errors[] = $line.'Grup tidak dikenali: '.implode(', ', $unknown).'. Pakai Group 1–6, nama seperti Searia1 (angka 1–6), atau nama grup yang sudah ada.';
+                $errors[] = $line.'Grup tidak dikenali: '.implode(', ', $unknown).'. Pakai Group 1–9, nama seperti Searia1 (angka 1–9), atau nama grup yang sudah ada.';
 
                 continue;
             }

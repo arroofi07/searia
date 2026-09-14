@@ -142,35 +142,36 @@ class Event extends Model
     }
 
     /**
-     * 17 nomor lomba baku Fun Swimming SeaRIA (34 nomor acara PA/PI).
+     * 18 nomor lomba baku Fun Swimming SeaRIA (36 nomor acara PA/PI).
      *
-     * @return list<array{distance: int, stroke: Stroke, equipment: Equipment, male_number: int, female_number: int}>
+     * @return list<array{distance: int, stroke: Stroke, equipment: Equipment, male_number: int, female_number: int, eligible_codes: list<string>}>
      */
     public static function defaultProgram(): array
     {
         $pairs = [
-            [50, Stroke::Butterfly, Equipment::None],
-            [50, Stroke::Backstroke, Equipment::None],
-            [50, Stroke::Butterfly, Equipment::Fins],
-            [50, Stroke::Backstroke, Equipment::Fins],
-            [25, Stroke::Butterfly, Equipment::None],
-            [25, Stroke::Backstroke, Equipment::None],
-            [50, Stroke::Breaststroke, Equipment::None],
-            [50, Stroke::Freestyle, Equipment::None],
-            [50, Stroke::Butterfly, Equipment::Kickboard],
-            [50, Stroke::Breaststroke, Equipment::Kickboard],
-            [25, Stroke::Breaststroke, Equipment::None],
-            [25, Stroke::Freestyle, Equipment::None],
-            [25, Stroke::Butterfly, Equipment::Kickboard],
-            [25, Stroke::Breaststroke, Equipment::Kickboard],
-            [50, Stroke::Freestyle, Equipment::Kickboard],
-            [25, Stroke::Freestyle, Equipment::Kickboard],
-            [50, Stroke::Freestyle, Equipment::Fins],
+            [50, Stroke::Butterfly, Equipment::None, ['2', '3', '4', '5']],
+            [50, Stroke::Backstroke, Equipment::None, ['2', '3', '4', '5']],
+            [50, Stroke::Butterfly, Equipment::Fins, ['4', '5', '6', '7']],
+            [50, Stroke::Backstroke, Equipment::Fins, ['4', '5', '6', '7']],
+            [25, Stroke::Butterfly, Equipment::None, ['5', '6', '7']],
+            [25, Stroke::Backstroke, Equipment::None, ['5', '6', '7']],
+            [50, Stroke::Breaststroke, Equipment::None, ['2', '3', '4', '5']],
+            [50, Stroke::Freestyle, Equipment::None, ['2', '3', '4', '5']],
+            [50, Stroke::Butterfly, Equipment::Kickboard, ['4', '5']],
+            [50, Stroke::Breaststroke, Equipment::Kickboard, ['4', '5']],
+            [200, Stroke::Freestyle, Equipment::None, ['1']],
+            [25, Stroke::Breaststroke, Equipment::None, ['5', '6', '7', '8', '9']],
+            [25, Stroke::Freestyle, Equipment::None, ['5', '6', '7', '8', '9']],
+            [25, Stroke::Butterfly, Equipment::Kickboard, ['6', '7']],
+            [25, Stroke::Breaststroke, Equipment::Kickboard, ['6', '7', '8', '9']],
+            [50, Stroke::Freestyle, Equipment::Kickboard, ['4', '5']],
+            [25, Stroke::Freestyle, Equipment::Kickboard, ['6', '7', '8', '9']],
+            [50, Stroke::Freestyle, Equipment::Fins, ['2', '3', '4', '5', '6', '7']],
         ];
 
         $program = [];
 
-        foreach ($pairs as $index => [$distance, $stroke, $equipment]) {
+        foreach ($pairs as $index => [$distance, $stroke, $equipment, $eligibleCodes]) {
             $maleNumber = ($index * 2) + 1;
             $program[] = [
                 'distance' => $distance,
@@ -178,6 +179,7 @@ class Event extends Model
                 'equipment' => $equipment,
                 'male_number' => $maleNumber,
                 'female_number' => $maleNumber + 1,
+                'eligible_codes' => $eligibleCodes,
             ];
         }
 
@@ -189,25 +191,13 @@ class Event extends Model
      */
     public static function defaultEligibleGroupCodes(int $distance, Stroke $stroke, Equipment $equipment): array
     {
-        $older = ['1', '2', '3', '4'];
-        $younger = ['3', '4', '5', '6'];
-        $all = ['1', '2', '3', '4', '5', '6'];
+        foreach (self::defaultProgram() as $pair) {
+            if ($pair['distance'] === $distance && $pair['stroke'] === $stroke && $pair['equipment'] === $equipment) {
+                return $pair['eligible_codes'];
+            }
+        }
 
-        return match ($equipment) {
-            Equipment::None => match ($distance) {
-                50 => $older,
-                25 => $younger,
-                default => [],
-            },
-            Equipment::Fins => $distance !== 50
-                ? []
-                : ($stroke === Stroke::Freestyle ? $all : $younger),
-            Equipment::Kickboard => match ($distance) {
-                50 => $stroke === Stroke::Freestyle ? $all : $younger,
-                25 => ['5', '6'],
-                default => [],
-            },
-        };
+        return [];
     }
 
     public function paddedEventNumber(): string

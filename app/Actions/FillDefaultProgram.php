@@ -47,12 +47,7 @@ class FillDefaultProgram
                     }
 
                     if (! $hasRegistrations) {
-                        $codes = Event::defaultEligibleGroupCodes(
-                            $pair['distance'],
-                            $pair['stroke'],
-                            $pair['equipment'],
-                        );
-                        $event->ageGroups()->sync($groups->only($codes)->pluck('id')->all());
+                        $event->ageGroups()->sync($groups->only($pair['eligible_codes'])->pluck('id')->all());
                     }
                 }
             }

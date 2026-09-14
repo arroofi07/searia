@@ -30,7 +30,7 @@ class EventProgramPetunjukSheet implements FromArray, ShouldAutoSize, WithTitle
             [''],
             ['Isi lembar NOMOR LOMBA, lalu unggah ulang di halaman yang sama.'],
             ['Satu baris = satu nomor acara (putra dan putri ditulis terpisah).'],
-            ['Jika kelompok umur belum ada, tulis nama berakhiran 1–6 (Group 1 atau Searia1). Sistem membuat grup baku otomatis.'],
+            ['Jika kelompok umur belum ada, tulis nama berakhiran 1–9 (Group 1 atau Searia1). Sistem membuat grup baku otomatis.'],
             [''],
             ['KODE ACARA', 'Nomor urut acara, unik di kejuaraan ini'],
             ['NOMOR PERLOMBAAN', 'Contoh: 50 M Gaya Dada atau 50 M Gaya Kupu-Kupu (Fins)'],
@@ -49,7 +49,7 @@ class EventProgramPetunjukSheet implements FromArray, ShouldAutoSize, WithTitle
         }
 
         if ($this->competition->ageGroups->isEmpty()) {
-            $lines[] = ['Belum ada. Unggah nama grup 1–6 (Group 1 atau Searia1) pada lembar NOMOR LOMBA untuk membuatnya otomatis.'];
+            $lines[] = ['Belum ada. Unggah nama grup 1–9 (Group 1 atau Searia1) pada lembar NOMOR LOMBA untuk membuatnya otomatis.'];
         }
 
         return $lines;

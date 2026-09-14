@@ -122,8 +122,9 @@ class AgeGroupController extends Controller
             $created++;
         }
 
+        $officialCount = count(AgeGroup::defaultDefinitions($competition->year()));
         $message = $created === 0
-            ? 'Enam grup baku sudah ada.'
+            ? "{$officialCount} grup baku sudah ada."
             : "{$created} kelompok umur baku ditambahkan berdasarkan tahun {$competition->year()}.";
 
         return back()->with('status', $message);

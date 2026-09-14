@@ -12,7 +12,7 @@
     <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'events'])
 
-    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 17 nomor lomba, 34 nomor acara (PA ganjil, PI genap). Panitia dan Super Admin juga bisa mengisi lewat Excel.</p>
+    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 18 nomor lomba, 36 nomor acara (PA ganjil, PI genap), termasuk 200 M Gaya Bebas untuk Group 1. Panitia dan Super Admin juga bisa mengisi lewat Excel.</p>
 
     <form method="POST" action="{{ route('admin.competitions.events.quick-fill', $competition) }}" class="mt-4">
         @csrf
@@ -24,7 +24,7 @@
         <p class="mt-1 text-sm leading-6 text-slate-600">
             Unduh template, isi atau sesuaikan lembar <strong>NOMOR LOMBA</strong>, lalu unggah.
             Satu berkas bisa mengisi <strong>nomor lomba dan kelompok umur sekaligus</strong>.
-            Jika grup belum dibuat, tulis nama yang berakhiran <strong>1–6</strong> di kolom GRUP YANG BOLEH IKUT (misalnya Group 1 atau Searia1) — sistem membuat grup baku (tahun lahir) otomatis.
+            Jika grup belum dibuat, tulis nama yang berakhiran <strong>1–9</strong> di kolom GRUP YANG BOLEH IKUT (misalnya Group 1 atau Searia1) — sistem membuat grup baku (tahun lahir) otomatis.
             Nomor yang sudah punya pendaftaran tidak diubah.
         </p>
         <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">

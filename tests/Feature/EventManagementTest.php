@@ -32,7 +32,7 @@ it('rejects two events that share an event number in the same competition', func
     expect($competition->events()->count())->toBe(1);
 });
 
-it('fills the official 34-event program in PA/PI order', function () {
+it('fills the official 36-event program in PA/PI order', function () {
     $competition = Competition::factory()->create();
     foreach (AgeGroup::defaultDefinitions($competition->year()) as $definition) {
         $competition->ageGroups()->create($definition);
@@ -45,19 +45,24 @@ it('fills the official 34-event program in PA/PI order', function () {
 
     $events = $competition->events()->orderBy('event_number')->get();
     $dadaPutra = $events->firstWhere('event_number', 13);
+    $bebas200 = $events->firstWhere('event_number', 21);
 
-    expect($events)->toHaveCount(34)
+    expect($events)->toHaveCount(36)
         ->and($events->first()->event_number)->toBe(1)
         ->and($events->first()->programName())->toBe('50 M GAYA KUPU-KUPU')
         ->and($dadaPutra->stroke)->toBe(Stroke::Breaststroke)
-        ->and($dadaPutra->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['1', '2', '3', '4'])
-        ->and($events->firstWhere('event_number', 33)->programName())->toBe('50 M BEBAS (FINS)')
-        ->and($events->last()->event_number)->toBe(34);
+        ->and($dadaPutra->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['2', '3', '4', '5'])
+        ->and($bebas200->distance)->toBe(200)
+        ->and($bebas200->stroke)->toBe(Stroke::Freestyle)
+        ->and($bebas200->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['1'])
+        ->and($events->firstWhere('event_number', 35)->programName())->toBe('50 M BEBAS (FINS)')
+        ->and($events->last()->event_number)->toBe(36);
 
     $this->actingAs($panitia)
         ->get(route('admin.competitions.events.index', $competition))
         ->assertOk()
         ->assertSee('Susunan Acara Perlombaan')
         ->assertSee('50 M GAYA KUPU-KUPU')
+        ->assertSee('200 M GAYA BEBAS')
         ->assertSee('50 M BEBAS (FINS)');
 });
