@@ -26,24 +26,36 @@ class SeedingController extends Controller
 
         $events = $competition->events()->with(['heats.ageGroup', 'ageGroups'])->get();
 
+        $eligibleCounts = $competition->registrations()
+            ->eligibleForSeeding()
+            ->selectRaw('event_id, age_group_id, COUNT(*) as aggregate')
+            ->groupBy('event_id', 'age_group_id')
+            ->get()
+            ->mapWithKeys(fn ($row): array => [(int) $row->event_id.'-'.(int) $row->age_group_id => (int) $row->aggregate]);
+
         $pairs = collect();
         foreach ($events as $event) {
             foreach ($event->ageGroups as $group) {
                 $heats = $event->heats->where('age_group_id', $group->id)->sortBy('heat_number');
+                $entrantCount = $eligibleCounts[$event->id.'-'.$group->id] ?? 0;
+                $empty = $heats->isEmpty() && $entrantCount === 0;
                 $pairs->push([
                     'event' => $event,
                     'ageGroup' => $group,
                     'heatCount' => $heats->count(),
+                    'entrantCount' => $entrantCount,
+                    'empty' => $empty,
                     'locked' => $heats->isNotEmpty() && $heats->every(fn (Heat $heat): bool => $heat->isLocked()),
                     'seeded' => $heats->isNotEmpty(),
                 ]);
             }
         }
 
-        $unseeded = $pairs->where('seeded', false)->count();
+        $unseeded = $pairs->where('seeded', false)->where('empty', false)->count();
         $unlocked = $pairs->where('seeded', true)->where('locked', false)->count();
         $lockedCount = $pairs->where('locked', true)->count();
         $seededCount = $pairs->where('seeded', true)->count();
+        $emptyCount = $pairs->where('empty', true)->count();
         $pairTotal = $pairs->count();
         $pendingCount = $competition->registrations()
             ->where('status', RegistrationStatus::Pending)
@@ -58,6 +70,7 @@ class SeedingController extends Controller
             'pairTotal' => $pairTotal,
             'seededCount' => $seededCount,
             'lockedCount' => $lockedCount,
+            'emptyCount' => $emptyCount,
             'unseeded' => $unseeded,
             'unlocked' => $unlocked,
             'pendingCount' => $pendingCount,
@@ -190,7 +203,8 @@ class SeedingController extends Controller
             ->when($status !== '', function (Collection $items) use ($status): Collection {
                 return $items->filter(function (array $pair) use ($status): bool {
                     return match ($status) {
-                        'unseeded' => ! $pair['seeded'],
+                        'unseeded' => ! $pair['seeded'] && ! $pair['empty'],
+                        'empty' => $pair['empty'],
                         'preview' => $pair['seeded'] && ! $pair['locked'],
                         'locked' => $pair['locked'],
                         default => true,
@@ -201,13 +215,9 @@ class SeedingController extends Controller
 
     private function lockCompetition(Competition $competition): void
     {
-        $unseeded = $competition->events()
-            ->whereDoesntHave('heats')
-            ->exists();
-
-        if ($unseeded) {
+        if ($competition->eventsPendingSeeding()->isNotEmpty()) {
             throw new CannotLockSeedingException(
-                'Penguncian ditolak karena masih ada nomor lomba yang belum diseeding.',
+                'Penguncian ditolak karena masih ada nomor dengan peserta yang belum diseeding.',
             );
         }
 
@@ -219,9 +229,12 @@ class SeedingController extends Controller
 
     private function lockEvent(Competition $competition, Event $event): void
     {
-        if (! $event->heats()->exists()) {
+        $pending = $competition->eventsPendingSeeding()
+            ->contains(fn (Event $item): bool => $item->id === $event->id);
+
+        if ($pending) {
             throw new CannotLockSeedingException(
-                'Penguncian ditolak karena nomor lomba ini belum diseeding.',
+                'Penguncian ditolak karena nomor lomba ini masih punya peserta yang belum diseeding.',
             );
         }
 

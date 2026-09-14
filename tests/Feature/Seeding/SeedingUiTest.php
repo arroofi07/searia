@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\RunSeeding;
+use App\Enums\CompetitionStatus;
 use App\Models\ActivityLog;
 use App\Models\Heat;
 use App\Models\HeatLane;
@@ -39,14 +40,37 @@ it('locks every heat for a competition', function () {
     expect(Heat::query()->where('event_id', $event->id)->whereNull('locked_at')->count())->toBe(0);
 });
 
-it('rejects locking when an event has no heats', function () {
+it('locks a competition even when leftover events have no swimmers', function () {
     $meet = openRegistrationMeet();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.seeding.index', $meet['competition']))
+        ->post(route('admin.seeding.lock', $meet['competition']))
+        ->assertRedirect()
+        ->assertSessionDoesntHaveErrors('seeding');
+});
+
+it('rejects locking when a verified event still has no heats', function () {
+    $meet = openRegistrationMeet();
+    verifiedRegistration($meet);
 
     $this->actingAs(User::factory()->panitia()->create())
         ->from(route('admin.seeding.index', $meet['competition']))
         ->post(route('admin.seeding.lock', $meet['competition']))
         ->assertRedirect(route('admin.seeding.index', $meet['competition']))
         ->assertSessionHasErrors('seeding');
+});
+
+it('treats empty age groups as skippable instead of unseeded', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Closed]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Tidak ada peserta')
+        ->assertSee('Tidak ada seri yang perlu dikunci')
+        ->assertDontSee('Langkah berikutnya: bagi seri');
 });
 
 it('swaps two lanes and writes complementary audit entries', function () {

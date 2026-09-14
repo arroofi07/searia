@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class Competition extends Model
@@ -182,6 +183,35 @@ class Competition extends Model
         }
 
         return (bool) $this->fast_time_input;
+    }
+
+    /**
+     * Nomor yang masih punya peserta disetujui, tetapi kelompok itu belum punya seri.
+     * Nomor atau grup tanpa peserta tidak ikut dihitung.
+     *
+     * @return Collection<int, Event>
+     */
+    public function eventsPendingSeeding(): Collection
+    {
+        $events = $this->events()
+            ->with([
+                'heats:id,event_id,age_group_id',
+                'registrations' => fn ($query) => $query->eligibleForSeeding()->select('id', 'event_id', 'age_group_id'),
+            ])
+            ->get();
+
+        return $events
+            ->filter(function (Event $event): bool {
+                $eligibleGroups = $event->registrations->pluck('age_group_id')->unique()->filter();
+                if ($eligibleGroups->isEmpty()) {
+                    return false;
+                }
+
+                $seededGroups = $event->heats->pluck('age_group_id')->unique();
+
+                return $eligibleGroups->diff($seededGroups)->isNotEmpty();
+            })
+            ->values();
     }
 
     public function hasPublicStartList(): bool

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\CompetitionStatus;
+use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotTransitionCompetitionException;
 use App\Models\ActivityLog;
 use App\Models\AgeGroup;
@@ -53,9 +54,18 @@ it('allows only the adjacent transitions drawn in the status diagram', function 
     }
 });
 
-it('rejects moving to seeded when an event has no heats', function () {
+it('rejects moving to seeded when an event has verified swimmers without heats', function () {
     $competition = Competition::factory()->status(CompetitionStatus::Closed)->create();
-    Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 13]);
+    $event = Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 13]);
+    $group = AgeGroup::factory()->create(['competition_id' => $competition->id, 'code' => '3']);
+    $athlete = Athlete::factory()->create();
+    Registration::factory()->create([
+        'competition_id' => $competition->id,
+        'event_id' => $event->id,
+        'age_group_id' => $group->id,
+        'athlete_id' => $athlete->id,
+        'status' => RegistrationStatus::Verified,
+    ]);
     $panitia = User::factory()->panitia()->create();
 
     expect(fn () => (new CompetitionStatusTransition)->transition(
@@ -63,6 +73,40 @@ it('rejects moving to seeded when an event has no heats', function () {
         CompetitionStatus::Seeded,
         $panitia,
     ))->toThrow(CannotTransitionCompetitionException::class);
+});
+
+it('allows moving to seeded when leftover events have no swimmers', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Closed)->create();
+    Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 13]);
+    $panitia = User::factory()->panitia()->create();
+
+    (new CompetitionStatusTransition)->transition(
+        $competition,
+        CompetitionStatus::Seeded,
+        $panitia,
+    );
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Seeded);
+});
+
+it('allows moving to seeded when some events are seeded and others are empty', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Closed)->create();
+    $seededEvent = Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 1]);
+    Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 2]);
+    $group = AgeGroup::factory()->create(['competition_id' => $competition->id, 'code' => '3']);
+    Heat::factory()->create([
+        'event_id' => $seededEvent->id,
+        'age_group_id' => $group->id,
+    ]);
+    $panitia = User::factory()->panitia()->create();
+
+    (new CompetitionStatusTransition)->transition(
+        $competition,
+        CompetitionStatus::Seeded,
+        $panitia,
+    );
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Seeded);
 });
 
 it('rejects moving to published when a result is still unverified', function () {

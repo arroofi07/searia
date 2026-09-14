@@ -1,9 +1,13 @@
 @php
     use App\Enums\CompetitionStatus;
 
-    $progress = $pairTotal > 0 ? (int) round(($seededCount / $pairTotal) * 100) : 0;
-    $allLocked = $pairTotal > 0 && $unseeded === 0 && $unlocked === 0;
-    $canLock = $pairTotal > 0 && $unseeded === 0;
+    $fillableTotal = $pairTotal - $emptyCount;
+    $progress = $fillableTotal > 0
+        ? (int) round(($seededCount / $fillableTotal) * 100)
+        : ($pairTotal > 0 ? 100 : 0);
+    $allLocked = $seededCount > 0 && $unseeded === 0 && $unlocked === 0;
+    $readyToAdvance = $pairTotal > 0 && $unseeded === 0 && $unlocked === 0;
+    $canLock = $seededCount > 0 && $unseeded === 0;
     $registrationOpen = in_array($competition->status, [CompetitionStatus::Draft, CompetitionStatus::Registration], true);
     $statusFilter = (string) ($filters['status'] ?? '');
 @endphp
@@ -86,7 +90,17 @@
         <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm leading-6 text-teal-950">
                 <p class="font-semibold">Semua seri terkunci</p>
-                <p>Kembali ke Ringkasan, lanjutkan status ke <strong>Sudah diseeding</strong> agar buku acara bisa dicetak.</p>
+                <p>Kembali ke Ringkasan, lanjutkan status ke <strong>Sudah diseeding</strong> agar buku acara bisa dicetak. Grup tanpa peserta dilewati.</p>
+            </div>
+            <a href="{{ route('admin.competitions.show', $competition) }}" class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
+                Lanjut di ringkasan
+            </a>
+        </div>
+    @elseif ($readyToAdvance)
+        <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm leading-6 text-teal-950">
+                <p class="font-semibold">Tidak ada seri yang perlu dikunci</p>
+                <p>Grup tanpa peserta dilewati. Kembali ke Ringkasan, lanjutkan status ke <strong>Sudah diseeding</strong>.</p>
             </div>
             <a href="{{ route('admin.competitions.show', $competition) }}" class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
                 Lanjut di ringkasan
@@ -98,7 +112,12 @@
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Progres pembagian</p>
-                <p class="mt-1 text-sm text-slate-700">{{ $seededCount }} dari {{ $pairTotal }} kombinasi sudah dibagi · {{ $verifiedCount }} entri disetujui</p>
+                <p class="mt-1 text-sm text-slate-700">
+                    {{ $seededCount }} dari {{ $fillableTotal }} kombinasi dengan peserta sudah dibagi · {{ $verifiedCount }} entri disetujui
+                    @if ($emptyCount > 0)
+                        · {{ $emptyCount }} tanpa peserta dilewati
+                    @endif
+                </p>
             </div>
             <p class="text-sm font-semibold text-slate-900">{{ $progress }}%</p>
         </div>
@@ -141,7 +160,7 @@
             @csrf
             <button class="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 @disabled(! $canLock)
-                title="{{ $canLock ? 'Kunci semua seri' : 'Kunci hanya bisa setelah semua kombinasi dibagi' }}">
+                title="{{ $canLock ? 'Kunci semua seri' : 'Kunci hanya bisa setelah semua kombinasi dengan peserta dibagi' }}">
                 Kunci seluruh kejuaraan
             </button>
         </form>
@@ -207,6 +226,7 @@
             <select id="seeding-status" name="status" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
                 <option value="" @selected($statusFilter === '')>Semua status</option>
                 <option value="unseeded" @selected($statusFilter === 'unseeded')>Belum dibagi</option>
+                <option value="empty" @selected($statusFilter === 'empty')>Tidak ada peserta</option>
                 <option value="preview" @selected($statusFilter === 'preview')>Pratinjau</option>
                 <option value="locked" @selected($statusFilter === 'locked')>Terkunci</option>
             </select>
@@ -238,7 +258,7 @@
                         <td class="px-4 py-3" data-label="Kelompok umur">{{ $pair['ageGroup']->name }}</td>
                         <td class="px-4 py-3" data-label="Jumlah seri">{{ $pair['seeded'] ? $pair['heatCount'] : '—' }}</td>
                         <td class="px-4 py-3" data-label="Status">
-                            @include('admin.seeding._status', ['seeded' => $pair['seeded'], 'locked' => $pair['locked']])
+                            @include('admin.seeding._status', ['seeded' => $pair['seeded'], 'locked' => $pair['locked'], 'empty' => $pair['empty']])
                         </td>
                         <td class="px-4 py-3 text-right" data-label="Aksi">
                             <div class="flex flex-wrap items-center justify-end gap-2">
@@ -247,18 +267,20 @@
                                         Lihat susunan
                                     </a>
                                 @endif
-                                <form method="POST" action="{{ route('admin.seeding.run', $competition) }}" class="inline">
-                                    @csrf
-                                    <input type="hidden" name="event_id" value="{{ $pair['event']->id }}">
-                                    <input type="hidden" name="age_group_id" value="{{ $pair['ageGroup']->id }}">
-                                    @if ($pair['locked'])
-                                        <input type="hidden" name="force" value="1">
-                                    @endif
-                                    <button class="{{ $pair['seeded'] ? 'text-xs text-slate-600 hover:underline' : 'inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}"
-                                        @if ($pair['locked']) onclick="return confirm('Nomor ini sudah dikunci. Ulangi pembagian akan mengganti susunan. Lanjutkan?')" @endif>
-                                        {{ $pair['seeded'] ? 'Ulangi pembagian' : 'Bagi seri ini' }}
-                                    </button>
-                                </form>
+                                @unless ($pair['empty'])
+                                    <form method="POST" action="{{ route('admin.seeding.run', $competition) }}" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="event_id" value="{{ $pair['event']->id }}">
+                                        <input type="hidden" name="age_group_id" value="{{ $pair['ageGroup']->id }}">
+                                        @if ($pair['locked'])
+                                            <input type="hidden" name="force" value="1">
+                                        @endif
+                                        <button class="{{ $pair['seeded'] ? 'text-xs text-slate-600 hover:underline' : 'inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}"
+                                            @if ($pair['locked']) onclick="return confirm('Nomor ini sudah dikunci. Ulangi pembagian akan mengganti susunan. Lanjutkan?')" @endif>
+                                            {{ $pair['seeded'] ? 'Ulangi pembagian' : 'Bagi seri ini' }}
+                                        </button>
+                                    </form>
+                                @endunless
                             </div>
                         </td>
                     </tr>

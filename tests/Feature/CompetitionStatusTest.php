@@ -30,3 +30,16 @@ it('asks for confirmation before moving status forward', function () {
         ->assertSee('status-forward-modal', false)
         ->assertSee('Batal');
 });
+
+it('lets panitia move to seeded when leftover events have no swimmers', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Closed]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->patch(route('admin.competitions.status', $meet['competition']), [
+            'status' => CompetitionStatus::Seeded->value,
+        ])
+        ->assertRedirect();
+
+    expect($meet['competition']->fresh()->status)->toBe(CompetitionStatus::Seeded);
+});

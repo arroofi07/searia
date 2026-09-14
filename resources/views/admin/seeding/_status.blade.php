@@ -1,4 +1,6 @@
-@if (! $seeded)
+@if ($empty ?? false)
+    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">Tidak ada peserta</span>
+@elseif (! $seeded)
     <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-950">Belum dibagi</span>
 @elseif ($locked)
     <span class="inline-flex items-center rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-900">Terkunci</span>

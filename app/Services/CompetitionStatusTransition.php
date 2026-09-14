@@ -63,7 +63,7 @@ class CompetitionStatusTransition
 
             if ($unseeded->isNotEmpty()) {
                 throw new CannotTransitionCompetitionException(
-                    'Perpindahan ke seeded ditolak karena masih ada nomor lomba yang belum diseeding.',
+                    'Perpindahan ke seeded ditolak karena masih ada nomor dengan peserta yang belum diseeding.',
                 );
             }
         }
@@ -111,9 +111,7 @@ class CompetitionStatusTransition
      */
     public function unseededEvents(Competition $competition): Collection
     {
-        return $competition->events()
-            ->whereDoesntHave('heats')
-            ->get();
+        return $competition->eventsPendingSeeding();
     }
 
     public function hasUnverifiedResults(Competition $competition): bool
