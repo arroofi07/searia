@@ -44,6 +44,34 @@ it('lets panitia and juri download results pdf after seeding', function () {
         ->assertHeader('content-type', 'application/pdf');
 });
 
+it('lets a judge open start list and results pdfs before the public status', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $judge = User::factory()->juri()->create();
+    $event->judges()->attach($judge->id);
+
+    expect($competition->status->isSeededOrLater())->toBeFalse();
+
+    $this->get(route('start-list.pdf', $competition))->assertNotFound();
+    $this->get(route('results.pdf', $competition))->assertNotFound();
+
+    $this->actingAs($judge)
+        ->get(route('judge.tasks'))
+        ->assertOk()
+        ->assertSee('PDF acara')
+        ->assertSee('PDF hasil');
+
+    $this->actingAs($judge)
+        ->get(route('start-list.pdf', [$competition, 'inline' => 1]))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    $this->actingAs($judge)
+        ->get(route('results.pdf', [$competition, 'inline' => 1]))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
 it('lets guests download start list pdf after seeding', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(4);
     app(RunSeeding::class)->handle($competition, $event, $group);

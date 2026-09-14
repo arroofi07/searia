@@ -34,7 +34,7 @@
                                 · {{ $competition->type->label() }}
                             </p>
                         </div>
-                        <a href="{{ route('results.index', $competition) }}" class="inline-flex min-h-11 items-center font-medium text-teal-800 hover:underline">Lihat hasil</a>
+                        @include('public._books', ['competition' => $competition, 'primary' => 'results'])
                     </div>
                 </article>
             @endforeach

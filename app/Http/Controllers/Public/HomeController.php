@@ -24,9 +24,18 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
+        $live = Competition::query()
+            ->liveMeet()
+            ->orderByDesc('start_date')
+            ->limit(6)
+            ->get();
+
         return view('public.home', [
             'openCompetitions' => $open,
             'recentCompetitions' => $recent,
+            'liveCompetitions' => $live,
+            'featuredStartList' => $live->first() ?? $recent->first(),
+            'featuredResults' => $recent->first(),
         ]);
     }
 }

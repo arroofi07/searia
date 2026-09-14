@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CompetitionStatus;
-use App\Enums\UserRole;
 use App\Models\Competition;
+use App\Models\User;
 use App\Services\StartListBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -14,12 +13,7 @@ class StartListPdfDownloadController extends Controller
 {
     public function download(Request $request, Competition $competition, StartListBuilder $builder): Response
     {
-        $user = $request->user();
-        $isStaff = $user !== null && in_array($user->role, [UserRole::SuperAdmin, UserRole::Panitia, UserRole::Juri], true);
-
-        if (! $isStaff) {
-            abort_unless($competition->status->isSeededOrLater(), 404);
-        } else {
+        if (! $this->isStaff($request->user())) {
             abort_unless($competition->status->isSeededOrLater(), 404);
         }
 
@@ -29,6 +23,7 @@ class StartListPdfDownloadController extends Controller
             eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
         );
 
+        $filename = 'buku-acara-'.$competition->slug.'.pdf';
         $pdf = Pdf::loadView('pdf.start-list', [
             'document' => $document,
             'competitionName' => $document->competitionName,
@@ -39,6 +34,13 @@ class StartListPdfDownloadController extends Controller
             'includeToc' => ! $request->filled('event_id'),
         ])->setPaper('a4');
 
-        return $pdf->download('buku-acara-'.$competition->slug.'.pdf');
+        return $request->boolean('inline')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
+    }
+
+    private function isStaff(?User $user): bool
+    {
+        return $user !== null && ($user->isJuri() || $user->managesMasterData());
     }
 }

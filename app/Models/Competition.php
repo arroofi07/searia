@@ -184,6 +184,16 @@ class Competition extends Model
         return (bool) $this->fast_time_input;
     }
 
+    public function hasPublicStartList(): bool
+    {
+        return $this->status->isSeededOrLater();
+    }
+
+    public function hasPublicResults(): bool
+    {
+        return $this->status === CompetitionStatus::Published;
+    }
+
     /**
      * @param  Builder<Competition>  $query
      * @return Builder<Competition>
@@ -191,6 +201,21 @@ class Competition extends Model
     public function scopeOpenRegistration(Builder $query): Builder
     {
         return $query->where('status', CompetitionStatus::Registration);
+    }
+
+    /**
+     * Kejuaraan yang sudah punya seri, belum masuk arsip hasil.
+     *
+     * @param  Builder<Competition>  $query
+     * @return Builder<Competition>
+     */
+    public function scopeLiveMeet(Builder $query): Builder
+    {
+        return $query->whereIn('status', [
+            CompetitionStatus::Seeded,
+            CompetitionStatus::Running,
+            CompetitionStatus::Finished,
+        ]);
     }
 
     /**

@@ -83,9 +83,11 @@
             @endif
             @if ($competition->status->isSeededOrLater())
                 <a href="{{ route('start-list.show', $competition) }}" class="public-btn-secondary">Buku acara</a>
+                <a href="{{ route('start-list.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF acara</a>
             @endif
             @if ($competition->status === \App\Enums\CompetitionStatus::Published)
-                <a href="{{ route('results.index', $competition) }}" class="public-btn-secondary">Hasil</a>
+                <a href="{{ route('results.index', $competition) }}" class="public-btn-secondary">Buku hasil</a>
+                <a href="{{ route('results.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF hasil</a>
             @endif
         </p>
     </div>

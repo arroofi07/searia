@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\CompetitionStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller as BaseController;
 use App\Models\Competition;
+use App\Models\User;
 use App\Services\ResultsBookBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -16,12 +16,9 @@ class ResultsPdfController extends BaseController
     public function download(Request $request, Competition $competition, ResultsBookBuilder $builder): Response
     {
         $user = $request->user();
-        $isStaff = $user !== null && in_array($user->role, [UserRole::SuperAdmin, UserRole::Panitia, UserRole::Juri], true);
 
-        if (! $isStaff) {
+        if (! $this->isStaff($user)) {
             abort_unless($competition->status === CompetitionStatus::Published, 404);
-        } else {
-            abort_unless($competition->status->isSeededOrLater(), 404);
         }
 
         $document = $builder->build(
@@ -30,6 +27,7 @@ class ResultsPdfController extends BaseController
             eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
         );
 
+        $filename = 'hasil-lomba-'.$competition->slug.'.pdf';
         $pdf = Pdf::loadView('pdf.results-book', [
             'document' => $document,
             'competitionName' => $document->competitionName,
@@ -39,6 +37,13 @@ class ResultsPdfController extends BaseController
             'printedAt' => $document->printedAt,
         ])->setPaper('a4');
 
-        return $pdf->download('hasil-lomba-'.$competition->slug.'.pdf');
+        return $request->boolean('inline')
+            ? $pdf->stream($filename)
+            : $pdf->download($filename);
+    }
+
+    private function isStaff(?User $user): bool
+    {
+        return $user !== null && ($user->isJuri() || $user->managesMasterData());
     }
 }

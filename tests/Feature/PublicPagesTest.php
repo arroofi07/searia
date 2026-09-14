@@ -138,6 +138,30 @@ it('serves a sitemap xml document', function () {
         ->assertSee(route('archive.index'), false);
 });
 
+it('lets visitors open start lists and results books from the home page', function () {
+    $live = Competition::factory()->status(CompetitionStatus::Running)->create([
+        'name' => 'LIVE START LIST MEET',
+    ]);
+    $published = Competition::factory()->status(CompetitionStatus::Published)->create([
+        'name' => 'PUBLISHED RESULTS MEET',
+        'published_at' => now(),
+    ]);
+    Competition::factory()->status(CompetitionStatus::Draft)->create([
+        'name' => 'DRAFT BOOKS HIDDEN',
+    ]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('LIVE START LIST MEET')
+        ->assertSee('PUBLISHED RESULTS MEET')
+        ->assertSee('Buku acara')
+        ->assertSee('Buku hasil')
+        ->assertSee(route('start-list.show', $live), false)
+        ->assertSee(route('results.index', $published), false)
+        ->assertSee(route('start-list.show', $published), false)
+        ->assertDontSee('DRAFT BOOKS HIDDEN');
+});
+
 it('shows a countdown and three recent published meets on the home page', function () {
     Competition::factory()->status(CompetitionStatus::Registration)->create([
         'name' => 'OPEN COUNTDOWN MEET',

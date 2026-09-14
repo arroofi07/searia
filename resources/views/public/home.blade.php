@@ -12,6 +12,12 @@
         </p>
         <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href="{{ route('register.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-5 py-3 text-base font-semibold text-teal-900 hover:bg-teal-50">Daftar lomba</a>
+            @if ($featuredStartList)
+                <a href="{{ route('start-list.show', $featuredStartList) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku acara</a>
+            @endif
+            @if ($featuredResults)
+                <a href="{{ route('results.index', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku hasil</a>
+            @endif
             <a href="{{ route('public.athletes.search') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Cari hasil atlet</a>
             <a href="{{ route('archive.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Arsip kejuaraan</a>
         </div>
@@ -71,6 +77,35 @@
         @include('partials.pagination', ['paginator' => $openCompetitions])
     </section>
 
+    <section class="mt-10" id="buku-acara">
+        <h2 class="text-xl font-semibold">Buku acara &amp; hasil</h2>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+            Buku acara adalah susunan seri dan lintasan. Buku hasil adalah catatan waktu hari lomba, setelah panitia mempublikasikan.
+        </p>
+
+        @forelse ($liveCompetitions as $competition)
+            <article class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">{{ $competition->status->label() }}</p>
+                        <h3 class="mt-1 text-lg font-semibold">{{ $competition->name }}</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            {{ $competition->venue }}, {{ $competition->city }}
+                            · {{ $competition->start_date->translatedFormat('d M Y') }}
+                        </p>
+                    </div>
+                    @include('public._books', ['competition' => $competition, 'primary' => 'start-list'])
+                </div>
+            </article>
+        @empty
+            @unless ($recentCompetitions->isNotEmpty())
+                <p class="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">
+                    Buku acara tampil setelah seri dibagi. Buku hasil tampil setelah dipublikasikan. Lihat arsip jika kejuaraan sudah selesai.
+                </p>
+            @endunless
+        @endforelse
+    </section>
+
     <section class="mt-10">
         <h2 class="text-xl font-semibold">Hasil terbaru</h2>
         @forelse ($recentCompetitions as $competition)
@@ -80,7 +115,7 @@
                         <h3 class="font-semibold">{{ $competition->name }}</h3>
                         <p class="text-sm text-slate-500">{{ $competition->city }} · {{ $competition->type->label() }}</p>
                     </div>
-                    <a href="{{ route('results.index', $competition) }}" class="inline-flex min-h-11 items-center font-medium text-teal-800 hover:underline">Lihat hasil</a>
+                    @include('public._books', ['competition' => $competition, 'primary' => 'results'])
                 </div>
             </article>
         @empty
