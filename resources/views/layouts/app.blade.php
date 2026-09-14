@@ -8,16 +8,23 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            @media (min-width: 1024px) {
+                #admin-main {
+                    padding-left: 16rem;
+                }
+            }
+        </style>
     </head>
     <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <div class="flex min-h-screen">
+        <div class="min-h-screen">
             <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden"></div>
 
-            <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 flex min-h-screen w-64 -translate-x-full flex-col overflow-y-auto bg-slate-900 transition-transform lg:static lg:translate-x-0">
+            <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 flex h-dvh w-64 -translate-x-full flex-col overflow-hidden bg-slate-900 transition-transform lg:translate-x-0">
                 @include('layouts.partials.sidebar')
             </aside>
 
-            <div class="flex min-w-0 flex-1 flex-col">
+            <div id="admin-main" class="flex min-h-screen min-w-0 flex-col">
                 <header class="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
                     <button type="button" id="sidebar-toggle" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700" aria-controls="admin-sidebar" aria-expanded="false">
                         Menu
