@@ -17,3 +17,16 @@ it('returns 403 when a committee member tries to roll a status backward', functi
 
     expect($competition->fresh()->status)->toBe(CompetitionStatus::Registration);
 });
+
+it('asks for confirmation before moving status forward', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Closed)->create();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.competitions.show', $competition))
+        ->assertOk()
+        ->assertSee('Ubah status')
+        ->assertSee('Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.')
+        ->assertSee('Lanjut ke Sudah diseeding')
+        ->assertSee('status-forward-modal', false)
+        ->assertSee('Batal');
+});

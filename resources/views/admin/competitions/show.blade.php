@@ -66,27 +66,104 @@
             @if ($next === CompetitionStatus::Registration && ! $ready)
                 <p class="mt-4 text-sm text-amber-700">Pendaftaran belum dapat dibuka. Lihat halaman kesiapan.</p>
             @else
-                <form method="POST" action="{{ route('admin.competitions.status', $competition) }}" class="mt-4">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="status" value="{{ $next->value }}">
-                    <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
-                        Lanjut ke {{ $next->label() }}
-                    </button>
-                </form>
+                <button type="button" class="mt-4 rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800" data-open-modal="status-forward-modal">
+                    Lanjut ke {{ $next->label() }}
+                </button>
             @endif
         @endif
 
         @if ($back && auth()->user()?->isSuperAdmin())
-            <form method="POST" action="{{ route('admin.competitions.status', $competition) }}" class="mt-4 space-y-2">
+            <button type="button" class="mt-4 rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800" data-open-modal="status-back-modal">
+                Mundurkan status
+            </button>
+            @error('reason') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+        @endif
+    </div>
+
+    @if ($next && ! ($next === CompetitionStatus::Registration && ! $ready))
+        <dialog id="status-forward-modal" class="admin-modal w-[min(100%-2rem,28rem)] rounded-2xl border-0 bg-white p-0 text-slate-900 shadow-2xl" aria-labelledby="status-forward-title">
+            <form method="POST" action="{{ route('admin.competitions.status', $competition) }}" class="p-5">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="status" value="{{ $next->value }}">
+                <h2 id="status-forward-title" class="text-lg font-semibold">Ubah status</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                    Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.
+                </p>
+                <p class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-800">
+                    {{ $competition->status->label() }}
+                    <span class="mx-1 text-slate-400">→</span>
+                    <strong>{{ $next->label() }}</strong>
+                </p>
+                <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <button type="button" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50" data-close-modal>
+                        Batal
+                    </button>
+                    <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
+                        Lanjut ke {{ $next->label() }}
+                    </button>
+                </div>
+            </form>
+        </dialog>
+    @endif
+
+    @if ($back && auth()->user()?->isSuperAdmin())
+        <dialog id="status-back-modal" class="admin-modal w-[min(100%-2rem,28rem)] rounded-2xl border-0 bg-white p-0 text-slate-900 shadow-2xl" aria-labelledby="status-back-title">
+            <form method="POST" action="{{ route('admin.competitions.status', $competition) }}" class="p-5">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="status" value="{{ $back->value }}">
-                <label for="reason" class="block text-sm font-medium text-slate-700">Alasan mundur ke {{ $back->label() }}</label>
-                <textarea id="reason" name="reason" rows="2" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"></textarea>
-                @error('reason') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
-                <button class="rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">Mundurkan status</button>
+                <h2 id="status-back-title" class="text-lg font-semibold">Ubah status</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                    Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.
+                </p>
+                <p class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                    {{ $competition->status->label() }}
+                    <span class="mx-1 text-amber-400">→</span>
+                    <strong>{{ $back->label() }}</strong>
+                </p>
+                <label for="reason" class="mt-4 block text-sm font-medium text-slate-700">Alasan mundur ke {{ $back->label() }}</label>
+                <textarea id="reason" name="reason" rows="2" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">{{ old('reason') }}</textarea>
+                <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <button type="button" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50" data-close-modal>
+                        Batal
+                    </button>
+                    <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">
+                        Mundurkan status
+                    </button>
+                </div>
             </form>
-        @endif
-    </div>
+        </dialog>
+    @endif
 @endsection
+
+@push('scripts')
+    <style>
+        dialog.admin-modal { margin: auto; }
+        dialog.admin-modal::backdrop { background: rgb(15 23 42 / 0.55); }
+    </style>
+    <script>
+        (() => {
+            document.querySelectorAll('[data-open-modal]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    document.getElementById(button.dataset.openModal)?.showModal();
+                });
+            });
+
+            document.querySelectorAll('dialog.admin-modal').forEach((dialog) => {
+                dialog.querySelectorAll('[data-close-modal]').forEach((button) => {
+                    button.addEventListener('click', () => dialog.close());
+                });
+                dialog.addEventListener('click', (event) => {
+                    if (event.target === dialog) {
+                        dialog.close();
+                    }
+                });
+            });
+
+            @if ($errors->has('reason'))
+                document.getElementById('status-back-modal')?.showModal();
+            @endif
+        })();
+    </script>
+@endpush
