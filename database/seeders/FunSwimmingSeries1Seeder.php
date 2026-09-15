@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Actions\CommitImportBatch;
 use App\Actions\FillDefaultProgram;
+use App\Actions\ImportEventProgram;
 use App\Enums\ClubType;
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionType;
@@ -11,6 +12,7 @@ use App\Enums\ImportStatus;
 use App\Enums\RegistrationStatus;
 use App\Enums\SeedingMode;
 use App\Enums\UserRole;
+use App\Exceptions\MissingImportColumnsException;
 use App\Models\AgeGroup;
 use App\Models\Club;
 use App\Models\Competition;
@@ -18,6 +20,7 @@ use App\Models\ImportBatch;
 use App\Models\User;
 use App\Services\Import\ParticipantFileReader;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -28,6 +31,8 @@ class FunSwimmingSeries1Seeder extends Seeder
     public function run(): void
     {
         $source = $this->sourcePath();
+        $this->copySource($source);
+
         $user = User::query()->where('role', UserRole::Panitia)->first()
             ?? User::query()->where('role', UserRole::SuperAdmin)->firstOrFail();
 
@@ -69,25 +74,26 @@ class FunSwimmingSeries1Seeder extends Seeder
             );
         }
 
-        app(FillDefaultProgram::class)->handle($competition->fresh());
-
-        if ($competition->registrations()->exists()) {
-            $this->command?->info('Peserta sudah ada, impor dilewati.');
-
-            return;
-        }
+        $this->importProgram($competition->fresh(), $source);
 
         $cleanedPath = $this->writeCleanedWorkbook($source);
         $result = app(ParticipantFileReader::class)->readAndValidate($cleanedPath, 'xlsx', $competition->fresh());
 
-        if ($result->invalid > 0) {
+        if ($result->valid === 0) {
             $messages = [];
 
             foreach ($result->invalidRows() as $row) {
                 $messages[] = 'Baris '.$row->row->excelRow.' '.$row->row->fullName.': '.collect($row->errors)->pluck('message')->implode('; ');
             }
 
-            throw new RuntimeException("Impor peserta gagal:\n".implode("\n", $messages));
+            throw new RuntimeException("Tidak ada baris peserta yang valid:\n".implode("\n", $messages));
+        }
+
+        foreach ($result->invalidRows() as $row) {
+            $this->command?->warn(
+                'Dilewati baris '.$row->row->excelRow.' '.$row->row->fullName.': '
+                .collect($row->errors)->pluck('message')->implode('; '),
+            );
         }
 
         $storedPath = 'imports/'.$competition->id.'/nomor-lomba-aplikasi.xlsx';
@@ -96,7 +102,7 @@ class FunSwimmingSeries1Seeder extends Seeder
         $batch = ImportBatch::query()->create([
             'competition_id' => $competition->id,
             'user_id' => $user->id,
-            'original_filename' => 'nomor-lomba aplikasi.xlsx',
+            'original_filename' => 'nomor-lomba aplikasi (3).xlsx',
             'stored_path' => $storedPath,
             'status' => ImportStatus::Validated,
         ]);
@@ -111,13 +117,49 @@ class FunSwimmingSeries1Seeder extends Seeder
             'Kejuaraan #'.$competition->id.' siap: '
             .$competition->events()->count().' nomor, '
             .$competition->ageGroups()->count().' grup, '
-            .$competition->registrations()->count().' pendaftaran.',
+            .$competition->registrations()->count().' pendaftaran valid, '
+            .$result->invalid.' baris Excel ditolak.',
         );
+    }
+
+    private function importProgram(Competition $competition, string $source): void
+    {
+        try {
+            $result = app(ImportEventProgram::class)->handle($competition, $source, 'xlsx');
+        } catch (MissingImportColumnsException $exception) {
+            $result = [
+                'created' => 0,
+                'updated' => 0,
+                'errors' => [$exception->getMessage()],
+            ];
+        }
+
+        $imported = ($result['created'] ?? 0) + ($result['updated'] ?? 0);
+
+        if ($imported > 0) {
+            $this->command?->info(
+                'Nomor lomba dari Excel: '.$result['created'].' dibuat, '.$result['updated'].' diperbarui.',
+            );
+
+            foreach ($result['errors'] ?? [] as $error) {
+                $this->command?->warn($error);
+            }
+
+            return;
+        }
+
+        foreach ($result['errors'] ?? [] as $error) {
+            $this->command?->warn($error);
+        }
+
+        $created = app(FillDefaultProgram::class)->handle($competition->fresh());
+        $this->command?->info('Dipakai susunan nomor baku ('.$created.' nomor baru).');
     }
 
     private function sourcePath(): string
     {
         $candidates = [
+            'C:\\Users\\RYZEN 5\\Downloads\\nomor-lomba aplikasi (3).xlsx',
             storage_path('app/imports/nomor-lomba-aplikasi.xlsx'),
             'C:\\Users\\RYZEN 5\\Downloads\\nomor-lomba aplikasi.xlsx',
         ];
@@ -128,7 +170,22 @@ class FunSwimmingSeries1Seeder extends Seeder
             }
         }
 
-        throw new RuntimeException('Berkas nomor-lomba aplikasi.xlsx tidak ditemukan.');
+        throw new RuntimeException('Berkas nomor-lomba aplikasi (3).xlsx tidak ditemukan.');
+    }
+
+    private function copySource(string $source): void
+    {
+        $destination = storage_path('app/imports/nomor-lomba-aplikasi.xlsx');
+        File::ensureDirectoryExists(dirname($destination));
+
+        $sourceReal = realpath($source);
+        $destinationReal = is_file($destination) ? realpath($destination) : false;
+
+        if ($sourceReal !== false && $sourceReal === $destinationReal) {
+            return;
+        }
+
+        File::copy($source, $destination);
     }
 
     private function writeCleanedWorkbook(string $source): string
@@ -139,6 +196,8 @@ class FunSwimmingSeries1Seeder extends Seeder
         if ($sheet === null) {
             throw new RuntimeException('Lembar PESERTA tidak ditemukan.');
         }
+
+        File::ensureDirectoryExists(storage_path('app/imports'));
 
         foreach ($sheet->getRowIterator(2) as $row) {
             $index = $row->getRowIndex();
