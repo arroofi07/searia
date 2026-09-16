@@ -222,17 +222,29 @@ class FunSwimmingSeries1Seeder extends Seeder
 
         if (is_numeric($value) && (float) $value > 0 && (float) $value < 1) {
             $totalSeconds = (int) round(((float) $value) * 86_400);
-            $minutes = intdiv($totalSeconds, 60);
+            $hours = intdiv($totalSeconds, 3600);
+            $minutes = intdiv($totalSeconds % 3600, 60);
             $seconds = $totalSeconds % 60;
 
-            if ($seconds === 0 && $minutes > 0 && $minutes < 100) {
-                return sprintf('00:%02d.00', $minutes);
+            // Excel menyimpan 00:44.23 sebagai jam 00:44:23, dan 4:02.22 sebagai 04:02:22.
+            if ($hours === 0 && $minutes === 0) {
+                return sprintf('00:%02d.00', $seconds);
             }
 
-            return sprintf('%02d:%02d.00', $minutes, $seconds);
+            if ($hours === 0) {
+                return sprintf('00:%02d.%02d', $minutes, $seconds);
+            }
+
+            return sprintf('%02d:%02d.%02d', $hours, $minutes, $seconds);
         }
 
-        return trim((string) $value);
+        $text = trim((string) $value);
+
+        if (preg_match('/^(\d{1,2})[.](\d{2})[.](\d{2,3})$/', $text, $matches) === 1) {
+            return sprintf('%02d:%02d.%s', (int) $matches[1], (int) $matches[2], $matches[3]);
+        }
+
+        return $text;
     }
 
     private function normalizeClubs(): void
