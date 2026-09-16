@@ -35,7 +35,12 @@
     @elseif ($judges->isEmpty())
         <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
             <p class="font-semibold">Belum ada akun juri yang aktif</p>
-            <p>Buat akun berperan Juri (atau pakai Panitia) sebelum menugaskan nomor.</p>
+            <p>
+                Buat akun berperan Juri (atau pakai Panitia) sebelum menugaskan nomor.
+                @can('create', App\Models\User::class)
+                    <a href="{{ route('admin.users.create', ['role' => 'juri']) }}" class="font-medium text-teal-800 hover:underline">Tambah akun juri</a>
+                @endcan
+            </p>
         </div>
     @elseif ($unassignedCount > 0)
         <div class="mt-4 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 text-sm leading-6 text-teal-950">

@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\SeedingController;
 use App\Http\Controllers\Admin\SitePageController;
 use App\Http\Controllers\Admin\StartListPdfController;
 use App\Http\Controllers\Admin\SubmissionController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AthleteController;
 use App\Http\Controllers\AthleteResultController;
 use App\Http\Controllers\Auth\LoginController;
@@ -203,6 +204,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('activity-logs/for-subject', [ActivityLogController::class, 'forSubject'])->name('activity-logs.subject');
         Route::get('activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+
+        Route::resource('users', UserController::class)->except(['show']);
 
         Route::resource('competitions', CompetitionController::class);
     });

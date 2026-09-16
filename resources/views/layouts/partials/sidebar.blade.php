@@ -57,7 +57,10 @@
         <p class="truncate text-sm font-medium text-white">{{ $user?->name }}</p>
         <p class="text-xs text-slate-500">{{ $user?->role->label() }}</p>
         @if ($manages)
-            <a href="{{ route('admin.site-pages.index') }}" class="mt-3 block text-sm text-slate-400 hover:text-white">Halaman publik</a>
+            @can('viewAny', App\Models\User::class)
+                <a href="{{ route('admin.users.index') }}" class="mt-3 block text-sm text-slate-400 hover:text-white">Akun</a>
+            @endcan
+            <a href="{{ route('admin.site-pages.index') }}" class="mt-1 block text-sm text-slate-400 hover:text-white">Halaman publik</a>
             <a href="{{ route('admin.activity-logs.index') }}" class="mt-1 block text-sm text-slate-400 hover:text-white">Audit</a>
         @endif
         <a href="{{ route('home') }}" class="mt-3 block text-sm text-slate-400 hover:text-white">Situs publik</a>
