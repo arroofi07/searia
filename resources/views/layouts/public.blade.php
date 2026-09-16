@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SeaRIA')</title>
+    @include('layouts.partials.favicon')
     <meta name="description" content="@yield('meta_description', 'Sistem informasi kejuaraan renang SeaRIA — pendaftaran, buku acara, dan hasil lomba.')">
     <meta property="og:title" content="@yield('og_title', trim($__env->yieldContent('title')).' · SeaRIA')">
     <meta property="og:description" content="@yield('meta_description', 'Sistem informasi kejuaraan renang SeaRIA — pendaftaran, buku acara, dan hasil lomba.')">
@@ -19,7 +20,7 @@
     <header class="relative sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
             <a href="{{ route('home') }}" class="flex min-h-11 items-center gap-2.5">
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-sm font-bold text-white">SR</span>
+                @include('layouts.partials.brand-mark', ['class' => 'h-9 w-9', 'alt' => ''])
                 <span class="leading-tight">
                     <span class="block text-base font-semibold tracking-tight text-teal-900">SeaRIA</span>
                     <span class="block text-[11px] font-medium text-slate-500">Kejuaraan renang</span>
@@ -64,9 +65,12 @@
 
     <footer class="border-t border-slate-200 bg-white">
         <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <p class="font-semibold text-slate-800">SeaRIA</p>
-                <p class="mt-1">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang</p>
+            <div class="flex items-start gap-3">
+                @include('layouts.partials.brand-mark', ['class' => 'h-9 w-9', 'alt' => ''])
+                <div>
+                    <p class="font-semibold text-slate-800">SeaRIA</p>
+                    <p class="mt-1">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang</p>
+                </div>
             </div>
             <nav class="flex flex-wrap gap-x-5 gap-y-2">
                 <a href="{{ route('register.index') }}" class="hover:text-teal-800">Daftar lomba</a>

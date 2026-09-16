@@ -10,7 +10,10 @@
 
 <div class="flex h-full flex-col">
     <div class="flex items-center gap-2 px-4 py-4">
-        <a href="{{ route('dashboard') }}" class="text-lg font-semibold tracking-tight text-white">SeaRIA</a>
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white">
+            @include('layouts.partials.brand-mark', ['class' => 'h-8 w-8', 'alt' => ''])
+            SeaRIA
+        </a>
     </div>
 
     <nav class="flex-1 space-y-4 overflow-y-auto px-3 pb-4">

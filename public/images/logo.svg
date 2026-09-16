@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SeaRIA">
+  <rect width="64" height="64" rx="16" fill="#0f766e"/>
+  <circle cx="32" cy="20" r="5.2" fill="#fff"/>
+  <path d="M23 26.4c3.2 2.4 6.4 3.6 9 3.6s5.8-1.2 9-3.6" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M18.4 27.6c4.4 3.6 4.4 9.2 0 12.8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M10 42.4c4.8-3.6 8.4 3.2 13.2 0s8.4 3.2 13.2 0 8.4 3.2 13.2 0" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M10 50.4c4.8-3.6 8.4 3.2 13.2 0s8.4 3.2 13.2 0 8.4 3.2 13.2 0" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" opacity=".75"/>
+</svg>

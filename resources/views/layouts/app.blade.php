@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>@yield('title', 'SeaRIA')</title>
+        @include('layouts.partials.favicon')
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -29,7 +30,10 @@
                     <button type="button" id="sidebar-toggle" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700" aria-controls="admin-sidebar" aria-expanded="false">
                         Menu
                     </button>
-                    <a href="{{ route('dashboard') }}" class="font-semibold text-teal-800">SeaRIA</a>
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 font-semibold text-teal-800">
+                        @include('layouts.partials.brand-mark', ['class' => 'h-8 w-8', 'alt' => ''])
+                        SeaRIA
+                    </a>
                 </header>
 
                 <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6">

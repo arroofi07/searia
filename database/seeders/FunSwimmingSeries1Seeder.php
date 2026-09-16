@@ -102,7 +102,7 @@ class FunSwimmingSeries1Seeder extends Seeder
         $batch = ImportBatch::query()->create([
             'competition_id' => $competition->id,
             'user_id' => $user->id,
-            'original_filename' => 'nomor-lomba aplikasi (3).xlsx',
+            'original_filename' => 'nomor-lomba aplikasi.xlsx',
             'stored_path' => $storedPath,
             'status' => ImportStatus::Validated,
         ]);
@@ -159,9 +159,8 @@ class FunSwimmingSeries1Seeder extends Seeder
     private function sourcePath(): string
     {
         $candidates = [
-            'C:\\Users\\RYZEN 5\\Downloads\\nomor-lomba aplikasi (3).xlsx',
-            storage_path('app/imports/nomor-lomba-aplikasi.xlsx'),
             'C:\\Users\\RYZEN 5\\Downloads\\nomor-lomba aplikasi.xlsx',
+            storage_path('app/imports/nomor-lomba-aplikasi.xlsx'),
         ];
 
         foreach ($candidates as $path) {
@@ -170,7 +169,7 @@ class FunSwimmingSeries1Seeder extends Seeder
             }
         }
 
-        throw new RuntimeException('Berkas nomor-lomba aplikasi (3).xlsx tidak ditemukan.');
+        throw new RuntimeException('Berkas nomor-lomba aplikasi.xlsx tidak ditemukan.');
     }
 
     private function copySource(string $source): void
