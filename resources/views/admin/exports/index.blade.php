@@ -52,6 +52,8 @@
             <a href="{{ route('admin.exports.results', [$competition, 'per_event' => 1]) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Hasil per acara</a>
             <a href="{{ route('admin.exports.medals', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Rekap medali</a>
             <a href="{{ route('admin.exports.blank-results', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Lembar hasil kosong</a>
+            <a href="{{ route('admin.results.best-club-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF club terbaik</a>
+            <a href="{{ route('admin.results.best-swimmers-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF atlet terbaik</a>
         </div>
     </section>
 

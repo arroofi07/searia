@@ -90,6 +90,8 @@
             @if ($competition->status === \App\Enums\CompetitionStatus::Published)
                 <a href="{{ route('results.index', $competition) }}" class="public-btn-secondary">Buku hasil</a>
                 <a href="{{ route('results.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF hasil</a>
+                <a href="{{ route('results.best-swimmers.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF atlet terbaik</a>
+                <a href="{{ route('results.best-club.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF club terbaik</a>
             @endif
         </p>
     </div>

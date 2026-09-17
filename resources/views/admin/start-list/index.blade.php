@@ -78,6 +78,15 @@
             </div>
             <button class="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900">Unduh hasil lomba</button>
         </form>
+
+        <div class="rounded-lg border border-slate-200 bg-white p-5 space-y-3 lg:col-span-2">
+            <h2 class="font-medium">PDF penghargaan</h2>
+            <p class="text-sm text-slate-500">Club terbaik diurutkan emas, perak, perunggu. Atlet terbaik adalah juara medali per jenis kelamin dan kelompok umur.</p>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.results.best-club-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Unduh club terbaik</a>
+                <a href="{{ route('admin.results.best-swimmers-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50">Unduh atlet terbaik</a>
+            </div>
+        </div>
     </div>
 
     <p class="mt-6 text-sm">

@@ -5,8 +5,13 @@
 
 @section('content')
     <p class="text-sm"><a href="{{ route('results.index', $competition) }}" class="text-teal-800 hover:underline">← Hasil</a></p>
-    <h1 class="mt-2 text-2xl font-semibold">Klasemen klub</h1>
-    <p class="text-sm text-slate-500">{{ $competition->name }} · diurutkan emas, perak, perunggu</p>
+    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold">Klasemen klub</h1>
+            <p class="text-sm text-slate-500">{{ $competition->name }} · diurutkan emas, perak, perunggu</p>
+        </div>
+        <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF club terbaik</a>
+    </div>
     @if ($preview)
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>
     @endif

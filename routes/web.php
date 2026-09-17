@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AthleteController;
 use App\Http\Controllers\AthleteResultController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\AwardsPdfController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
@@ -62,6 +63,8 @@ Route::middleware(CachePublicPages::class.':300')->group(function (): void {
     Route::get('competitions/{competition}/start-list/pdf', [StartListPdfDownloadController::class, 'download'])->name('start-list.pdf');
     Route::get('competitions/{competition}/results', [ResultController::class, 'index'])->name('results.index');
     Route::get('competitions/{competition}/results/pdf', [ResultsPdfController::class, 'download'])->name('results.pdf');
+    Route::get('competitions/{competition}/results/best-club/pdf', [AwardsPdfController::class, 'bestClub'])->name('results.best-club.pdf');
+    Route::get('competitions/{competition}/results/best-swimmers/pdf', [AwardsPdfController::class, 'bestSwimmers'])->name('results.best-swimmers.pdf');
     Route::get('competitions/{competition}/results/medals', [ResultController::class, 'medals'])->name('results.medals');
     Route::get('competitions/{competition}/results/standings', [ResultController::class, 'standings'])->name('results.standings');
     Route::get('competitions/{competition}/results/events/{event}/age-groups/{ageGroup}', [ResultController::class, 'show'])->name('results.show');
@@ -183,6 +186,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('competitions/{competition}/start-list/pdf', [StartListPdfController::class, 'book'])->name('start-list.pdf');
         Route::get('competitions/{competition}/start-list/results', [StartListPdfController::class, 'resultSheets'])->name('start-list.results');
         Route::get('competitions/{competition}/results/book-pdf', [ResultsPdfController::class, 'download'])->name('results.book-pdf');
+        Route::get('competitions/{competition}/results/best-club-pdf', [AwardsPdfController::class, 'bestClub'])->name('results.best-club-pdf');
+        Route::get('competitions/{competition}/results/best-swimmers-pdf', [AwardsPdfController::class, 'bestSwimmers'])->name('results.best-swimmers-pdf');
 
         Route::get('competitions/{competition}/judges', [JudgeAssignmentController::class, 'edit'])->name('judges.edit');
         Route::put('competitions/{competition}/judges', [JudgeAssignmentController::class, 'update'])->name('judges.update');
