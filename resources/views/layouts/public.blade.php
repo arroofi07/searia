@@ -17,13 +17,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <header class="relative sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
+    <header class="relative sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
             <a href="{{ route('home') }}" class="flex min-h-11 items-center">
                 @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto sm:h-16', 'alt' => 'Aquatic SeaRIA'])
             </a>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 md:hidden">
                 <a href="{{ route('register.index') }}" class="inline-flex min-h-10 items-center rounded-full bg-teal-700 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-800 md:hidden">
                     Daftar
                 </a>
@@ -53,26 +53,35 @@
         </div>
     </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+    <main class="{{ trim($__env->yieldContent('mainClass')) ?: 'mx-auto max-w-6xl px-4 py-6 sm:py-8' }}">
         @if (session('status'))
-            <div class="mb-4 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">{{ session('status') }}</div>
+            <div class="mx-auto mb-4 max-w-6xl px-4 rounded-2xl border border-teal-200 bg-teal-50 py-3 text-sm text-teal-900">{{ session('status') }}</div>
         @endif
         @yield('content')
     </main>
 
     <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-3">
+        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+            <div class="flex items-start gap-3">
                 @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto', 'alt' => 'Aquatic SeaRIA'])
-                <p class="text-sm text-slate-600">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang</p>
+                <div>
+                    <p class="font-semibold text-slate-900">Aquatic SeaRIA</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-600">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang. Pendaftaran, buku acara, dan hasil dalam satu tempat.</p>
+                </div>
             </div>
-            <nav class="flex flex-wrap gap-x-5 gap-y-2">
+            <nav class="flex flex-col gap-2 text-sm text-slate-600">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Peserta</p>
                 <a href="{{ route('register.index') }}" class="hover:text-teal-800">Daftar lomba</a>
                 <a href="{{ route('home') }}#buku-acara" class="hover:text-teal-800">Buku &amp; hasil</a>
+                <a href="{{ route('public.athletes.search') }}" class="hover:text-teal-800">Cari hasil atlet</a>
+                <a href="{{ route('archive.index') }}" class="hover:text-teal-800">Arsip hasil</a>
+            </nav>
+            <nav class="flex flex-col gap-2 text-sm text-slate-600">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Informasi</p>
                 <a href="{{ route('about') }}" class="hover:text-teal-800">Pengenalan</a>
                 <a href="{{ route('terms') }}" class="hover:text-teal-800">Syarat &amp; ketentuan</a>
-                <a href="{{ route('archive.index') }}" class="hover:text-teal-800">Arsip hasil</a>
                 <a href="{{ route('sitemap') }}" class="hover:text-teal-800">Peta situs</a>
+                <a href="{{ route('login') }}" class="hover:text-teal-800">Masuk panitia</a>
             </nav>
         </div>
     </footer>
