@@ -99,6 +99,89 @@ it('swaps two lanes and writes complementary audit entries', function () {
         ->and(ActivityLog::query()->where('action', 'heat_lane.swap')->count())->toBe(2);
 });
 
+it('lets panitia swap athletes across different heats', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(8);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+
+    $heats = Heat::query()->where('event_id', $event->id)->orderBy('heat_number')->get();
+    expect($heats)->toHaveCount(2);
+
+    $fromFirst = $heats[0]->lanes()->whereNotNull('registration_id')->orderBy('lane_number')->firstOrFail();
+    $fromSecond = $heats[1]->lanes()->whereNotNull('registration_id')->orderBy('lane_number')->firstOrFail();
+    $leftRegistration = $fromFirst->registration_id;
+    $rightRegistration = $fromSecond->registration_id;
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.seeding.show', [$competition, $event, $group]))
+        ->post(route('admin.heat-lanes.swap'), [
+            'left_lane_id' => $fromFirst->id,
+            'right_lane_id' => $fromSecond->id,
+        ])
+        ->assertRedirect(route('admin.seeding.show', [$competition, $event, $group]))
+        ->assertSessionHas('status', 'Peserta ditukar.');
+
+    expect($fromFirst->fresh()->registration_id)->toBe($rightRegistration)
+        ->and($fromSecond->fresh()->registration_id)->toBe($leftRegistration)
+        ->and($fromFirst->fresh()->heat_id)->toBe($heats[0]->id)
+        ->and($fromSecond->fresh()->heat_id)->toBe($heats[1]->id)
+        ->and($fromFirst->fresh()->lane_number)->toBe($fromFirst->lane_number)
+        ->and($fromSecond->fresh()->lane_number)->toBe($fromSecond->lane_number);
+});
+
+it('offers a cross-heat swap form on the seeding detail page', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(8);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.show', [$competition, $event, $group]))
+        ->assertOk()
+        ->assertSee('Tukar dua peserta')
+        ->assertSee('antar seri yang berbeda')
+        ->assertSee('Seri 1')
+        ->assertSee('Seri 2');
+});
+
+it('rejects swapping lanes from a different age group', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(6);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $source = HeatLane::query()->whereNotNull('registration_id')->firstOrFail();
+
+    $otherGroup = $competition->ageGroups()->where('id', '!=', $group->id)->first()
+        ?? $competition->ageGroups()->create([
+            'code' => 'X',
+            'name' => 'Grup X',
+            'display_code' => 'X',
+            'birth_year_start' => 2000,
+            'birth_year_end' => 2001,
+            'sort_order' => 99,
+        ]);
+
+    $foreignHeat = Heat::query()->create([
+        'event_id' => $event->id,
+        'age_group_id' => $otherGroup->id,
+        'heat_number' => 1,
+        'round' => 'final',
+    ]);
+    $foreignLane = HeatLane::factory()->create([
+        'heat_id' => $foreignHeat->id,
+        'lane_number' => 3,
+        'registration_id' => \App\Models\Registration::factory()->create([
+            'competition_id' => $competition->id,
+            'event_id' => $event->id,
+            'age_group_id' => $otherGroup->id,
+        ])->id,
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.seeding.show', [$competition, $event, $group]))
+        ->post(route('admin.heat-lanes.swap'), [
+            'left_lane_id' => $source->id,
+            'right_lane_id' => $foreignLane->id,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors('heat_lane');
+});
+
 it('rejects moving an entrant onto an occupied lane', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(6);
     app(RunSeeding::class)->handle($competition, $event, $group);

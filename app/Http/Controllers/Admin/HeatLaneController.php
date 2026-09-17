@@ -16,7 +16,7 @@ class HeatLaneController extends Controller
     public function swap(Request $request, SwapHeatLanes $swap): RedirectResponse
     {
         $left = HeatLane::query()->with('heat.event.competition')->findOrFail($request->integer('left_lane_id'));
-        $right = HeatLane::query()->findOrFail($request->integer('right_lane_id'));
+        $right = HeatLane::query()->with('heat')->findOrFail($request->integer('right_lane_id'));
         $competition = $left->heat?->event?->competition;
         abort_unless($competition !== null, 404);
         $this->authorize('seed', $competition);
@@ -27,7 +27,7 @@ class HeatLaneController extends Controller
             return back()->withErrors(['heat_lane' => $exception->getMessage()]);
         }
 
-        return back()->with('status', 'Lintasan ditukar.');
+        return back()->with('status', 'Peserta ditukar.');
     }
 
     public function move(Request $request, HeatLane $heatLane, MoveEntrantToHeat $move): RedirectResponse

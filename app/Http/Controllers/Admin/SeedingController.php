@@ -12,6 +12,7 @@ use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Heat;
+use App\Models\HeatLane;
 use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -108,11 +109,27 @@ class SeedingController extends Controller
             ->paginate(ListPaginator::PER_PAGE)
             ->withQueryString();
 
+        $swapLanes = HeatLane::query()
+            ->whereNotNull('registration_id')
+            ->whereHas('heat', function ($query) use ($event, $ageGroup): void {
+                $query->where('event_id', $event->id)
+                    ->where('age_group_id', $ageGroup->id)
+                    ->where('round', 'final');
+            })
+            ->with(['heat', 'registration.athlete'])
+            ->get()
+            ->sortBy([
+                fn (HeatLane $lane): int => (int) $lane->heat?->heat_number,
+                fn (HeatLane $lane): int => $lane->lane_number,
+            ])
+            ->values();
+
         return view('admin.seeding.show', [
             'competition' => $competition,
             'event' => $event,
             'ageGroup' => $ageGroup,
             'heats' => $heats,
+            'swapLanes' => $swapLanes,
             'laneCount' => $competition->pool_lanes,
             'anyLocked' => $anyLocked,
         ]);

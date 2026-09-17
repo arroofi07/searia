@@ -71,10 +71,41 @@
         <ul class="mt-3 list-disc space-y-1 border-t border-slate-100 pt-3 pl-5">
             <li><strong>Catatan waktu</strong> di sini adalah waktu saat daftar (seed), bukan hasil lomba. NT = belum punya catatan waktu.</li>
             <li>Seri dengan nomor lebih besar biasanya berisi perenang lebih cepat. Lintasan tengah untuk yang lebih cepat dalam seri itu.</li>
-            <li><strong>Tukar</strong> untuk saling menukar dua lintasan di seri yang sama. <strong>Keluarkan</strong> mengosongkan lintasan tanpa menggeser yang lain.</li>
+            <li><strong>Tukar</strong> untuk saling menukar dua peserta, termasuk antar seri yang berbeda. <strong>Keluarkan</strong> mengosongkan lintasan tanpa menggeser yang lain.</li>
             <li>Jika susunan sudah benar, tekan <strong>Kunci nomor ini</strong>. Setelah semua nomor dikunci, di Ringkasan lanjutkan status ke <strong>Sudah diseeding</strong>.</li>
         </ul>
     </details>
+
+    @if ($swapLanes->count() >= 2)
+        @php
+            $swapCounterpart = $swapLanes->first(fn ($lane) => $lane->heat_id !== $swapLanes->first()->heat_id)
+                ?? $swapLanes->skip(1)->first();
+        @endphp
+        <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+            <h2 class="text-sm font-semibold text-slate-900">Tukar dua peserta</h2>
+            <p class="mt-1 text-sm leading-6 text-slate-600">Boleh dalam seri yang sama atau antar seri yang berbeda, selama masih nomor dan kelompok umur ini.</p>
+            <form method="POST" action="{{ route('admin.heat-lanes.swap') }}" class="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-end">
+                @csrf
+                <div class="min-w-0 flex-1">
+                    <label class="block text-xs text-slate-500">Peserta pertama</label>
+                    <select name="left_lane_id" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-2">
+                        @foreach ($swapLanes as $option)
+                            <option value="{{ $option->id }}">Seri {{ $option->heat?->heat_number }} · Lintasan {{ $option->lane_number }} · {{ $option->registration?->athlete?->full_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <label class="block text-xs text-slate-500">Ditukar dengan</label>
+                    <select name="right_lane_id" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-2">
+                        @foreach ($swapLanes as $option)
+                            <option value="{{ $option->id }}" @selected($swapCounterpart && $option->id === $swapCounterpart->id)>Seri {{ $option->heat?->heat_number }} · Lintasan {{ $option->lane_number }} · {{ $option->registration?->athlete?->full_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900">Tukar peserta</button>
+            </form>
+        </section>
+    @endif
 
     @forelse ($heats as $heat)
         @php
@@ -160,36 +191,6 @@
                     </tbody>
                 </table>
             </div>
-
-            @if ($heat->lanes->whereNotNull('registration_id')->count() >= 2)
-                <div class="border-t border-slate-100 bg-slate-50/70 px-4 py-3">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tukar dua lintasan di seri ini</p>
-                    <form method="POST" action="{{ route('admin.heat-lanes.swap') }}" class="mt-2 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-end">
-                        @csrf
-                        <div class="min-w-0 flex-1">
-                            <label class="block text-xs text-slate-500">Peserta pertama</label>
-                            <select name="left_lane_id" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-2">
-                                @foreach ($heat->lanes->sortBy('lane_number') as $option)
-                                    @if ($option->registration_id)
-                                        <option value="{{ $option->id }}">Lintasan {{ $option->lane_number }} · {{ $option->registration?->athlete?->full_name ?? 'kosong' }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <label class="block text-xs text-slate-500">Ditukar dengan</label>
-                            <select name="right_lane_id" class="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-2">
-                                @foreach ($heat->lanes->sortBy('lane_number') as $option)
-                                    @if ($option->registration_id)
-                                        <option value="{{ $option->id }}" @selected($loop->iteration === 2)>Lintasan {{ $option->lane_number }} · {{ $option->registration?->athlete?->full_name ?? 'kosong' }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
-                        <button class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900">Tukar lintasan</button>
-                    </form>
-                </div>
-            @endif
         </section>
     @empty
         <p class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">
