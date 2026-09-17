@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($table->entries as $entry)
+        @foreach ($entries ?? $table->entries as $entry)
             @php
                 $podium = $entry->isPodium();
                 $rowClass = match ($entry->rank) {

@@ -37,7 +37,7 @@ class EventController extends Controller
             'events' => $competition->events()
                 ->paginate(ListPaginator::PER_PAGE)
                 ->withQueryString(),
-            'programRows' => $program->rows($allEvents),
+            'programRows' => ListPaginator::for($program->rows($allEvents), pageName: 'program_page'),
         ]);
     }
 

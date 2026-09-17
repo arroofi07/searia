@@ -6,6 +6,7 @@ use App\Enums\ImportStatus;
 use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotCancelImportBatchException;
 use App\Services\Import\ImportValidationResult;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,30 @@ class ImportBatch extends Model
             'errors' => 'array',
             'committed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Exclude the `errors` JSON payload so listing queries do not filesort large blobs.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeForListing(Builder $query): Builder
+    {
+        return $query->select([
+            'id',
+            'competition_id',
+            'user_id',
+            'original_filename',
+            'stored_path',
+            'total_rows',
+            'valid_rows',
+            'invalid_rows',
+            'status',
+            'committed_at',
+            'created_at',
+            'updated_at',
+        ]);
     }
 
     /**

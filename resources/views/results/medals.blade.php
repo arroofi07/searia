@@ -47,6 +47,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['paginator' => $byClub])
     </section>
 
     <section id="per-ku" class="mt-8">
@@ -87,6 +88,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['paginator' => $byAgeGroup])
     </section>
 
     <section id="per-nomor" class="mt-8">
@@ -117,5 +119,6 @@
                 </section>
             @endforeach
         </div>
+        @include('partials.pagination', ['paginator' => $blocks])
     </section>
 @endsection

@@ -3,7 +3,7 @@
 
     $user = auth()->user();
     $manages = $user?->managesMasterData() ?? false;
-    $competition = $manages ? AdminNavigation::competition() : null;
+    $activeCompetition = $manages ? AdminNavigation::competition() : null;
     $competitions = $manages ? AdminNavigation::competitions() : collect();
     $current = AdminNavigation::currentKey();
 @endphp
@@ -22,24 +22,50 @@
                 <label class="sr-only" for="sidebar-competition">Pilih acara</label>
                 <select id="sidebar-competition" class="w-full rounded-md border border-slate-700 bg-slate-800 px-2 py-2 text-sm text-white" onchange="window.location = this.value">
                     @foreach ($competitions as $option)
-                        <option value="{{ route('admin.competitions.show', $option) }}" @selected($competition?->id === $option->id)>
+                        <option value="{{ route('admin.competitions.show', $option) }}" @selected($activeCompetition?->id === $option->id)>
                             {{ $option->name }}
                         </option>
                     @endforeach
                 </select>
             @endif
 
+            @unless ($activeCompetition)
+                <p class="mb-2 rounded-md border border-slate-700 bg-slate-800 px-2 py-2 text-xs leading-5 text-slate-400">
+                    Belum ada acara aktif. <strong class="text-slate-200">Import Excel</strong> tetap bisa dibuka; menu lain aktif setelah ada acara.
+                </p>
+            @endunless
+
             <div class="space-y-0.5">
                 <a href="{{ route('admin.competitions.index') }}" class="{{ AdminNavigation::linkClass($current === 'dasbor') }}">Dasbor</a>
                 @can('viewAny', App\Models\Registration::class)
-                    <a href="{{ AdminNavigation::url('admin.registrations.index') }}" class="{{ AdminNavigation::linkClass($current === 'registrations') }}">Pendaftaran</a>
+                    @include('layouts.partials.sidebar-nav-link', [
+                        'label' => 'Pendaftaran',
+                        'routeName' => 'admin.registrations.index',
+                        'active' => $current === 'registrations',
+                        'activeCompetition' => $activeCompetition,
+                    ])
                 @endcan
                 @can('viewAny', App\Models\ImportBatch::class)
-                    <a href="{{ AdminNavigation::url('admin.imports.index') }}" class="{{ AdminNavigation::linkClass($current === 'imports') }}">Import Excel</a>
+                    <a href="{{ route('admin.imports.entry') }}" class="{{ AdminNavigation::linkClass($current === 'imports') }}">Import Excel</a>
                 @endcan
-                <a href="{{ AdminNavigation::url('admin.seeding.index') }}" class="{{ AdminNavigation::linkClass($current === 'seeding') }}">Pembagian seri</a>
-                <a href="{{ AdminNavigation::url('admin.start-list.index') }}" class="{{ AdminNavigation::linkClass($current === 'start-list') }}">Buku acara</a>
-                <a href="{{ AdminNavigation::url('admin.results.index') }}" class="{{ AdminNavigation::linkClass($current === 'results') }}">Hasil</a>
+                @include('layouts.partials.sidebar-nav-link', [
+                    'label' => 'Pembagian seri',
+                    'routeName' => 'admin.seeding.index',
+                    'active' => $current === 'seeding',
+                    'activeCompetition' => $activeCompetition,
+                ])
+                @include('layouts.partials.sidebar-nav-link', [
+                    'label' => 'Buku acara',
+                    'routeName' => 'admin.start-list.index',
+                    'active' => $current === 'start-list',
+                    'activeCompetition' => $activeCompetition,
+                ])
+                @include('layouts.partials.sidebar-nav-link', [
+                    'label' => 'Hasil',
+                    'routeName' => 'admin.results.index',
+                    'active' => $current === 'results',
+                    'activeCompetition' => $activeCompetition,
+                ])
                 @can('viewAny', App\Models\Club::class)
                     <a href="{{ route('admin.clubs.index') }}" class="{{ AdminNavigation::linkClass(request()->routeIs('admin.clubs.*')) }}">Klub</a>
                 @endcan

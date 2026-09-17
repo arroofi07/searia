@@ -43,14 +43,16 @@ final class AdminNavigation
             ->get(['id', 'name', 'status', 'start_date']);
     }
 
-    public static function url(string $name): string
+    public static function url(string $name): ?string
     {
         $competition = self::competition();
-        if ($competition === null) {
-            return route('admin.competitions.index');
-        }
 
-        return route($name, $competition);
+        return $competition === null ? null : route($name, $competition);
+    }
+
+    public static function disabledLinkClass(): string
+    {
+        return 'flex cursor-not-allowed items-center rounded-md px-3 py-2 text-sm text-slate-500';
     }
 
     public static function currentKey(): string

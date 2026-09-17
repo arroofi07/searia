@@ -84,6 +84,7 @@ class InvoiceController extends Controller
         return view('admin.invoices.show', [
             'invoice' => $invoice,
             'competition' => $invoice->competition,
+            'lines' => ListPaginator::for($invoice->lines()),
             'hasWithdrawnEntries' => $invoice->registrations
                 ->contains(fn (Registration $registration): bool => $registration->status === RegistrationStatus::Withdrawn),
         ]);

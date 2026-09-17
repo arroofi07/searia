@@ -77,6 +77,8 @@
             @endforelse
         </section>
 
+        @include('partials.pagination', ['paginator' => $programPages])
+
         <p class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             @if ($competition->status === \App\Enums\CompetitionStatus::Registration)
                 <a href="{{ route('register.create', $competition) }}" class="public-btn">Daftar sekarang</a>

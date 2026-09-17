@@ -13,6 +13,20 @@
         @endcan
     </div>
 
+    @if ($competitions->isEmpty())
+        <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+            <p class="font-medium">Belum ada acara</p>
+            <p class="mt-1">
+                Menu <strong>Pendaftaran</strong>, <strong>Import Excel</strong>, dan lainnya membutuhkan minimal satu acara.
+                @can('create', App\Models\Competition::class)
+                    Klik <a href="{{ route('admin.competitions.create') }}" class="font-medium text-teal-800 hover:underline">Tambah acara</a> untuk memulai.
+                @else
+                    Minta Super Admin membuat acara terlebih dahulu.
+                @endcan
+            </p>
+        </div>
+    @endif
+
     <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-600">

@@ -25,13 +25,27 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ImportController extends Controller
 {
+    public function entry(): RedirectResponse|View
+    {
+        $this->authorize('viewAny', ImportBatch::class);
+
+        $competition = Competition::query()->latest('id')->first();
+
+        if ($competition !== null) {
+            return redirect()->route('admin.imports.index', $competition);
+        }
+
+        return view('admin.imports.setup');
+    }
+
     public function index(Competition $competition): View
     {
         $this->authorize('viewAny', ImportBatch::class);
 
         $batches = ImportBatch::query()
+            ->forListing()
             ->where('competition_id', $competition->id)
-            ->latest()
+            ->latest('id')
             ->paginate(ListPaginator::PER_PAGE)
             ->withQueryString();
 
@@ -71,6 +85,8 @@ class ImportController extends Controller
      *     program: array{created: int, updated: int, groups_created: int, errors: list<string>}|null,
      *     program_skipped: bool,
      *     participants_skipped: bool,
+     *     registration_opened: bool,
+     *     committed_rows: int,
      *     participant_error: string|null
      * }  $result
      * @return list<string>
@@ -78,6 +94,10 @@ class ImportController extends Controller
     private function workbookStatusMessages(array $result): array
     {
         $messages = [];
+
+        if ($result['registration_opened']) {
+            $messages[] = 'Status acara dibuka ke Pendaftaran terbuka agar peserta bisa diimpor.';
+        }
 
         if ($result['program'] !== null) {
             $program = $result['program'];
@@ -90,17 +110,31 @@ class ImportController extends Controller
             if (($program['groups_created'] ?? 0) > 0) {
                 $messages[] = $program['groups_created'].' kelompok umur baru dibuat.';
             }
+
+            foreach ($program['errors'] ?? [] as $error) {
+                $messages[] = $error;
+            }
         } elseif ($result['program_skipped']) {
             $messages[] = 'Lembar NOMOR LOMBA dilewati (berkas CSV).';
         }
 
         if ($result['participants_skipped']) {
-            $messages[] = 'Lembar PESERTA tidak divalidasi karena pendaftaran sudah ditutup.';
+            $messages[] = 'Lembar PESERTA dilewati: status acara sudah melewati pendaftaran.';
         } elseif ($result['batch'] !== null) {
             $batch = $result['batch'];
-            $messages[] = $batch->status === ImportStatus::Validating
-                ? 'Peserta: berkas besar sedang divalidasi di latar belakang.'
-                : 'Peserta: berkas selesai divalidasi.';
+            $committed = (int) ($result['committed_rows'] ?? 0);
+
+            if ($committed > 0) {
+                $messages[] = 'Peserta: '.$committed.' baris valid langsung disimpan.';
+            } elseif ($batch->status === ImportStatus::Validated) {
+                $messages[] = 'Peserta: tidak ada baris valid. Periksa pratinjau kesalahan.';
+            } else {
+                $messages[] = 'Peserta: berkas diproses (status '.$batch->status->label().').';
+            }
+
+            if ($batch->invalid_rows > 0) {
+                $messages[] = $batch->invalid_rows.' baris ditolak — lihat pratinjau.';
+            }
         }
 
         if ($messages === []) {

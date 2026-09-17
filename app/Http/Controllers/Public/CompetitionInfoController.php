@@ -6,6 +6,7 @@ use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Services\ProgramOrderBuilder;
+use App\Support\ListPaginator;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -22,13 +23,14 @@ class CompetitionInfoController extends Controller
             ->orderBy('event_number')
             ->get();
 
-        $programRows = collect($program->rows($events))->groupBy('session');
+        $programPages = ListPaginator::for($program->rows($events));
 
         $now = now();
 
         return view('public.schedule', [
             'competition' => $competition,
-            'programBySession' => $programRows,
+            'programPages' => $programPages,
+            'programBySession' => $programPages->getCollection()->groupBy('session'),
             'milestones' => [
                 [
                     'label' => 'Masa pendaftaran',

@@ -12,19 +12,19 @@
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>
     @endif
     <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        @include('results._table', ['table' => $table, 'formatTime' => $formatTime, 'competition' => $competition])
+        @include('results._table', ['table' => $table, 'entries' => $entries, 'formatTime' => $formatTime, 'competition' => $competition])
     </div>
+    @include('partials.pagination', ['paginator' => $entries])
 
     @php
-        $flatCorrections = collect($corrections ?? [])->flatten(1);
         $entryNames = collect($table->entries)->keyBy('resultId');
     @endphp
-    @if ($flatCorrections->isNotEmpty())
+    @if ($correctionLogs->total() > 0)
         <section class="mt-8">
             <h2 class="text-lg font-semibold">Riwayat koreksi</h2>
             <p class="mt-1 text-sm text-slate-500">Perubahan hasil setelah pencatatan, termasuk yang dilakukan setelah publikasi.</p>
             <ul class="mt-4 space-y-3">
-                @foreach ($flatCorrections as $log)
+                @foreach ($correctionLogs as $log)
                     @php
                         $entry = $entryNames->get($log->subject_id);
                         $old = $log->old_values ?? [];
@@ -56,6 +56,7 @@
                     </li>
                 @endforeach
             </ul>
+            @include('partials.pagination', ['paginator' => $correctionLogs])
         </section>
     @endif
 @endsection

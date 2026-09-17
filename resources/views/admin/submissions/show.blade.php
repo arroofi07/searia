@@ -45,7 +45,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($submission->registrations as $registration)
+                @foreach ($registrations as $registration)
                     <tr class="border-t border-slate-100">
                         <td class="px-4 py-3">Acara {{ $registration->event?->event_number }} {{ $registration->event?->formattedName() }}</td>
                         <td class="px-4 py-3">{{ $registration->ageGroup?->name }}</td>
@@ -77,6 +77,8 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $registrations])
 
     <a href="{{ route('admin.submissions.index', $competition) }}" class="mt-6 inline-block text-sm text-teal-800 hover:underline">Kembali ke daftar</a>
 @endsection

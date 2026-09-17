@@ -4,7 +4,6 @@ use App\Actions\CommitImportBatch;
 use App\Enums\EventGender;
 use App\Enums\ImportStatus;
 use App\Enums\RegistrationStatus;
-use App\Jobs\ValidateImportBatch;
 use App\Models\Athlete;
 use App\Models\Club;
 use App\Models\Event;
@@ -42,7 +41,7 @@ it('shows import excel in the sidebar and on the import page', function () {
         ->assertOk()
         ->assertSee('satu berkas untuk nomor lomba dan peserta')
         ->assertSee('NOMOR LOMBA')
-        ->assertSee('Unggah dan proses');
+        ->assertSee('langsung disimpan');
 });
 
 it('downloads a template with the three required sheet names', function () {
@@ -159,10 +158,6 @@ it('commits valid rows into clubs, athletes, and registrations', function () {
     uploadCsv($meet, $path, $panitia);
     $batch = ImportBatch::query()->latest('id')->first();
 
-    $this->actingAs($panitia)
-        ->post(route('admin.imports.commit', $batch))
-        ->assertRedirect();
-
     expect(Club::query()->where('name', 'Klub Import Baru')->count())->toBe(1)
         ->and(Athlete::query()->where('full_name', 'IMPORT SATU')->count())->toBe(1)
         ->and(Registration::query()->where('import_batch_id', $batch->id)->count())->toBe(2)
@@ -175,9 +170,16 @@ it('rolls back the database when commit fails on the last row', function () {
         ['1', 'ROLLBACK SATU', 'L', '2016', 'Klub Rollback', 'Padang', '13', '00:52.20'],
         ['2', 'ROLLBACK DUA', 'L', '2016', 'Klub Rollback', 'Padang', '13', '00:48.15'],
     ]);
-    $panitia = User::factory()->panitia()->create();
-    uploadCsv($meet, $path, $panitia);
-    $batch = ImportBatch::query()->latest('id')->first();
+    $result = app(\App\Services\Import\ParticipantFileReader::class)
+        ->readAndValidate($path, 'csv', $meet['competition']);
+    $batch = ImportBatch::query()->create([
+        'competition_id' => $meet['competition']->id,
+        'user_id' => User::factory()->panitia()->create()->id,
+        'original_filename' => 'rollback.csv',
+        'stored_path' => 'imports/rollback.csv',
+        'status' => ImportStatus::Validated,
+    ]);
+    $batch->storeResult($result);
 
     expect(fn () => app(CommitImportBatch::class)->handle($batch, function (int $index, int $total): void {
         if ($index === $total) {
@@ -198,8 +200,7 @@ it('rejects cancelling a batch after an entry has been verified', function () {
     $panitia = User::factory()->panitia()->create();
     uploadCsv($meet, $path, $panitia);
     $batch = ImportBatch::query()->latest('id')->first();
-    $this->actingAs($panitia)->post(route('admin.imports.commit', $batch));
-    $batch->refresh();
+    expect($batch->status)->toBe(ImportStatus::Committed);
     $batch->registrations()->update(['status' => RegistrationStatus::Verified]);
 
     $this->actingAs($panitia)
@@ -209,7 +210,7 @@ it('rejects cancelling a batch after an entry has been verified', function () {
         ->assertSessionHasErrors('delete');
 });
 
-it('queues validation for files with more than two hundred rows', function () {
+it('validates and saves large participant files synchronously without a queue job', function () {
     Queue::fake();
     $meet = openRegistrationMeet();
     $rows = [];
@@ -220,8 +221,9 @@ it('queues validation for files with more than two hundred rows', function () {
 
     uploadCsv($meet, $path);
 
-    Queue::assertPushed(ValidateImportBatch::class);
-    expect(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Validating);
+    Queue::assertNothingPushed();
+    expect(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Committed)
+        ->and(Registration::query()->count())->toBe(201);
 });
 
 it('validates a small file immediately without a queue job', function () {
@@ -234,12 +236,13 @@ it('validates a small file immediately without a queue job', function () {
     uploadCsv($meet, $path);
 
     Queue::assertNothingPushed();
-    expect(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Validated);
+    expect(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Committed);
 });
 
-it('imports nomor lomba and validates peserta from one workbook upload', function () {
+it('imports nomor lomba and peserta from one workbook upload including draft competitions', function () {
     $meet = openRegistrationMeet();
     $competition = $meet['competition'];
+    $competition->update(['status' => \App\Enums\CompetitionStatus::Draft]);
     $competition->events()->delete();
 
     $path = tempnam(sys_get_temp_dir(), 'wb').'.xlsx';
@@ -267,6 +270,8 @@ it('imports nomor lomba and validates peserta from one workbook upload', functio
     ]);
 
     $response->assertRedirect();
-    expect($competition->fresh()->events()->where('event_number', 13)->exists())->toBeTrue()
-        ->and(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Validated);
+    expect($competition->fresh()->status)->toBe(\App\Enums\CompetitionStatus::Registration)
+        ->and($competition->fresh()->events()->where('event_number', 13)->exists())->toBeTrue()
+        ->and(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Committed)
+        ->and(Registration::query()->where('competition_id', $competition->id)->count())->toBe(1);
 });

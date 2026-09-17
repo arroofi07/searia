@@ -31,7 +31,11 @@
         <div class="mt-6 rounded-2xl border border-slate-200 bg-white px-5 py-6 text-sm leading-6 text-slate-700">
             @if ($manages)
                 Belum ada seri untuk diinput. Bagi seri dulu di
-                <a href="{{ \App\Support\AdminNavigation::url('admin.seeding.index') }}" class="font-medium text-teal-800 hover:underline">Pembagian seri</a>.
+                @if ($seedingUrl = \App\Support\AdminNavigation::url('admin.seeding.index'))
+                    <a href="{{ $seedingUrl }}" class="font-medium text-teal-800 hover:underline">Pembagian seri</a>.
+                @else
+                    <span class="font-medium">Pembagian seri</span> (belum ada acara).
+                @endif
             @else
                 Belum ada nomor lomba yang ditugaskan kepada Anda. Hubungi panitia untuk penugasan.
             @endif

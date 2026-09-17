@@ -14,7 +14,6 @@ use App\Services\RankingCalculator;
 use App\Support\ListPaginator;
 use App\Support\SwimTime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -63,22 +62,21 @@ class ResultController extends Controller
         $table = $ranking->forEventAgeGroup($event, $ageGroup);
         $resultIds = collect($table->entries)->pluck('resultId')->filter()->all();
 
-        /** @var Collection<int, Collection<int, ActivityLog>> $corrections */
-        $corrections = ActivityLog::query()
+        $correctionLogs = ActivityLog::query()
             ->with('user')
             ->where('action', 'result.correct')
             ->where('subject_type', Result::class)
             ->whereIn('subject_id', $resultIds)
             ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('subject_id');
+            ->get();
 
         return view('results.show', [
             'competition' => $competition,
             'event' => $event,
             'ageGroup' => $ageGroup,
             'table' => $table,
-            'corrections' => $corrections,
+            'entries' => ListPaginator::for($table->entries),
+            'correctionLogs' => ListPaginator::for($correctionLogs, pageName: 'correction_page'),
             'preview' => $competition->status !== CompetitionStatus::Published,
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);
@@ -92,9 +90,9 @@ class ResultController extends Controller
 
         return view('results.medals', [
             'competition' => $competition,
-            'blocks' => $blocks,
-            'byClub' => $medals->rollupClubs($blocks),
-            'byAgeGroup' => $medals->rollupAgeGroups($blocks),
+            'blocks' => ListPaginator::for($blocks),
+            'byClub' => ListPaginator::for($medals->rollupClubs($blocks), pageName: 'club_page'),
+            'byAgeGroup' => ListPaginator::for($medals->rollupAgeGroups($blocks), pageName: 'group_page'),
             'preview' => $competition->status !== CompetitionStatus::Published,
             'formatTime' => fn (?int $ms): string => SwimTime::formatMilliseconds($ms),
         ]);
@@ -106,7 +104,7 @@ class ResultController extends Controller
 
         return view('results.standings', [
             'competition' => $competition,
-            'rows' => $standing->forCompetition($competition, $medals, $ranking),
+            'rows' => ListPaginator::for($standing->forCompetition($competition, $medals, $ranking)),
             'preview' => $competition->status !== CompetitionStatus::Published,
         ]);
     }

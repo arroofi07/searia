@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function (): void {
         Route::post('competitions/{competition}/registrations/approve', [RegistrationVerificationController::class, 'bulkApprove'])->name('registrations.bulk-approve');
         Route::post('competitions/{competition}/registrations/reject', [RegistrationVerificationController::class, 'bulkReject'])->name('registrations.bulk-reject');
 
+        Route::get('imports', [ImportController::class, 'entry'])->name('imports.entry');
         Route::get('competitions/{competition}/imports', [ImportController::class, 'index'])->name('imports.index');
         Route::post('competitions/{competition}/imports', [ImportController::class, 'store'])
             ->middleware('throttle:uploads')

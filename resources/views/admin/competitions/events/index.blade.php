@@ -48,7 +48,7 @@
         @endif
     </div>
 
-    @if ($programRows !== [])
+    @if ($programRows->total() > 0)
         <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
             <div class="border-b border-slate-200 bg-slate-900 px-4 py-3 text-center">
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">Susunan Acara Perlombaan</p>
@@ -72,6 +72,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['paginator' => $programRows])
     @endif
 
     <p class="mt-6 text-sm text-slate-500">Nama nomor disusun dari jarak, gaya, alat bantu, dan gender. Seret baris untuk mengubah urutan tampil.</p>

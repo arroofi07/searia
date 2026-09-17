@@ -27,7 +27,7 @@
             <tbody>
                 @foreach ($rows as $index => $row)
                     <tr class="border-t border-slate-100 {{ $row['has_medals'] ? '' : 'text-slate-500' }}">
-                        <td class="px-3 py-2" data-label="Peringkat">{{ $index + 1 }}</td>
+                        <td class="px-3 py-2" data-label="Peringkat">{{ $rows->firstItem() + $index }}</td>
                         <td class="px-3 py-2" data-label="Klub">
                             {{ $row['club_name'] }}
                             @if ($row['city'])
@@ -44,4 +44,6 @@
             </tbody>
         </table>
     </div>
+
+    @include('partials.pagination', ['paginator' => $rows])
 @endsection

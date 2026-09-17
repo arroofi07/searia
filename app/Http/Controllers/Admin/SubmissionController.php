@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Models\Registration;
 use App\Models\RegistrationSubmission;
+use App\Support\ListPaginator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -51,6 +52,7 @@ class SubmissionController extends Controller
         return view('admin.submissions.show', [
             'submission' => $submission,
             'competition' => $submission->competition,
+            'registrations' => ListPaginator::for($submission->registrations),
         ]);
     }
 }

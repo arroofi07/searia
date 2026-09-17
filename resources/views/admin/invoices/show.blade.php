@@ -66,7 +66,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($invoice->lines() as $line)
+                    @forelse ($lines as $line)
                         <tr class="border-t border-slate-100">
                             <td class="px-4 py-2">{{ $line['athlete_name'] }}</td>
                             <td class="px-4 py-2">{{ $line['event_name'] }}</td>
@@ -87,6 +87,7 @@
                     @endforelse
                 </tbody>
             </table>
+            @include('partials.pagination', ['paginator' => $lines])
         </div>
 
         <div class="rounded-lg border border-slate-200 bg-white p-4">

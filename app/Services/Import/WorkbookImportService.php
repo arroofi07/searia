@@ -2,11 +2,12 @@
 
 namespace App\Services\Import;
 
+use App\Actions\CommitImportBatch;
 use App\Actions\ImportEventProgram;
+use App\Enums\CompetitionStatus;
 use App\Enums\ImportStatus;
 use App\Exceptions\ImportLimitExceededException;
 use App\Exceptions\MissingImportColumnsException;
-use App\Jobs\ValidateImportBatch;
 use App\Models\Competition;
 use App\Models\ImportBatch;
 use App\Models\User;
@@ -19,6 +20,7 @@ class WorkbookImportService
         private readonly ImportEventProgram $programImport,
         private readonly WorkbookTimeNormalizer $normalizer,
         private readonly ParticipantFileReader $reader,
+        private readonly CommitImportBatch $commit,
     ) {}
 
     /**
@@ -27,6 +29,8 @@ class WorkbookImportService
      *     program: array{created: int, updated: int, groups_created: int, errors: list<string>}|null,
      *     program_skipped: bool,
      *     participants_skipped: bool,
+     *     registration_opened: bool,
+     *     committed_rows: int,
      *     participant_error: string|null
      * }
      */
@@ -51,6 +55,7 @@ class WorkbookImportService
         $absolute = Storage::disk('local')->path($storedPath);
         $program = null;
         $programSkipped = strtolower($extension) === 'csv';
+        $registrationOpened = false;
 
         if (! $programSkipped) {
             try {
@@ -65,12 +70,21 @@ class WorkbookImportService
             }
         }
 
+        $competition = $competition->fresh();
+
+        if ($competition->status === CompetitionStatus::Draft) {
+            $competition->update(['status' => CompetitionStatus::Registration]);
+            $competition = $competition->fresh();
+            $registrationOpened = true;
+        }
+
         $participantsSkipped = ! $competition->isOpenForRegistration();
         $participantError = null;
         $batch = null;
+        $committedRows = 0;
 
         if ($participantsSkipped) {
-            return $this->result($batch, $program, $programSkipped, true, null);
+            return $this->result($batch, $program, $programSkipped, true, $registrationOpened, 0, null);
         }
 
         $normalizedAbsolute = $absolute;
@@ -94,13 +108,21 @@ class WorkbookImportService
                 $normalizedAbsolute,
                 $extension,
             );
+
+            if ($batch->status === ImportStatus::Validated && $batch->valid_rows > 0) {
+                ini_set('memory_limit', (string) config('searia.import.memory_limit', '512M'));
+                set_time_limit((int) config('searia.import.time_limit', 120));
+                $this->commit->handle($batch);
+                $batch = $batch->fresh();
+                $committedRows = (int) $batch->valid_rows;
+            }
         } catch (MissingImportColumnsException $exception) {
             $participantError = $exception->getMessage();
         } catch (ImportLimitExceededException $exception) {
             $participantError = $exception->getMessage();
         }
 
-        return $this->result($batch, $program, $programSkipped, false, $participantError);
+        return $this->result($batch, $program, $programSkipped, false, $registrationOpened, $committedRows, $participantError);
     }
 
     /**
@@ -110,6 +132,8 @@ class WorkbookImportService
      *     program: array{created: int, updated: int, groups_created: int, errors: list<string>}|null,
      *     program_skipped: bool,
      *     participants_skipped: bool,
+     *     registration_opened: bool,
+     *     committed_rows: int,
      *     participant_error: string|null
      * }
      */
@@ -118,6 +142,8 @@ class WorkbookImportService
         ?array $program,
         bool $programSkipped,
         bool $participantsSkipped,
+        bool $registrationOpened,
+        int $committedRows,
         ?string $participantError,
     ): array {
         return [
@@ -125,6 +151,8 @@ class WorkbookImportService
             'program' => $program,
             'program_skipped' => $programSkipped,
             'participants_skipped' => $participantsSkipped,
+            'registration_opened' => $registrationOpened,
+            'committed_rows' => $committedRows,
             'participant_error' => $participantError,
         ];
     }
@@ -137,6 +165,9 @@ class WorkbookImportService
         string $absolutePath,
         string $extension,
     ): ImportBatch {
+        ini_set('memory_limit', (string) config('searia.import.memory_limit', '512M'));
+        set_time_limit((int) config('searia.import.time_limit', 120));
+
         $batch = ImportBatch::query()->create([
             'competition_id' => $competition->id,
             'user_id' => $user->id,
@@ -145,40 +176,10 @@ class WorkbookImportService
             'status' => ImportStatus::Uploaded,
         ]);
 
-        $estimated = $this->estimateDataRows($absolutePath, $extension);
-        $queueAfter = (int) config('searia.import.queue_after_rows', 200);
-
-        if ($estimated > $queueAfter) {
-            $batch->update([
-                'status' => ImportStatus::Validating,
-                'total_rows' => $estimated,
-            ]);
-            ValidateImportBatch::dispatch($batch->id);
-
-            return $batch->fresh();
-        }
-
+        // Workbook one-shot: always validate synchronously so peserta tersimpan tanpa queue worker.
         $result = $this->reader->readAndValidate($absolutePath, $extension, $competition->fresh());
         $batch->storeResult($result);
 
         return $batch->fresh();
-    }
-
-    private function estimateDataRows(string $path, string $extension): int
-    {
-        if (strtolower($extension) === 'csv') {
-            $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-            return max(0, count($lines ?: []) - 1);
-        }
-
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
-        $reader->setReadDataOnly(true);
-        $spreadsheet = $reader->load($path);
-        $sheet = $spreadsheet->getSheetByName('PESERTA') ?? $spreadsheet->getSheet(0);
-        $highest = (int) $sheet->getHighestDataRow();
-        $spreadsheet->disconnectWorksheets();
-
-        return max(0, $highest - 1);
     }
 }
