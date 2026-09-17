@@ -8,6 +8,7 @@ use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Result;
+use App\Services\BestSwimmerStanding;
 use App\Services\ClubStanding;
 use App\Services\MedalTally;
 use App\Services\RankingCalculator;
@@ -114,6 +115,28 @@ class ResultController extends Controller
         return view('results.standings', [
             'competition' => $competition,
             'rows' => ListPaginator::for($standing->forCompetition($competition, $medals, $ranking)),
+            'preview' => $competition->status !== CompetitionStatus::Published,
+        ]);
+    }
+
+    public function bestClub(Request $request, Competition $competition, ClubStanding $standing, MedalTally $medals, RankingCalculator $ranking): View
+    {
+        $this->authorizePublicOrPreview($request, $competition);
+
+        return view('results.best-club', [
+            'competition' => $competition,
+            'rows' => ListPaginator::for($standing->forCompetition($competition, $medals, $ranking)),
+            'preview' => $competition->status !== CompetitionStatus::Published,
+        ]);
+    }
+
+    public function bestSwimmers(Request $request, Competition $competition, BestSwimmerStanding $standing, MedalTally $medals, RankingCalculator $ranking): View
+    {
+        $this->authorizePublicOrPreview($request, $competition);
+
+        return view('results.best-swimmers', [
+            'competition' => $competition,
+            'groups' => ListPaginator::for($standing->forCompetition($competition, $medals, $ranking)),
             'preview' => $competition->status !== CompetitionStatus::Published,
         ]);
     }

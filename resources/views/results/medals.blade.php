@@ -11,9 +11,12 @@
             <p class="text-sm text-slate-500">{{ $competition->name }}</p>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row">
-            <a href="{{ route('results.best-swimmers.pdf', $competition) }}" class="public-btn-secondary">PDF atlet terbaik</a>
-            <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">PDF club terbaik</a>
+            <a href="{{ route('results.best-swimmers', $competition) }}" class="public-btn-secondary">Atlet terbaik</a>
+            <a href="{{ route('results.best-club', $competition) }}" class="public-btn-secondary">Club terbaik</a>
         </div>
+    </div>
+    <div class="mt-4">
+        @include('public._books', ['competition' => $competition, 'primary' => 'results'])
     </div>
     @if ($preview)
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>

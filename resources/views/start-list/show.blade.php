@@ -16,7 +16,10 @@
                 </p>
             </div>
         </div>
-        <a href="{{ route('start-list.pdf', $competition) }}" class="public-btn">Unduh PDF</a>
+        <div class="flex flex-col gap-2 sm:items-end">
+            @include('public._books', ['competition' => $competition, 'primary' => 'start-list'])
+            <a href="{{ route('start-list.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF acara</a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('start-list.show', $competition) }}" class="mt-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">

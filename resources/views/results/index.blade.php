@@ -19,12 +19,13 @@
                 </p>
             </div>
         </div>
-        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <a href="{{ route('results.pdf', $competition) }}" class="public-btn">Unduh PDF buku hasil</a>
-            <a href="{{ route('results.best-swimmers.pdf', $competition) }}" class="public-btn-secondary">PDF atlet terbaik</a>
-            <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">PDF club terbaik</a>
-            <a href="{{ route('results.medals', $competition) }}" class="public-btn-secondary">Rekap medali</a>
-            <a href="{{ route('results.standings', $competition) }}" class="public-btn-secondary">Klasemen klub</a>
+        <div class="flex flex-col gap-2 sm:items-end">
+            @include('public._books', ['competition' => $competition, 'primary' => 'results'])
+            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <a href="{{ route('results.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF buku hasil</a>
+                <a href="{{ route('results.medals', $competition) }}" class="public-btn-secondary">Rekap medali</a>
+                <a href="{{ route('results.standings', $competition) }}" class="public-btn-secondary">Klasemen klub</a>
+            </div>
         </div>
     </div>
 

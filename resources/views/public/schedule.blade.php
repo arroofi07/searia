@@ -79,20 +79,13 @@
 
         @include('partials.pagination', ['paginator' => $programPages])
 
-        <p class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            @if ($competition->status === \App\Enums\CompetitionStatus::Registration)
-                <a href="{{ route('register.create', $competition) }}" class="public-btn">Daftar sekarang</a>
-            @endif
-            @if ($competition->status->isSeededOrLater())
-                <a href="{{ route('start-list.show', $competition) }}" class="public-btn-secondary">Buku acara</a>
-                <a href="{{ route('start-list.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF acara</a>
-            @endif
-            @if ($competition->status === \App\Enums\CompetitionStatus::Published)
-                <a href="{{ route('results.index', $competition) }}" class="public-btn-secondary">Buku hasil</a>
-                <a href="{{ route('results.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF buku hasil</a>
-                <a href="{{ route('results.best-swimmers.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF atlet terbaik</a>
-                <a href="{{ route('results.best-club.pdf', [$competition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="public-btn-secondary">PDF club terbaik</a>
-            @endif
+        <p class="mt-6">
+            @include('public._books', ['competition' => $competition, 'primary' => $competition->hasPublicResults() ? 'results' : 'start-list'])
         </p>
+        @if ($competition->status === \App\Enums\CompetitionStatus::Registration)
+            <p class="mt-3">
+                <a href="{{ route('register.create', $competition) }}" class="public-btn">Daftar sekarang</a>
+            </p>
+        @endif
     </div>
 @endsection

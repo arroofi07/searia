@@ -12,5 +12,20 @@
         <lastmod>{{ ($competition->published_at ?? $competition->updated_at)?->toAtomString() }}</lastmod>
         <changefreq>monthly</changefreq>
     </url>
+    <url>
+        <loc>{{ route('start-list.show', $competition) }}</loc>
+        <lastmod>{{ ($competition->published_at ?? $competition->updated_at)?->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+    </url>
+    <url>
+        <loc>{{ route('results.best-club', $competition) }}</loc>
+        <lastmod>{{ ($competition->published_at ?? $competition->updated_at)?->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+    </url>
+    <url>
+        <loc>{{ route('results.best-swimmers', $competition) }}</loc>
+        <lastmod>{{ ($competition->published_at ?? $competition->updated_at)?->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+    </url>
 @endforeach
 </urlset>

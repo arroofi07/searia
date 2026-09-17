@@ -68,7 +68,9 @@ Route::middleware(CachePublicPages::class.':300')->group(function (): void {
     Route::get('competitions/{competition}/start-list/pdf', [StartListPdfDownloadController::class, 'download'])->name('start-list.pdf');
     Route::get('competitions/{competition}/results', [ResultController::class, 'index'])->name('results.index');
     Route::get('competitions/{competition}/results/pdf', [ResultsPdfController::class, 'download'])->name('results.pdf');
+    Route::get('competitions/{competition}/results/best-club', [ResultController::class, 'bestClub'])->name('results.best-club');
     Route::get('competitions/{competition}/results/best-club/pdf', [AwardsPdfController::class, 'bestClub'])->name('results.best-club.pdf');
+    Route::get('competitions/{competition}/results/best-swimmers', [ResultController::class, 'bestSwimmers'])->name('results.best-swimmers');
     Route::get('competitions/{competition}/results/best-swimmers/pdf', [AwardsPdfController::class, 'bestSwimmers'])->name('results.best-swimmers.pdf');
     Route::get('competitions/{competition}/results/medals', [ResultController::class, 'medals'])->name('results.medals');
     Route::get('competitions/{competition}/results/standings', [ResultController::class, 'standings'])->name('results.standings');

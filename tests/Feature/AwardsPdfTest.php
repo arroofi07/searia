@@ -36,6 +36,8 @@ it('lets guests download awards pdfs after publish and hides them before', funct
 
     $this->get(route('results.best-club.pdf', $competition))->assertNotFound();
     $this->get(route('results.best-swimmers.pdf', $competition))->assertNotFound();
+    $this->get(route('results.best-club', $competition))->assertNotFound();
+    $this->get(route('results.best-swimmers', $competition))->assertNotFound();
 
     $competition->update(['status' => CompetitionStatus::Published, 'published_at' => now()]);
 
@@ -46,6 +48,18 @@ it('lets guests download awards pdfs after publish and hides them before', funct
     $this->get(route('results.best-swimmers.pdf', $competition))
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
+
+    $this->get(route('results.best-club', $competition))
+        ->assertOk()
+        ->assertSee('Club terbaik')
+        ->assertSee('Buku acara')
+        ->assertSee('Buku hasil')
+        ->assertSee('Atlet terbaik');
+
+    $this->get(route('results.best-swimmers', $competition))
+        ->assertOk()
+        ->assertSee('Atlet terbaik')
+        ->assertSee('Club terbaik');
 });
 
 it('lets panitia download awards pdfs from the admin print page', function () {

@@ -12,6 +12,9 @@
         </div>
         <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF club terbaik</a>
     </div>
+    <div class="mt-4">
+        @include('public._books', ['competition' => $competition, 'primary' => 'best-club'])
+    </div>
     @if ($preview)
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>
     @endif

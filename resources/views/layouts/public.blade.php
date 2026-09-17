@@ -39,6 +39,7 @@
                 <div class="flex flex-col gap-1 text-base md:ml-auto md:flex-row md:items-center md:gap-1 md:text-sm">
                     <a href="{{ route('home') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('home') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Beranda</a>
                     <a href="{{ route('register.index') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('register.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Daftar lomba</a>
+                    <a href="{{ route('home') }}#buku-acara" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('start-list.*', 'results.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Buku &amp; hasil</a>
                     <a href="{{ route('archive.index') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('archive.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Arsip</a>
                     <a href="{{ route('public.athletes.search') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('public.athletes.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Cari atlet</a>
                     <a href="{{ route('about') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('about') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Tentang</a>
@@ -67,6 +68,7 @@
             </div>
             <nav class="flex flex-wrap gap-x-5 gap-y-2">
                 <a href="{{ route('register.index') }}" class="hover:text-teal-800">Daftar lomba</a>
+                <a href="{{ route('home') }}#buku-acara" class="hover:text-teal-800">Buku &amp; hasil</a>
                 <a href="{{ route('about') }}" class="hover:text-teal-800">Pengenalan</a>
                 <a href="{{ route('terms') }}" class="hover:text-teal-800">Syarat &amp; ketentuan</a>
                 <a href="{{ route('archive.index') }}" class="hover:text-teal-800">Arsip hasil</a>

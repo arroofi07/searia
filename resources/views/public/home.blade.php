@@ -19,6 +19,8 @@
                     @endif
                     @if ($featuredResults)
                         <a href="{{ route('results.index', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku hasil</a>
+                        <a href="{{ route('results.best-club', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Club terbaik</a>
+                        <a href="{{ route('results.best-swimmers', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Atlet terbaik</a>
                     @endif
                     <a href="{{ route('public.athletes.search') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Cari hasil atlet</a>
                     <a href="{{ route('archive.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Arsip kejuaraan</a>
@@ -87,7 +89,7 @@
     <section class="mt-10" id="buku-acara">
         <h2 class="text-xl font-semibold">Buku acara &amp; hasil</h2>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-            Buku acara adalah susunan seri dan lintasan. Buku hasil adalah catatan waktu hari lomba, setelah panitia mempublikasikan.
+            Peserta dapat melihat buku acara, buku hasil, club terbaik, dan atlet terbaik tanpa akun. Buku acara tampil setelah seri dibagi. Hasil dan penghargaan tampil setelah dipublikasikan.
         </p>
 
         @forelse ($liveCompetitions as $competition)
