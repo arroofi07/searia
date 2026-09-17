@@ -28,11 +28,11 @@ class PetunjukSheet implements FromArray, ShouldAutoSize, WithEvents, WithTitle
         $lines = [
             ['Petunjuk pengisian template pendaftaran'],
             [''],
-            ['Siapa yang mengunggah', 'Panitia dan Super Admin, lewat Pendaftaran → Import Excel. Peserta memakai form publik.'],
+            ['Siapa yang mengunggah', 'Panitia dan Super Admin, lewat Pendaftaran → Import Excel (satu berkas untuk nomor lomba + peserta). Peserta memakai form publik.'],
             ['Kejuaraan', $this->competition->name],
             ['Batas nomor per atlet', (string) $this->competition->max_events_per_athlete],
             [''],
-            ['Yang diisi', 'Hanya lembar PESERTA. Lembar NOMOR LOMBA dan PETUNJUK terkunci.'],
+            ['Yang diisi', 'Lembar NOMOR LOMBA dan PESERTA. Lembar PETUNJUK hanya baca.'],
             ['Kolom wajib', 'NAMA LENGKAP, L/P, TAHUN LAHIR, KLUB/SEKOLAH, KODE ACARA'],
             ['L/P', 'Isi L untuk putra atau P untuk putri'],
             ['KODE ACARA', 'Salin nomor dari kolom KODE ACARA di lembar NOMOR LOMBA, bukan nama gaya'],

@@ -10,7 +10,14 @@ class StoreImportRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', ImportBatch::class) ?? false;
+        $user = $this->user();
+        $competition = $this->route('competition');
+
+        if ($user === null || ! $user->can('create', ImportBatch::class)) {
+            return false;
+        }
+
+        return $competition instanceof Competition && $user->can('update', $competition);
     }
 
     /**

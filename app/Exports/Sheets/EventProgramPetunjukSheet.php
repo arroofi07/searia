@@ -25,10 +25,10 @@ class EventProgramPetunjukSheet implements FromArray, ShouldAutoSize, WithTitle
         $lines = [
             ['Petunjuk pengisian nomor lomba'],
             [''],
-            ['Unggah di', 'Pengaturan acara → Nomor lomba'],
+            ['Unggah di', 'Pendaftaran → Import Excel'],
             ['Kejuaraan', $this->competition->name],
             [''],
-            ['Isi lembar NOMOR LOMBA, lalu unggah ulang di halaman yang sama.'],
+            ['Isi lembar NOMOR LOMBA (dan PESERTA bila perlu), lalu unggah di halaman yang sama.'],
             ['Satu baris = satu nomor acara (putra dan putri ditulis terpisah).'],
             ['Jika kelompok umur belum ada, tulis nama berakhiran 1–9 (Group 1 atau Searia1). Sistem membuat grup baku otomatis.'],
             [''],

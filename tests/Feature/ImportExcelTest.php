@@ -23,34 +23,26 @@ function uploadCsv(array $meet, string $path, ?User $user = null)
         ]);
 }
 
-it('shows import excel only inside the registration section', function () {
+it('shows import excel in the sidebar and on the import page', function () {
     $meet = openRegistrationMeet();
     $panitia = User::factory()->panitia()->create();
 
     $this->actingAs($panitia)
         ->get(route('admin.competitions.index'))
         ->assertOk()
-        ->assertSee('Dasbor')
-        ->assertDontSee('Import Excel');
-
-    $this->actingAs($panitia)
-        ->get(route('admin.competitions.show', $meet['competition']))
-        ->assertOk()
-        ->assertSee('Pendaftaran')
-        ->assertDontSee('Import Excel');
+        ->assertSee('Import Excel');
 
     $this->actingAs($panitia)
         ->get(route('admin.registrations.index', $meet['competition']))
         ->assertOk()
-        ->assertSee('Import Excel');
+        ->assertSee('Import Excel (nomor + peserta)');
 
     $this->actingAs($panitia)
         ->get(route('admin.imports.index', $meet['competition']))
         ->assertOk()
-        ->assertSee('Import peserta dari Excel')
-        ->assertSee('jalur panitia dan Super Admin')
-        ->assertSeeText('Lembar NOMOR LOMBA terkunci, hanya rujukan')
-        ->assertSee('Unggah .xlsx atau .csv');
+        ->assertSee('satu berkas untuk nomor lomba dan peserta')
+        ->assertSee('NOMOR LOMBA')
+        ->assertSee('Unggah dan proses');
 });
 
 it('downloads a template with the three required sheet names', function () {
@@ -70,7 +62,8 @@ it('downloads a template with the three required sheet names', function () {
 
     $spreadsheet = IOFactory::load($path);
 
-    expect($spreadsheet->getSheetNames())->toBe(['PESERTA', 'NOMOR LOMBA', 'PETUNJUK']);
+    expect($spreadsheet->getSheetNames())->toBe(['PESERTA', 'NOMOR LOMBA', 'PETUNJUK'])
+        ->and($spreadsheet->getSheetByName('NOMOR LOMBA')->getProtection()->getSheet())->not->toBeTrue();
 
     $petunjuk = $spreadsheet->getSheetByName('PETUNJUK')->toArray();
     $joined = collect($petunjuk)->flatten()->filter()->implode(' ');
@@ -242,4 +235,38 @@ it('validates a small file immediately without a queue job', function () {
 
     Queue::assertNothingPushed();
     expect(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Validated);
+});
+
+it('imports nomor lomba and validates peserta from one workbook upload', function () {
+    $meet = openRegistrationMeet();
+    $competition = $meet['competition'];
+    $competition->events()->delete();
+
+    $path = tempnam(sys_get_temp_dir(), 'wb').'.xlsx';
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+    $events = $spreadsheet->getActiveSheet();
+    $events->setTitle('NOMOR LOMBA');
+    $events->fromArray([
+        ['KODE ACARA', 'NOMOR PERLOMBAAN', 'GENDER', 'GRUP YANG BOLEH IKUT'],
+        ['13', '50 M Gaya Dada', 'Putra', $meet['group']->name],
+    ], null, 'A1');
+
+    $participants = $spreadsheet->createSheet();
+    $participants->setTitle('PESERTA');
+    $participants->fromArray([
+        ['NO', 'NAMA LENGKAP', 'L/P', 'TAHUN LAHIR', 'KLUB/SEKOLAH', 'KABUPATEN/KOTA', 'KODE ACARA', 'CATATAN WAKTU'],
+        ['1', 'WORKBOOK ATLET', 'L', '2016', $meet['club']->name, $meet['club']->city, '13', '00:52.20'],
+    ], null, 'A1');
+
+    \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx')->save($path);
+    $spreadsheet->disconnectWorksheets();
+
+    $panitia = User::factory()->panitia()->create();
+    $response = test()->actingAs($panitia)->post(route('admin.imports.store', $competition), [
+        'file' => new UploadedFile($path, 'workbook.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true),
+    ]);
+
+    $response->assertRedirect();
+    expect($competition->fresh()->events()->where('event_number', 13)->exists())->toBeTrue()
+        ->and(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Validated);
 });

@@ -6,8 +6,6 @@ use App\Actions\CommitImportBatch;
 use App\DataTransferObjects\ParticipantRow;
 use App\Enums\ImportStatus;
 use App\Exceptions\CannotCancelImportBatchException;
-use App\Exceptions\ImportLimitExceededException;
-use App\Exceptions\MissingImportColumnsException;
 use App\Exports\ImportErrorReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreImportRequest;
@@ -15,8 +13,8 @@ use App\Http\Requests\UpdateImportRowRequest;
 use App\Jobs\CommitImportBatch as CommitImportBatchJob;
 use App\Models\Competition;
 use App\Models\ImportBatch;
-use App\Services\Import\ImportUploadService;
 use App\Services\Import\RowValidator;
+use App\Services\Import\WorkbookImportService;
 use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,23 +38,76 @@ class ImportController extends Controller
         return view('admin.imports.index', compact('competition', 'batches'));
     }
 
-    public function store(StoreImportRequest $request, Competition $competition, ImportUploadService $uploads): RedirectResponse
+    public function store(StoreImportRequest $request, Competition $competition, WorkbookImportService $workbook): RedirectResponse
     {
-        abort_unless($competition->isOpenForRegistration(), 403, 'Pendaftaran sudah ditutup');
+        $this->authorize('update', $competition);
 
-        try {
-            $batch = $uploads->store($competition, $request->user(), $request->file('file'));
-        } catch (MissingImportColumnsException $exception) {
-            return back()->withErrors(['file' => $exception->getMessage()]);
-        } catch (ImportLimitExceededException $exception) {
-            return back()->withErrors(['file' => $exception->getMessage()]);
+        $file = $request->file('file');
+        abort_if($file === null, 422);
+
+        $result = $workbook->handle($competition, $request->user(), $file);
+
+        if ($result['participant_error'] !== null) {
+            return back()
+                ->with('workbook_program', $result['program'])
+                ->with('workbook_program_skipped', $result['program_skipped'])
+                ->withErrors(['file' => $result['participant_error']]);
+        }
+
+        $messages = $this->workbookStatusMessages($result);
+
+        if ($result['batch'] === null) {
+            return back()->with('status', implode(' ', $messages));
         }
 
         return redirect()
-            ->route('admin.imports.show', $batch)
-            ->with('status', $batch->status === ImportStatus::Validating
-                ? 'Berkas besar sedang divalidasi di latar belakang.'
-                : 'Berkas selesai divalidasi.');
+            ->route('admin.imports.show', $result['batch'])
+            ->with('status', implode(' ', $messages));
+    }
+
+    /**
+     * @param  array{
+     *     batch: ImportBatch|null,
+     *     program: array{created: int, updated: int, groups_created: int, errors: list<string>}|null,
+     *     program_skipped: bool,
+     *     participants_skipped: bool,
+     *     participant_error: string|null
+     * }  $result
+     * @return list<string>
+     */
+    private function workbookStatusMessages(array $result): array
+    {
+        $messages = [];
+
+        if ($result['program'] !== null) {
+            $program = $result['program'];
+            $imported = ($program['created'] ?? 0) + ($program['updated'] ?? 0);
+
+            if ($imported > 0) {
+                $messages[] = 'Nomor lomba: '.$program['created'].' dibuat, '.$program['updated'].' diperbarui.';
+            }
+
+            if (($program['groups_created'] ?? 0) > 0) {
+                $messages[] = $program['groups_created'].' kelompok umur baru dibuat.';
+            }
+        } elseif ($result['program_skipped']) {
+            $messages[] = 'Lembar NOMOR LOMBA dilewati (berkas CSV).';
+        }
+
+        if ($result['participants_skipped']) {
+            $messages[] = 'Lembar PESERTA tidak divalidasi karena pendaftaran sudah ditutup.';
+        } elseif ($result['batch'] !== null) {
+            $batch = $result['batch'];
+            $messages[] = $batch->status === ImportStatus::Validating
+                ? 'Peserta: berkas besar sedang divalidasi di latar belakang.'
+                : 'Peserta: berkas selesai divalidasi.';
+        }
+
+        if ($messages === []) {
+            $messages[] = 'Berkas diproses. Periksa pratinjau peserta jika ada.';
+        }
+
+        return $messages;
     }
 
     public function show(ImportBatch $importBatch): View

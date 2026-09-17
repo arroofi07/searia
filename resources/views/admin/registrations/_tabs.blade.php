@@ -7,7 +7,7 @@
         class="rounded-md px-3 py-1.5 {{ $tab === 'registrations' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Antrean verifikasi</a>
     @can('viewAny', App\Models\ImportBatch::class)
         <a href="{{ route('admin.imports.index', $competition) }}"
-            class="rounded-md px-3 py-1.5 {{ $tab === 'imports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Import Excel</a>
+            class="rounded-md px-3 py-1.5 {{ $tab === 'imports' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Import Excel (nomor + peserta)</a>
     @endcan
     <a href="{{ route('admin.submissions.index', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $tab === 'submissions' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Pendaftaran masuk</a>

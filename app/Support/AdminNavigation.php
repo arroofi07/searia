@@ -58,7 +58,7 @@ final class AdminNavigation
         $name = (string) request()->route()?->getName();
 
         return match (true) {
-            str_starts_with($name, 'admin.imports.'),
+            str_starts_with($name, 'admin.imports.') => 'imports',
             str_starts_with($name, 'admin.registrations.'),
             str_starts_with($name, 'admin.submissions.') => 'registrations',
             str_starts_with($name, 'admin.seeding.') => 'seeding',

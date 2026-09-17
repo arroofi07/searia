@@ -21,7 +21,7 @@ class ParticipantTemplateExport implements WithMultipleSheets
 
         return [
             new Sheets\PesertaSheet,
-            new Sheets\NomorLombaSheet($this->competition),
+            new Sheets\NomorLombaSheet($this->competition, protect: false, seedDefaults: true),
             new Sheets\PetunjukSheet($this->competition),
         ];
     }
