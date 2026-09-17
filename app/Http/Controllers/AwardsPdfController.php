@@ -9,7 +9,7 @@ use App\Services\BestSwimmerStanding;
 use App\Services\ClubStanding;
 use App\Services\MedalTally;
 use App\Services\RankingCalculator;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -25,14 +25,14 @@ class AwardsPdfController extends Controller
         $this->authorizeDownload($request, $competition);
 
         $filename = 'club-terbaik-'.$competition->slug.'.pdf';
-        $pdf = Pdf::loadView('pdf.best-club', [
+        $data = [
             ...$this->headerData($competition),
             'rows' => $standing->forCompetition($competition, $medals, $ranking),
-        ])->setPaper('a4');
+        ];
 
         return $request->boolean('inline')
-            ? $pdf->stream($filename)
-            : $pdf->download($filename);
+            ? PdfRenderer::stream('pdf.best-club', $data, $filename)
+            : PdfRenderer::download('pdf.best-club', $data, $filename);
     }
 
     public function bestSwimmers(
@@ -45,14 +45,14 @@ class AwardsPdfController extends Controller
         $this->authorizeDownload($request, $competition);
 
         $filename = 'atlet-terbaik-'.$competition->slug.'.pdf';
-        $pdf = Pdf::loadView('pdf.best-swimmers', [
+        $data = [
             ...$this->headerData($competition),
             'groups' => $standing->forCompetition($competition, $medals, $ranking),
-        ])->setPaper('a4', 'landscape');
+        ];
 
         return $request->boolean('inline')
-            ? $pdf->stream($filename)
-            : $pdf->download($filename);
+            ? PdfRenderer::stream('pdf.best-swimmers', $data, $filename, 'a4', 'landscape')
+            : PdfRenderer::download('pdf.best-swimmers', $data, $filename, 'a4', 'landscape');
     }
 
     private function authorizeDownload(Request $request, Competition $competition): void

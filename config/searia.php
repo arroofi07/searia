@@ -43,7 +43,7 @@ return [
     ],
 
     'pdf' => [
-        'organizer_logo' => env('SEARIA_PDF_LOGO', public_path('images/event-logo.jpg')),
+        'organizer_logo' => env('SEARIA_PDF_LOGO'),
     ],
 
     'certificate' => [

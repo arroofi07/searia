@@ -3,8 +3,8 @@
 namespace App\Services\Certificate;
 
 use App\Models\Certificate;
+use App\Support\PdfRenderer;
 use App\Support\SwimTime;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
 class CertificatePdf
@@ -17,7 +17,7 @@ class CertificatePdf
             ? 'pdf.certificate-winner'
             : 'pdf.certificate-participant';
 
-        $pdf = Pdf::loadView($view, $this->viewData($certificate))->setPaper('a4', 'landscape');
+        $pdf = PdfRenderer::load($view, $this->viewData($certificate), 'a4', 'landscape');
 
         $slug = $certificate->isWinner() ? 'juara' : 'peserta';
 
@@ -32,9 +32,7 @@ class CertificatePdf
             ? 'pdf.certificate-winner'
             : 'pdf.certificate-participant';
 
-        return Pdf::loadView($view, $this->viewData($certificate))
-            ->setPaper('a4', 'landscape')
-            ->output();
+        return PdfRenderer::output($view, $this->viewData($certificate), 'a4', 'landscape');
     }
 
     /**
@@ -76,10 +74,7 @@ class CertificatePdf
         }
 
         $absolute = storage_path('app/public/'.$path);
-        if (! is_file($absolute)) {
-            return null;
-        }
 
-        return 'file://'.str_replace('\\', '/', $absolute);
+        return PdfRenderer::fileDataUri($absolute);
     }
 }

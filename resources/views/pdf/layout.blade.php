@@ -36,13 +36,7 @@
 </head>
 <body>
     @php
-        $logoPath = $logoPath ?? null;
-        if ($logoPath === null) {
-            $configured = config('searia.pdf.organizer_logo');
-            if (is_string($configured) && $configured !== '' && is_file($configured)) {
-                $logoPath = 'file://'.str_replace('\\', '/', $configured);
-            }
-        }
+        $logoPath = $logoPath ?? \App\Support\PdfRenderer::logoDataUri();
         $includeCover = $includeCover ?? false;
         $coverTitle = $coverTitle ?? trim($__env->yieldContent('document-title'));
         if ($coverTitle === '') {

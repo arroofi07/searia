@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller as BaseController;
 use App\Models\Competition;
 use App\Models\User;
 use App\Services\ResultsBookBuilder;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -28,7 +28,7 @@ class ResultsPdfController extends BaseController
         );
 
         $filename = 'buku-hasil-'.$competition->slug.'.pdf';
-        $pdf = Pdf::loadView('pdf.results-book', [
+        $data = [
             'document' => $document,
             'competitionName' => $document->competitionName,
             'venue' => $document->venue,
@@ -36,11 +36,11 @@ class ResultsPdfController extends BaseController
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
             'includeCover' => ! $request->filled('event_id'),
-        ])->setPaper('a4');
+        ];
 
         $response = $request->boolean('inline')
-            ? $pdf->stream($filename)
-            : $pdf->download($filename);
+            ? PdfRenderer::stream('pdf.results-book', $data, $filename)
+            : PdfRenderer::download('pdf.results-book', $data, $filename);
 
         $response->headers->set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
         $response->headers->set('Pragma', 'no-cache');

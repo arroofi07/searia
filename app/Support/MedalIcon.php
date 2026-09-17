@@ -24,13 +24,16 @@ class MedalIcon
         };
     }
 
-    public static function pdfSrc(string $metal): string
-    {
-        return 'file://'.str_replace('\\', '/', public_path('images/medals/'.$metal.'.svg'));
-    }
-
     public static function webSrc(string $metal): string
     {
         return asset('images/medals/'.$metal.'.svg');
+    }
+
+    /**
+     * Kept so stale compiled Blade on cPanel does not call a missing method.
+     */
+    public static function pdfSrc(string $metal): string
+    {
+        return self::webSrc($metal);
     }
 }

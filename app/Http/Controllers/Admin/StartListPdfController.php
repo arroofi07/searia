@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Competition;
 use App\Services\StartListBuilder;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -33,7 +33,7 @@ class StartListPdfController extends Controller
             eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
         );
 
-        $pdf = Pdf::loadView('pdf.start-list', [
+        return PdfRenderer::download('pdf.start-list', [
             'document' => $document,
             'competitionName' => $document->competitionName,
             'venue' => $document->venue,
@@ -42,9 +42,7 @@ class StartListPdfController extends Controller
             'printedAt' => $document->printedAt,
             'includeToc' => ! $request->filled('event_id'),
             'includeCover' => ! $request->filled('event_id'),
-        ])->setPaper('a4');
-
-        return $pdf->download($this->filename($competition, 'buku-acara'));
+        ], $this->filename($competition, 'buku-acara'));
     }
 
     public function resultSheets(Request $request, Competition $competition, StartListBuilder $builder): Response
@@ -57,16 +55,14 @@ class StartListPdfController extends Controller
             eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
         );
 
-        $pdf = Pdf::loadView('pdf.result-sheet', [
+        return PdfRenderer::download('pdf.result-sheet', [
             'document' => $document,
             'competitionName' => $document->competitionName,
             'venue' => $document->venue,
             'city' => $document->city,
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
-        ])->setPaper('a4');
-
-        return $pdf->download($this->filename($competition, 'lembar-hasil'));
+        ], $this->filename($competition, 'lembar-hasil'));
     }
 
     private function filename(Competition $competition, string $prefix): string

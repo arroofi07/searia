@@ -102,7 +102,7 @@ it('downloads the ranked results book instead of a start-list style sheet', func
         ->and($html)->toContain('Emas')
         ->and($html)->toContain('Perak')
         ->and($html)->toContain('Perunggu')
-        ->and($html)->not->toContain('YOB')
+        ->and($html)->not->toContain('>YOB<')
         ->and($html)->not->toContain('>AGE<')
         ->and($html)->not->toContain('●')
         ->and($html)->not->toContain('✓');

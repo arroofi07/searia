@@ -3,7 +3,7 @@
 namespace App\Services\Invoice;
 
 use App\Models\Invoice;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfRenderer;
 use Illuminate\Http\Response;
 
 class InvoicePdf
@@ -14,17 +14,17 @@ class InvoicePdf
 
         $filename = $invoice->invoice_number.'.pdf';
 
-        return Pdf::loadView('pdf.invoice', [
+        return PdfRenderer::download('pdf.invoice', [
             'invoice' => $invoice,
-        ])->download($filename);
+        ], $filename);
     }
 
     public function render(Invoice $invoice): string
     {
         $invoice->loadMissing(['competition', 'club', 'registrations.athlete', 'registrations.event']);
 
-        return Pdf::loadView('pdf.invoice', [
+        return PdfRenderer::output('pdf.invoice', [
             'invoice' => $invoice,
-        ])->output();
+        ]);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Competition;
 use App\Models\User;
 use App\Services\StartListBuilder;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PdfRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -24,7 +24,7 @@ class StartListPdfDownloadController extends Controller
         );
 
         $filename = 'buku-acara-'.$competition->slug.'.pdf';
-        $pdf = Pdf::loadView('pdf.start-list', [
+        $data = [
             'document' => $document,
             'competitionName' => $document->competitionName,
             'venue' => $document->venue,
@@ -33,11 +33,11 @@ class StartListPdfDownloadController extends Controller
             'printedAt' => $document->printedAt,
             'includeToc' => ! $request->filled('event_id'),
             'includeCover' => ! $request->filled('event_id'),
-        ])->setPaper('a4');
+        ];
 
         return $request->boolean('inline')
-            ? $pdf->stream($filename)
-            : $pdf->download($filename);
+            ? PdfRenderer::stream('pdf.start-list', $data, $filename)
+            : PdfRenderer::download('pdf.start-list', $data, $filename);
     }
 
     private function isStaff(?User $user): bool

@@ -102,9 +102,9 @@ it('merges heats into one ranking table ordered by place', function () {
         'includeCover' => false,
     ])->render();
 
-    expect($html)->toContain('images/medals/gold.svg')
-        ->and($html)->toContain('images/medals/silver.svg')
-        ->and($html)->toContain('images/medals/bronze.svg')
+    expect($html)->toContain('#eab308')
+        ->and($html)->toContain('#cbd5e1')
+        ->and($html)->toContain('#cd7f32')
         ->and($html)->not->toContain('✓');
 });
 
