@@ -9,6 +9,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="stylesheet" href="{{ \App\Support\PublicAssets::cssUrl() }}">
     </head>
     <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <main class="mx-auto flex min-h-screen max-w-md items-center px-4 py-10">

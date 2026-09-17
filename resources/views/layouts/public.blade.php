@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
+    <link rel="stylesheet" href="{{ \App\Support\PublicAssets::cssUrl() }}">
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <header class="relative sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">

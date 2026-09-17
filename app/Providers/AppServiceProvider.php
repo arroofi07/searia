@@ -23,8 +23,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Carbon::setLocale(config('app.locale', 'id'));
 
-        // Root-relative CSS/JS so an HTTPS page never loads HTTP assets (Chrome "Not Secure").
-        Vite::createAssetPathsUsing(fn (string $path, ?bool $secure = null): string => '/'.ltrim($path, '/'));
+        Vite::createAssetPathsUsing(function (string $path, ?bool $secure = null): string {
+            $base = '';
+            if (! app()->runningInConsole()) {
+                $base = rtrim((string) request()->getBasePath(), '/');
+            }
+
+            return ($base === '' ? '' : $base).'/'.ltrim($path, '/');
+        });
 
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceHttps();

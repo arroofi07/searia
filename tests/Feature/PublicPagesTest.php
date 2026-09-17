@@ -41,6 +41,7 @@ it('uses the swimming brand mark and favicon on public pages', function () {
         ->assertOk()
         ->assertSee('/brand/favicon', false)
         ->assertSee('/brand/logo', false)
+        ->assertSee('/css/app.css', false)
         ->assertDontSee('>SR<', false);
 });
 

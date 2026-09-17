@@ -35,7 +35,9 @@ Chrome menampilkan **Not Secure** jika situs masih `http://`, atau halaman `http
 
 Document root container harus folder `public/`. Cek `https://domain-anda/images/logo.png` — harus 200.
 
-`public/build` tidak ada di git. Deploy harus menjalankan `npm ci && npm run build` atau halaman akan error Vite manifest.
+`public/build` tidak ada di git. Deploy CapRover harus `npm ci && npm run build`.
+
+Untuk **cPanel**, unggah juga `public/css/app.css` (stylesheet stabil hasil build). Tanpa file itu, landing page baru tampil berantakan karena CSS Tailwind di server masih versi lama. Setelah unggah: `php artisan cache:clear && php artisan view:clear`.
 
 ## Langkah penerapan
 

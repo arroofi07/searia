@@ -18,6 +18,6 @@ class PublicPageCache
 
     public static function key(string $suffix): string
     {
-        return 'public_v'.self::version().':'.$suffix;
+        return 'public_css_v1:'.self::version().':'.$suffix;
     }
 }
