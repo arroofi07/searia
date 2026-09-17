@@ -5,19 +5,21 @@ namespace App\DataTransferObjects;
 class ResultsBookEventBlock
 {
     /**
-     * @param  list<ResultsBookAgeGroupBlock>  $ageGroups
+     * @param  list<ResultsBookLane>  $lanes
      */
     public function __construct(
         public int $eventId,
         public int $eventNumber,
         public string $eventName,
+        public string $ageGroupName,
+        public string $ageGroupCode,
         public int $session,
         public int $sortOrder,
-        public array $ageGroups,
+        public array $lanes,
     ) {}
 
     public function title(): string
     {
-        return 'EVENT '.$this->eventNumber.': '.$this->eventName;
+        return 'Nomor '.$this->eventNumber.' · '.$this->eventName.' · '.$this->ageGroupName;
     }
 }

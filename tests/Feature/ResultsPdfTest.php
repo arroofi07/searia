@@ -59,7 +59,7 @@ it('lets a judge open start list and results pdfs before the public status', fun
         ->get(route('judge.tasks'))
         ->assertOk()
         ->assertSee('PDF acara')
-        ->assertSee('PDF hasil');
+        ->assertSee('PDF buku hasil');
 
     $this->actingAs($judge)
         ->get(route('start-list.pdf', [$competition, 'inline' => 1]))

@@ -48,8 +48,9 @@
         <div class="mt-5 flex flex-wrap gap-2 text-sm">
             <a href="{{ route('admin.exports.start-list', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Start list</a>
             <a href="{{ route('admin.exports.start-list', [$competition, 'per_event' => 1]) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Start list per acara</a>
-            <a href="{{ route('admin.exports.results', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Hasil</a>
-            <a href="{{ route('admin.exports.results', [$competition, 'per_event' => 1]) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Hasil per acara</a>
+            <a href="{{ route('admin.exports.results', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Hasil Excel</a>
+            <a href="{{ route('admin.exports.results', [$competition, 'per_event' => 1]) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Hasil Excel per acara</a>
+            <a href="{{ route('admin.results.book-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF buku hasil</a>
             <a href="{{ route('admin.exports.medals', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Rekap medali</a>
             <a href="{{ route('admin.exports.blank-results', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">Lembar hasil kosong</a>
             <a href="{{ route('admin.results.best-club-pdf', $competition) }}" class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">PDF club terbaik</a>

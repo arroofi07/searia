@@ -27,7 +27,7 @@ class ResultsPdfController extends BaseController
             eventId: $request->filled('event_id') ? $request->integer('event_id') : null,
         );
 
-        $filename = 'hasil-lomba-'.$competition->slug.'.pdf';
+        $filename = 'buku-hasil-'.$competition->slug.'.pdf';
         $pdf = Pdf::loadView('pdf.results-book', [
             'document' => $document,
             'competitionName' => $document->competitionName,
@@ -38,9 +38,14 @@ class ResultsPdfController extends BaseController
             'includeCover' => ! $request->filled('event_id'),
         ])->setPaper('a4');
 
-        return $request->boolean('inline')
+        $response = $request->boolean('inline')
             ? $pdf->stream($filename)
             : $pdf->download($filename);
+
+        $response->headers->set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
     }
 
     private function isStaff(?User $user): bool

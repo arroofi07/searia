@@ -22,7 +22,7 @@
         @if ($firstCompetition)
             <div class="flex flex-wrap gap-2">
                 <a href="{{ route('start-list.pdf', [$firstCompetition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">PDF acara</a>
-                <a href="{{ route('results.pdf', [$firstCompetition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">PDF hasil</a>
+                <a href="{{ route('results.pdf', [$firstCompetition, 'inline' => 1]) }}" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">PDF buku hasil</a>
             </div>
         @endif
     </div>

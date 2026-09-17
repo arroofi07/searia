@@ -43,6 +43,71 @@ it('lets admin download start list and result sheet pdfs', function () {
         ->assertHeader('content-type', 'application/pdf');
 });
 
+it('keeps the ranked results book form separate from blank result sheets', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $admin = User::factory()->panitia()->create();
+
+    $html = $this->actingAs($admin)
+        ->get(route('admin.start-list.index', $competition))
+        ->assertOk()
+        ->assertSee('Unduh buku hasil', false)
+        ->assertSee('Unduh lembar kosong', false)
+        ->assertSee(route('admin.results.book-pdf', $competition), false)
+        ->assertSee(route('admin.start-list.results', $competition), false)
+        ->getContent();
+
+    $depth = 0;
+    $maxDepth = 0;
+    $offset = 0;
+    while (preg_match('/<\/?form\b[^>]*>/i', $html, $match, PREG_OFFSET_CAPTURE, $offset) === 1) {
+        $tag = $match[0][0];
+        $offset = $match[0][1] + strlen($tag);
+        $depth += str_starts_with(strtolower($tag), '</') ? -1 : 1;
+        $maxDepth = max($maxDepth, $depth);
+        expect($depth)->toBeGreaterThanOrEqual(0);
+    }
+
+    expect($depth)->toBe(0)
+        ->and($maxDepth)->toBe(1);
+});
+
+it('downloads the ranked results book instead of a start-list style sheet', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $admin = User::factory()->panitia()->create();
+
+    $response = $this->actingAs($admin)
+        ->get(route('admin.results.book-pdf', $competition))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+
+    expect($response->headers->get('content-disposition'))->toContain('buku-hasil-'.$competition->slug.'.pdf');
+
+    $document = app(\App\Services\ResultsBookBuilder::class)->build($competition->fresh());
+    $html = view('pdf.results-book', [
+        'document' => $document,
+        'competitionName' => $document->competitionName,
+        'venue' => $document->venue,
+        'city' => $document->city,
+        'dateLabel' => $document->dateLabel,
+        'printedAt' => $document->printedAt,
+        'includeCover' => true,
+    ])->render();
+
+    expect($html)->toContain('TEMPAT')
+        ->and($html)->toContain('HASIL')
+        ->and($html)->toContain('Umur')
+        ->and($html)->toContain('Group')
+        ->and($html)->toContain('Emas')
+        ->and($html)->toContain('Perak')
+        ->and($html)->toContain('Perunggu')
+        ->and($html)->not->toContain('YOB')
+        ->and($html)->not->toContain('>AGE<')
+        ->and($html)->not->toContain('●')
+        ->and($html)->not->toContain('✓');
+});
+
 it('highlights matching athlete names on the public start list', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(4);
     app(RunSeeding::class)->handle($competition, $event, $group);

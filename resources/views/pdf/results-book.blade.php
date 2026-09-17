@@ -8,43 +8,41 @@
         <h2 style="font-size:13px;margin:0 0 10px;">Sesi {{ $session->session }}</h2>
 
         @foreach ($session->events as $event)
-            <div class="event-block">
+            <div class="event-block" style="page-break-inside:auto;">
                 <div class="event-title">{{ $event->title() }}</div>
 
-                @foreach ($event->ageGroups as $ageGroup)
-                    <div class="group-title">{{ $ageGroup->name }}</div>
-
-                    <table class="lanes">
-                        <thead>
+                <table class="lanes">
+                    <thead>
+                        <tr>
+                            <th style="width:7%">TEMPAT</th>
+                            <th>NAMA</th>
+                            <th style="width:7%">Umur</th>
+                            <th style="width:8%">Group</th>
+                            <th style="width:16%">CLUB</th>
+                            <th style="width:13%">KAB/KOTA</th>
+                            <th style="width:12%">HASIL</th>
+                            <th style="width:6%;text-align:center">Emas</th>
+                            <th style="width:6%;text-align:center">Perak</th>
+                            <th style="width:8%;text-align:center">Perunggu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($event->lanes as $lane)
                             <tr>
-                                <th style="width:8%">TEMPAT</th>
-                                <th>NAMA</th>
-                                <th style="width:7%">YOB</th>
-                                <th style="width:7%">AGE</th>
-                                <th style="width:16%">CLUB</th>
-                                <th style="width:12%">KAB/KOTA</th>
-                                <th style="width:7%">SERI</th>
-                                <th style="width:7%">LANE</th>
-                                <th style="width:12%">HASIL</th>
+                                <td>{{ $lane->formattedRank() }}</td>
+                                <td>{{ $lane->athleteName }}</td>
+                                <td>{{ $lane->formattedAge() }}</td>
+                                <td>{{ $lane->ageGroupCode }}</td>
+                                <td>{{ $lane->clubName }}</td>
+                                <td>{{ $lane->city }}</td>
+                                <td>{{ $lane->formattedResult() }}</td>
+                                <td style="text-align:center">@include('partials.medal-icon', ['metal' => $lane->medalMark(1), 'pdf' => true])</td>
+                                <td style="text-align:center">@include('partials.medal-icon', ['metal' => $lane->medalMark(2), 'pdf' => true])</td>
+                                <td style="text-align:center">@include('partials.medal-icon', ['metal' => $lane->medalMark(3), 'pdf' => true])</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($ageGroup->lanes as $lane)
-                                <tr>
-                                    <td>{{ $lane->formattedRank() }}</td>
-                                    <td>{{ $lane->athleteName }}</td>
-                                    <td>{{ $lane->birthYear }}</td>
-                                    <td>{{ $lane->ageGroupCode }}</td>
-                                    <td>{{ $lane->clubName }}</td>
-                                    <td>{{ $lane->city }}</td>
-                                    <td>{{ $lane->heatNumber }}</td>
-                                    <td>{{ $lane->laneNumber }}</td>
-                                    <td>{{ $lane->formattedResult() }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endforeach
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         @endforeach
 

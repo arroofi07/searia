@@ -3,12 +3,15 @@
         <tr>
             <th class="px-3 py-2">Peringkat</th>
             <th class="px-3 py-2">Nama</th>
+            <th class="px-3 py-2">Umur</th>
+            <th class="px-3 py-2">Group</th>
             <th class="px-3 py-2">Klub</th>
             <th class="px-3 py-2">Kota</th>
             <th class="px-3 py-2">Waktu</th>
+            <th class="px-3 py-2 text-center">Emas</th>
+            <th class="px-3 py-2 text-center">Perak</th>
+            <th class="px-3 py-2 text-center">Perunggu</th>
             <th class="px-3 py-2">Selisih</th>
-            <th class="px-3 py-2">Seri</th>
-            <th class="px-3 py-2">Lint</th>
         </tr>
     </thead>
     <tbody>
@@ -39,9 +42,14 @@
                         <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">PB</span>
                     @endif
                 </td>
+                <td class="px-3 py-2" data-label="Umur">{{ $entry->formattedAge() }}</td>
+                <td class="px-3 py-2" data-label="Group">{{ $entry->ageGroupCode ?? '—' }}</td>
                 <td class="px-3 py-2" data-label="Klub">{{ $entry->clubName }}</td>
                 <td class="px-3 py-2" data-label="Kota">{{ $entry->city ?? '—' }}</td>
                 <td class="px-3 py-2 font-mono" data-label="Waktu">{{ ($formatTime)($entry->timeMs) }}</td>
+                <td class="px-3 py-2 text-center" data-label="Emas">@include('partials.medal-icon', ['metal' => $entry->medalMark(1)])</td>
+                <td class="px-3 py-2 text-center" data-label="Perak">@include('partials.medal-icon', ['metal' => $entry->medalMark(2)])</td>
+                <td class="px-3 py-2 text-center" data-label="Perunggu">@include('partials.medal-icon', ['metal' => $entry->medalMark(3)])</td>
                 <td class="px-3 py-2 text-slate-600" data-label="Selisih">
                     @if ($entry->gapToFirstMs === null)
                         —
@@ -51,8 +59,6 @@
                         +{{ ($formatTime)($entry->gapToFirstMs) }}
                     @endif
                 </td>
-                <td class="px-3 py-2" data-label="Seri">{{ $entry->heatNumber }}</td>
-                <td class="px-3 py-2" data-label="Lintasan">{{ $entry->laneNumber }}</td>
             </tr>
         @endforeach
     </tbody>

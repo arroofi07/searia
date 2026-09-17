@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <a href="{{ route('results.pdf', $competition) }}" class="public-btn">Unduh PDF hasil</a>
+            <a href="{{ route('results.pdf', $competition) }}" class="public-btn">Unduh PDF buku hasil</a>
             <a href="{{ route('results.best-swimmers.pdf', $competition) }}" class="public-btn-secondary">PDF atlet terbaik</a>
             <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">PDF club terbaik</a>
             <a href="{{ route('results.medals', $competition) }}" class="public-btn-secondary">Rekap medali</a>
@@ -36,7 +36,6 @@
         <section class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h2 class="font-medium">{{ $table->eventTitle }}</h2>
-                <p class="text-sm text-slate-500">{{ $table->ageGroupName }}</p>
             </div>
             @include('results._table', ['table' => $table, 'formatTime' => $formatTime, 'competition' => $competition])
         </section>

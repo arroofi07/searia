@@ -38,6 +38,7 @@
     @include('partials.pagination', ['paginator' => $events])
 
     <p class="mt-4 text-sm flex flex-wrap gap-4">
+        <a href="{{ route('admin.results.book-pdf', $competition) }}" class="text-teal-800 hover:underline">Unduh PDF buku hasil</a>
         <a href="{{ route('admin.judges.edit', $competition) }}" class="text-teal-800 hover:underline">Kelola penugasan juri</a>
         <a href="{{ route('admin.results.verify', $competition) }}" class="text-teal-800 hover:underline">Verifikasi hasil</a>
         <a href="{{ route('admin.exports.index', $competition) }}" class="text-teal-800 hover:underline">Export</a>

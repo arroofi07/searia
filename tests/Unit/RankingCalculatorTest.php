@@ -82,7 +82,10 @@ it('gives rank one to the fastest swimmer even from heat two', function () {
 
     expect($table->entries[0]->athleteName)->toBe('HEAT TWO BEST')
         ->and($table->entries[0]->rank)->toBe(1)
-        ->and($table->entries[0]->athleteId)->toBe($best->id);
+        ->and($table->entries[0]->athleteId)->toBe($best->id)
+        ->and($table->eventTitle)->toContain('Group 3')
+        ->and($table->entries[0]->age)->toBe(2016)
+        ->and($table->entries[0]->medalMark(1))->toBe('gold');
 });
 
 it('shares rank one on equal times and skips rank two', function () {

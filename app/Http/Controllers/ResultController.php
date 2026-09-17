@@ -23,27 +23,36 @@ class ResultController extends Controller
     {
         $this->authorizePublicOrPreview($request, $competition);
 
-        $events = $competition->events()->with(['ageGroups', 'heats'])->get();
-        $pairs = [];
+        $events = $competition->events()
+            ->with(['ageGroups', 'heats.ageGroup'])
+            ->orderBy('session')
+            ->orderBy('sort_order')
+            ->orderBy('event_number')
+            ->get();
+        $eventBlocks = [];
 
         foreach ($events as $event) {
-            $ageGroupIds = $event->heats->pluck('age_group_id')->unique()->filter()->values();
-            foreach ($ageGroupIds as $ageGroupId) {
-                $ageGroup = $event->ageGroups->firstWhere('id', $ageGroupId)
-                    ?? AgeGroup::query()->find($ageGroupId);
-                if ($ageGroup === null) {
+            $groups = $event->heats
+                ->map(function ($heat) use ($event) {
+                    return $heat->ageGroup
+                        ?? $event->ageGroups->firstWhere('id', $heat->age_group_id);
+                })
+                ->filter()
+                ->unique('id')
+                ->sortBy(fn (AgeGroup $group): int => (int) $group->sort_order)
+                ->values();
+
+            foreach ($groups as $ageGroup) {
+                $table = $ranking->forEventAgeGroup($event, $ageGroup);
+                if ($table->entries === []) {
                     continue;
                 }
-                $pairs[] = ['event' => $event, 'ageGroup' => $ageGroup];
+
+                $eventBlocks[] = $table;
             }
         }
 
-        $tables = ListPaginator::for($pairs);
-        $tables->setCollection(
-            $tables->getCollection()
-                ->map(fn (array $pair) => $ranking->forEventAgeGroup($pair['event'], $pair['ageGroup']))
-                ->values()
-        );
+        $tables = ListPaginator::for($eventBlocks);
 
         return view('results.index', [
             'competition' => $competition,

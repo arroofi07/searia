@@ -16,7 +16,7 @@ class RankingCalculator
     {
         $results = Result::query()
             ->with([
-                'heatLane.heat',
+                'heatLane.heat.ageGroup',
                 'heatLane.registration.athlete.club',
             ])
             ->whereHas('heatLane.heat', function ($query) use ($event, $ageGroup): void {
@@ -28,7 +28,7 @@ class RankingCalculator
         return new RankingTable(
             eventId: $event->id,
             ageGroupId: $ageGroup->id,
-            eventTitle: 'Acara '.$event->event_number.' - '.$event->formattedName(),
+            eventTitle: 'Nomor '.$event->event_number.' · '.$event->shortName().' · '.$event->gender->label().' · '.$ageGroup->name,
             ageGroupName: $ageGroup->name,
             entries: $this->rankResults($results)->all(),
         );
@@ -98,6 +98,8 @@ class RankingCalculator
             ? $time - $firstTimeMs
             : null;
 
+        $ageGroup = $lane?->heat?->ageGroup;
+
         return new RankingEntry(
             resultId: $result->id,
             rank: $rank,
@@ -114,6 +116,8 @@ class RankingCalculator
             gapToFirstMs: $gap,
             isPersonalBest: $isPb,
             dsqCode: $result->dsq_code?->value,
+            ageGroupCode: $ageGroup?->display_code ?: $ageGroup?->code,
+            age: $athlete?->birth_year,
         );
     }
 }
