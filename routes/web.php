@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\StartListPdfController;
 use App\Http\Controllers\Admin\SubmissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AthleteController;
+use App\Http\Controllers\BrandImageController;
 use App\Http\Controllers\AthleteResultController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AwardsPdfController;
@@ -50,6 +51,10 @@ use App\Http\Controllers\StartListController;
 use App\Http\Controllers\StartListPdfDownloadController;
 use App\Http\Middleware\CachePublicPages;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/brand/{name}', BrandImageController::class)
+    ->where('name', 'logo|event-logo|apple-touch-icon|favicon')
+    ->name('brand.image');
 
 Route::middleware(CachePublicPages::class.':300')->group(function (): void {
     Route::get('/', HomeController::class)->name('home');

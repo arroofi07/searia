@@ -39,16 +39,16 @@ it('returns 200 on home when there are no open competitions', function () {
 it('uses the swimming brand mark and favicon on public pages', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('favicon.svg', false)
-        ->assertSee('images/logo.png', false)
+        ->assertSee('/brand/favicon', false)
+        ->assertSee('/brand/logo', false)
         ->assertDontSee('>SR<', false);
 });
 
 it('uses the swimming brand mark and favicon on the login page', function () {
     $this->get(route('login'))
         ->assertOk()
-        ->assertSee('favicon.svg', false)
-        ->assertSee('images/logo.png', false);
+        ->assertSee('/brand/favicon', false)
+        ->assertSee('/brand/logo', false);
 });
 
 it('uses root-relative brand assets so https pages do not mix in http urls', function () {
@@ -61,9 +61,23 @@ it('uses root-relative brand assets so https pages do not mix in http urls', fun
         'HTTP_X_FORWARDED_PORT' => '443',
     ])->get(route('home'))
         ->assertOk()
-        ->assertSee('src="/images/logo.png"', false)
-        ->assertSee('href="/favicon.svg"', false)
-        ->assertDontSee('http://searia.example.com/images/logo.png', false);
+        ->assertSee('src="/brand/logo"', false)
+        ->assertSee('href="/brand/favicon"', false)
+        ->assertDontSee('http://searia.example.com/brand/logo', false);
+});
+
+it('serves brand images through laravel so production does not depend on public/ static files', function () {
+    $this->get('/brand/logo')
+        ->assertOk()
+        ->assertHeader('content-type', 'image/png');
+
+    $this->get('/brand/event-logo')
+        ->assertOk()
+        ->assertHeader('content-type', 'image/jpeg');
+
+    $this->get('/brand/favicon')
+        ->assertOk()
+        ->assertHeader('content-type', 'image/svg+xml');
 });
 
 it('caches public home responses without serializing closures', function () {

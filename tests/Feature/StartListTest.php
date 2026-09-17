@@ -22,7 +22,7 @@ it('allows guests to open start list after seeding', function () {
     $this->get(route('start-list.show', $competition))
         ->assertOk()
         ->assertSee('Buku acara')
-        ->assertSee('images/event-logo.jpg', false)
+        ->assertSee('/brand/event-logo', false)
         ->assertSee('ATHLETE 01');
 });
 

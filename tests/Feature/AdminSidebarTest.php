@@ -24,8 +24,8 @@ it('shows a short consistent sidebar of primary features only', function () {
 
     foreach ($pages as $page) {
         $page->assertOk();
-        $page->assertSee('images/logo.png', false);
-        $page->assertSee('favicon.svg', false);
+        $page->assertSee('/brand/logo', false);
+        $page->assertSee('/brand/favicon', false);
         foreach ($labels as $label) {
             $page->assertSee($label);
         }
