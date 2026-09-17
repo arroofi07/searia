@@ -35,6 +35,7 @@ class ResultsPdfController extends BaseController
             'city' => $document->city,
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
+            'includeCover' => ! $request->filled('event_id'),
         ])->setPaper('a4');
 
         return $request->boolean('inline')

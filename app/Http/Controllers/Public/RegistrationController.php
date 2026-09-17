@@ -73,11 +73,6 @@ class RegistrationController extends Controller
         }
 
         $wizard->put($competition, [
-            'registrant' => [
-                'name' => $data['registrant_name'],
-                'phone' => $data['registrant_phone'],
-                'email' => $data['registrant_email'] ?? null,
-            ],
             'athlete' => [
                 'full_name' => $data['full_name'],
                 'gender' => $data['gender'],

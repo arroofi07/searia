@@ -113,7 +113,8 @@ it('publishes results and opens the public page', function () {
 
     $this->get(route('results.index', $competition))
         ->assertOk()
-        ->assertSee('Hasil lomba');
+        ->assertSee('Hasil lomba')
+        ->assertSee('images/event-logo.jpg', false);
 
     Notification::assertSentOnDemand(
         ResultsPublished::class,

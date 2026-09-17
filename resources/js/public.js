@@ -157,7 +157,7 @@ function initEventForm() {
   function refreshQuota() {
     const selected = boxes.filter((box) => box.checked).length;
     const total = used + selected;
-    const text = `Terpakai ${total} dari ${max} nomor yang diizinkan.`;
+    const text = `Terpakai ${total} dari ${max} kode acara yang diizinkan.`;
 
     if (quota) {
       quota.textContent = text;

@@ -40,7 +40,7 @@ it('uses the swimming brand mark and favicon on public pages', function () {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('favicon.svg', false)
-        ->assertSee('images/logo.svg', false)
+        ->assertSee('images/logo.png', false)
         ->assertDontSee('>SR<', false);
 });
 
@@ -48,7 +48,7 @@ it('uses the swimming brand mark and favicon on the login page', function () {
     $this->get(route('login'))
         ->assertOk()
         ->assertSee('favicon.svg', false)
-        ->assertSee('images/logo.svg', false);
+        ->assertSee('images/logo.png', false);
 });
 
 it('caches public home responses without serializing closures', function () {

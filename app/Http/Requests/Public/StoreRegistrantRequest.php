@@ -8,8 +8,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Langkah 1 form publik: kontak pendaftar dan identitas atlet.
- * Klub selalu diketik sendiri oleh pendaftar (nama + kabupaten/kota).
+ * Langkah 1 form publik: identitas peserta sesuai kolom Excel
+ * (nama lengkap, L/P, tahun lahir, klub/sekolah, kabupaten/kota).
  */
 class StoreRegistrantRequest extends FormRequest
 {
@@ -26,10 +26,6 @@ class StoreRegistrantRequest extends FormRequest
         $currentYear = (int) now()->year;
 
         return [
-            'registrant_name' => ['required', 'string', 'min:3', 'max:100'],
-            'registrant_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
-            'registrant_email' => ['nullable', 'email', 'max:120'],
-
             'full_name' => ['required', 'string', 'min:3', 'max:100'],
             'gender' => ['required', Rule::enum(Gender::class)],
             'birth_year' => ['required', 'integer', 'min:1950', 'max:'.$currentYear],
@@ -48,14 +44,11 @@ class StoreRegistrantRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'registrant_name' => 'nama pendaftar',
-            'registrant_phone' => 'nomor WhatsApp',
-            'registrant_email' => 'email',
-            'full_name' => 'nama lengkap atlet',
-            'gender' => 'jenis kelamin',
+            'full_name' => 'nama lengkap',
+            'gender' => 'L/P',
             'birth_year' => 'tahun lahir',
-            'club_name' => 'nama klub atau sekolah',
-            'club_city' => 'kabupaten atau kota',
+            'club_name' => 'klub/sekolah',
+            'club_city' => 'kabupaten/kota',
         ];
     }
 }

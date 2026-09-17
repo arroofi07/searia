@@ -15,9 +15,6 @@ use App\Models\User;
 function submitStep1(array $meet, array $overrides = []): Illuminate\Testing\TestResponse
 {
     return test()->post(route('register.athlete', $meet['competition']), array_merge([
-        'registrant_name' => 'Rahmat Hidayat',
-        'registrant_phone' => '081234567890',
-        'registrant_email' => 'rahmat@example.test',
         'full_name' => 'AHZA DANISH RAHMAN',
         'gender' => 'L',
         'birth_year' => 2016,
@@ -25,6 +22,20 @@ function submitStep1(array $meet, array $overrides = []): Illuminate\Testing\Tes
         'club_city' => $meet['club']->city ?? 'Padang',
     ], $overrides));
 }
+
+it('asks only for the excel participant columns on the public form', function () {
+    $meet = openRegistrationMeet();
+
+    $this->get(route('register.create', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Nama lengkap')
+        ->assertSee('L/P')
+        ->assertSee('Tahun lahir')
+        ->assertSee('Klub/sekolah')
+        ->assertSee('Kabupaten/kota')
+        ->assertDontSee('Nama pendaftar')
+        ->assertDontSee('Nomor WhatsApp');
+});
 
 it('lets a visitor register an athlete across three steps without logging in', function () {
     $meet = openRegistrationMeet();
@@ -63,7 +74,8 @@ it('lets a visitor register an athlete across three steps without logging in', f
         ->and(Registration::query()->whereNull('seed_time_ms')->count())->toBe(1)
         ->and(Registration::query()->pluck('submission_id')->unique()->all())->toBe([$submission->id])
         ->and(Registration::query()->pluck('registered_by')->unique()->all())->toBe([null])
-        ->and($submission->registrant_phone)->toBe('081234567890');
+        ->and($submission->registrant_name)->toBe('AHZA DANISH RAHMAN')
+        ->and($submission->registrant_phone)->toBeNull();
 });
 
 it('does not issue an invoice when a public registration is submitted', function () {
@@ -141,7 +153,6 @@ it('rejects an event outside the age group even when posted directly over HTTP',
 
     $this->withSession([
         'public_registration.'.$meet['competition']->id => [
-            'registrant' => ['name' => 'Rahmat', 'phone' => '0812', 'email' => null],
             'athlete' => [
                 'full_name' => $meet['athlete']->full_name,
                 'gender' => 'L',
@@ -184,6 +195,7 @@ it('explains seed time in plain language on the event picker', function () {
 
     $this->get(route('register.events', $meet['competition']))
         ->assertOk()
+        ->assertSee('Kode acara')
         ->assertSee('Catatan waktu')
         ->assertSee('6 angka')
         ->assertSee('paling kiri')
@@ -223,25 +235,26 @@ it('shows the receipt only to the browser that just submitted', function () {
     $this->get(route('register.done', $submission->code))->assertNotFound();
 });
 
-it('lets panitia find a submission by code and read the registrant contact', function () {
+it('lets panitia find a submission by code and read the participant data', function () {
     $meet = openRegistrationMeet();
     $submission = RegistrationSubmission::factory()->create([
         'competition_id' => $meet['competition']->id,
         'athlete_id' => $meet['athlete']->id,
-        'registrant_name' => 'Rahmat Hidayat',
-        'registrant_phone' => '081234567890',
+        'registrant_name' => $meet['athlete']->full_name,
     ]);
     $panitia = User::factory()->panitia()->create();
 
     $this->actingAs($panitia)
         ->get(route('admin.submissions.index', [$meet['competition'], 'code' => $submission->code]))
         ->assertOk()
-        ->assertSee('Rahmat Hidayat');
+        ->assertSee($meet['athlete']->full_name);
 
     $this->actingAs($panitia)
         ->get(route('admin.submissions.show', $submission))
         ->assertOk()
-        ->assertSee('081234567890');
+        ->assertSee($meet['athlete']->full_name)
+        ->assertSee($meet['club']->name)
+        ->assertDontSee('WhatsApp');
 
     $this->actingAs(User::factory()->juri()->create())
         ->get(route('admin.submissions.show', $submission))

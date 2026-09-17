@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('athlete_id')->constrained()->restrictOnDelete();
             $table->string('code', 20)->unique();
             $table->string('registrant_name', 100);
-            $table->string('registrant_phone', 20);
+            $table->string('registrant_phone', 20)->nullable();
             $table->string('registrant_email', 120)->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();

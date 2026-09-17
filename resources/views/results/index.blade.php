@@ -6,15 +6,18 @@
 
 @section('content')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold">Hasil lomba</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
-            @if ($competition->published_at)
-                <p class="text-xs text-slate-500">Dipublikasikan {{ $competition->published_at->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</p>
-            @endif
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Waktu di sini adalah hasil hari lomba. PB berarti lebih cepat dari catatan waktu saat daftar.
-            </p>
+        <div class="flex items-start gap-4">
+            @include('layouts.partials.event-logo', ['class' => 'h-20 w-20 sm:h-24 sm:w-24'])
+            <div>
+                <h1 class="text-2xl font-semibold">Hasil lomba</h1>
+                <p class="mt-1 text-sm text-slate-500">{{ $competition->name }}</p>
+                @if ($competition->published_at)
+                    <p class="text-xs text-slate-500">Dipublikasikan {{ $competition->published_at->timezone(config('app.timezone'))->format('d/m/Y H:i') }}</p>
+                @endif
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                    Waktu di sini adalah hasil hari lomba. PB berarti lebih cepat dari catatan waktu saat daftar.
+                </p>
+            </div>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <a href="{{ route('results.pdf', $competition) }}" class="public-btn">Unduh PDF hasil</a>

@@ -9,9 +9,14 @@
         .header { border-bottom: 1.5px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px; }
         .header-table { width: 100%; border-collapse: collapse; }
         .header-table td { vertical-align: middle; border: none; padding: 0; }
-        .header .logo { width: 48px; height: 48px; }
+        .header .logo { width: 72px; height: 72px; }
         .header h1 { font-size: 14px; margin: 0 0 2px; }
         .header p { margin: 0; color: #334155; font-size: 9px; }
+        .cover { text-align: center; padding: 18mm 0 8mm; }
+        .cover .badge { width: 92mm; height: 92mm; }
+        .cover .eyebrow { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #0369a1; margin: 14px 0 6px; }
+        .cover h1 { font-size: 18px; margin: 0 0 8px; }
+        .cover .meta { font-size: 10px; color: #334155; margin: 0 0 2px; }
         .footer { position: fixed; bottom: -12mm; left: 0; right: 0; font-size: 8px; color: #64748b; border-top: 0.5px solid #cbd5e1; padding-top: 4px; }
         .footer .page:after { content: counter(page); }
         .toc { margin-top: 8px; }
@@ -38,12 +43,21 @@
                 $logoPath = 'file://'.str_replace('\\', '/', $configured);
             }
         }
+        $includeCover = $includeCover ?? false;
+        $coverTitle = $coverTitle ?? trim($__env->yieldContent('document-title'));
+        if ($coverTitle === '') {
+            $coverTitle = 'Buku Acara';
+        }
     @endphp
+    @if ($includeCover)
+        @include('pdf.cover', ['coverTitle' => $coverTitle])
+        <div class="page-break"></div>
+    @endif
     <div class="header">
         <table class="header-table">
             <tr>
                 @if ($logoPath)
-                    <td style="width:58px"><img class="logo" src="{{ $logoPath }}" alt="Logo"></td>
+                    <td style="width:84px"><img class="logo" src="{{ $logoPath }}" alt="Fun Swimming SeaRIA Series 1"></td>
                 @endif
                 <td>
                     <h1>{{ $competitionName ?? '' }}</h1>

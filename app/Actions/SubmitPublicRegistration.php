@@ -40,9 +40,9 @@ class SubmitPublicRegistration
                 'competition_id' => $competition->id,
                 'athlete_id' => $athlete->id,
                 'code' => RegistrationSubmission::generateCode(),
-                'registrant_name' => $state['registrant']['name'],
-                'registrant_phone' => $state['registrant']['phone'],
-                'registrant_email' => $state['registrant']['email'] ?? null,
+                'registrant_name' => $athlete->full_name,
+                'registrant_phone' => null,
+                'registrant_email' => null,
                 'ip_address' => $ipAddress,
             ]);
 
@@ -81,8 +81,6 @@ class SubmitPublicRegistration
             [
                 'type' => ClubType::Perkumpulan,
                 'city' => $data['club_city'],
-                'contact_name' => $state['registrant']['name'],
-                'contact_phone' => $state['registrant']['phone'],
                 'status' => ClubStatus::Pending,
                 'is_active' => true,
             ],

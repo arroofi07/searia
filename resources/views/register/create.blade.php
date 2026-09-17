@@ -1,12 +1,11 @@
 @php
     $athlete = $state['athlete'] ?? [];
-    $registrant = $state['registrant'] ?? [];
 @endphp
 
 @extends('layouts.public')
 
-@section('title', 'Data pendaftar dan atlet')
-@section('meta_description', 'Isi kontak pendaftar dan data atlet untuk '.$competition->name)
+@section('title', 'Data peserta')
+@section('meta_description', 'Isi data peserta sesuai kolom pendaftaran untuk '.$competition->name)
 
 @section('content')
     <div class="mx-auto max-w-2xl">
@@ -20,46 +19,13 @@
             @csrf
 
             <fieldset class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <legend class="px-1 text-base font-semibold text-slate-900">Siapa yang mendaftarkan?</legend>
+                <legend class="px-1 text-base font-semibold text-slate-900">Data peserta</legend>
                 <p class="text-sm leading-6 text-slate-600">
-                    Bisa orang tua, pelatih, atau atlet sendiri. Panitia menghubungi nomor WhatsApp ini jika data perlu diperbaiki.
+                    Isi sama seperti di berkas Excel panitia. Tahun lahir menentukan kelompok umur — bukan umur di hari lomba.
                 </p>
 
                 <div>
-                    <label for="registrant_name" class="block text-sm font-medium text-slate-800">Nama pendaftar</label>
-                    <input id="registrant_name" name="registrant_name" required maxlength="100" autocomplete="name"
-                        value="{{ old('registrant_name', $registrant['name'] ?? '') }}"
-                        class="public-input" placeholder="Nama lengkap Anda">
-                    @error('registrant_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="registrant_phone" class="block text-sm font-medium text-slate-800">Nomor WhatsApp</label>
-                    <input id="registrant_phone" name="registrant_phone" required maxlength="20" inputmode="tel" autocomplete="tel"
-                        value="{{ old('registrant_phone', $registrant['phone'] ?? '') }}"
-                        class="public-input" placeholder="08…">
-                    <p class="mt-1 text-xs leading-5 text-slate-500">Pakai nomor yang mudah dihubungi. Jangan nomor yang sudah tidak aktif.</p>
-                    @error('registrant_phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="registrant_email" class="block text-sm font-medium text-slate-800">Email <span class="font-normal text-slate-400">(opsional)</span></label>
-                    <input id="registrant_email" name="registrant_email" type="email" maxlength="120" autocomplete="email"
-                        value="{{ old('registrant_email', $registrant['email'] ?? '') }}"
-                        class="public-input" placeholder="nama@email.com">
-                    <p class="mt-1 text-xs leading-5 text-slate-500">Isi jika ingin menerima kabar verifikasi lewat email. Boleh dikosongkan.</p>
-                    @error('registrant_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </fieldset>
-
-            <fieldset class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <legend class="px-1 text-base font-semibold text-slate-900">Data atlet</legend>
-                <p class="text-sm leading-6 text-slate-600">
-                    Isi sesuai identitas. Tahun lahir menentukan kelompok umur — bukan umur di hari lomba.
-                </p>
-
-                <div>
-                    <label for="full_name" class="block text-sm font-medium text-slate-800">Nama lengkap atlet</label>
+                    <label for="full_name" class="block text-sm font-medium text-slate-800">Nama lengkap</label>
                     <input id="full_name" name="full_name" required minlength="3" maxlength="100" autocomplete="off"
                         value="{{ old('full_name', $athlete['full_name'] ?? '') }}"
                         class="public-input" placeholder="Nama di buku acara">
@@ -68,14 +34,14 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label for="gender" class="block text-sm font-medium text-slate-800">Jenis kelamin</label>
+                        <label for="gender" class="block text-sm font-medium text-slate-800">L/P</label>
                         <select id="gender" name="gender" required class="public-input">
                             <option value="">Pilih</option>
                             @foreach (App\Enums\Gender::cases() as $gender)
-                                <option value="{{ $gender->value }}" @selected(old('gender', $athlete['gender'] ?? '') === $gender->value)>{{ $gender->label() }}</option>
+                                <option value="{{ $gender->value }}" @selected(old('gender', $athlete['gender'] ?? '') === $gender->value)>{{ $gender->formLabel() }}</option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs leading-5 text-slate-500">Menyaring nomor putra atau putri yang boleh diikuti.</p>
+                        <p class="mt-1 text-xs leading-5 text-slate-500">L = putra, P = putri. Menyaring kode acara yang boleh diikuti.</p>
                         @error('gender') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -91,16 +57,16 @@
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label for="club_name" class="block text-sm font-medium text-slate-800">Nama klub atau sekolah</label>
+                        <label for="club_name" class="block text-sm font-medium text-slate-800">Klub/sekolah</label>
                         <input id="club_name" name="club_name" required minlength="3" maxlength="100"
                             value="{{ old('club_name', $athlete['club_name'] ?? '') }}"
                             class="public-input"
-                            placeholder="Ketik nama klub">
-                        <p class="mt-1 text-xs leading-5 text-slate-500">Tidak perlu punya akun klub. Jika nama baru, panitia akan memeriksanya.</p>
+                            placeholder="Ketik nama klub atau sekolah">
+                        <p class="mt-1 text-xs leading-5 text-slate-500">Tidak perlu punya akun. Jika nama baru, panitia akan memeriksanya.</p>
                         @error('club_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="club_city" class="block text-sm font-medium text-slate-800">Kabupaten atau kota</label>
+                        <label for="club_city" class="block text-sm font-medium text-slate-800">Kabupaten/kota</label>
                         <input id="club_city" name="club_city" required maxlength="100"
                             value="{{ old('club_city', $athlete['club_city'] ?? '') }}"
                             class="public-input"
@@ -116,7 +82,7 @@
                 <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
             </div>
 
-            <button class="public-btn">Lanjut pilih nomor lomba</button>
+            <button class="public-btn">Lanjut pilih kode acara</button>
         </form>
     </div>
 @endsection

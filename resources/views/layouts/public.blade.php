@@ -19,12 +19,8 @@
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
     <header class="relative sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-            <a href="{{ route('home') }}" class="flex min-h-11 items-center gap-2.5">
-                @include('layouts.partials.brand-mark', ['class' => 'h-9 w-9', 'alt' => ''])
-                <span class="leading-tight">
-                    <span class="block text-base font-semibold tracking-tight text-teal-900">SeaRIA</span>
-                    <span class="block text-[11px] font-medium text-slate-500">Kejuaraan renang</span>
-                </span>
+            <a href="{{ route('home') }}" class="flex min-h-11 items-center">
+                @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto sm:h-16', 'alt' => 'Aquatic SeaRIA'])
             </a>
 
             <div class="flex items-center gap-2">
@@ -65,12 +61,9 @@
 
     <footer class="border-t border-slate-200 bg-white">
         <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-start gap-3">
-                @include('layouts.partials.brand-mark', ['class' => 'h-9 w-9', 'alt' => ''])
-                <div>
-                    <p class="font-semibold text-slate-800">SeaRIA</p>
-                    <p class="mt-1">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang</p>
-                </div>
+            <div class="flex items-center gap-3">
+                @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto', 'alt' => 'Aquatic SeaRIA'])
+                <p class="text-sm text-slate-600">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang</p>
             </div>
             <nav class="flex flex-wrap gap-x-5 gap-y-2">
                 <a href="{{ route('register.index') }}" class="hover:text-teal-800">Daftar lomba</a>

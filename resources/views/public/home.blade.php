@@ -5,21 +5,28 @@
 
 @section('content')
     <section class="overflow-hidden rounded-3xl bg-gradient-to-br from-teal-800 via-teal-900 to-slate-900 px-5 py-10 text-white sm:px-10 sm:py-14">
-        <p class="text-sm font-semibold uppercase tracking-wide text-teal-200">SeaRIA</p>
-        <h1 class="mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">Daftar lomba, lihat buku acara, dan cek hasil</h1>
-        <p class="mt-3 max-w-xl text-sm leading-6 text-teal-50/90 sm:text-base">
-            Untuk peserta dan orang tua. Tidak perlu membuat akun. Panitia yang memverifikasi data setelah Anda kirim.
-        </p>
-        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <a href="{{ route('register.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-5 py-3 text-base font-semibold text-teal-900 hover:bg-teal-50">Daftar lomba</a>
-            @if ($featuredStartList)
-                <a href="{{ route('start-list.show', $featuredStartList) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku acara</a>
-            @endif
-            @if ($featuredResults)
-                <a href="{{ route('results.index', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku hasil</a>
-            @endif
-            <a href="{{ route('public.athletes.search') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Cari hasil atlet</a>
-            <a href="{{ route('archive.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Arsip kejuaraan</a>
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-wide text-teal-200">Aquatic SeaRIA</p>
+                <h1 class="mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">Daftar lomba, lihat buku acara, dan cek hasil</h1>
+                <p class="mt-3 max-w-xl text-sm leading-6 text-teal-50/90 sm:text-base">
+                    Untuk peserta dan orang tua. Tidak perlu membuat akun. Panitia yang memverifikasi data setelah Anda kirim.
+                </p>
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <a href="{{ route('register.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-5 py-3 text-base font-semibold text-teal-900 hover:bg-teal-50">Daftar lomba</a>
+                    @if ($featuredStartList)
+                        <a href="{{ route('start-list.show', $featuredStartList) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku acara</a>
+                    @endif
+                    @if ($featuredResults)
+                        <a href="{{ route('results.index', $featuredResults) }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Buku hasil</a>
+                    @endif
+                    <a href="{{ route('public.athletes.search') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Cari hasil atlet</a>
+                    <a href="{{ route('archive.index') }}" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/40 px-5 py-3 text-base font-semibold text-white hover:bg-white/10">Arsip kejuaraan</a>
+                </div>
+            </div>
+            <div class="mx-auto shrink-0 rounded-3xl bg-white p-5 shadow-sm lg:mx-0">
+                @include('layouts.partials.brand-mark', ['class' => 'h-36 w-auto sm:h-44', 'alt' => 'Aquatic SeaRIA'])
+            </div>
         </div>
     </section>
 
@@ -28,12 +35,12 @@
         <ol class="mt-3 grid gap-3 sm:grid-cols-3">
             <li class="rounded-xl bg-slate-50 p-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">Langkah 1</p>
-                <p class="mt-1 text-sm font-medium">Isi data atlet</p>
-                <p class="mt-1 text-sm leading-5 text-slate-600">Nama, jenis kelamin, tahun lahir, klub, dan WhatsApp pendaftar.</p>
+                <p class="mt-1 text-sm font-medium">Isi data peserta</p>
+                <p class="mt-1 text-sm leading-5 text-slate-600">Nama lengkap, L/P, tahun lahir, klub/sekolah, dan kabupaten/kota.</p>
             </li>
             <li class="rounded-xl bg-slate-50 p-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">Langkah 2</p>
-                <p class="mt-1 text-sm font-medium">Pilih nomor + catatan waktu</p>
+                <p class="mt-1 text-sm font-medium">Pilih kode acara + catatan waktu</p>
                 <p class="mt-1 text-sm leading-5 text-slate-600">Catatan waktu (seed) untuk pembagian lintasan. Kosong = NT.</p>
             </li>
             <li class="rounded-xl bg-slate-50 p-3">

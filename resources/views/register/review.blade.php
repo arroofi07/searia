@@ -12,12 +12,24 @@
         @include('register._steps', ['current' => 3])
 
         <div class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
-            <h2 class="font-semibold text-slate-900">{{ $athlete->full_name }}</h2>
-            <p class="mt-1 text-slate-600">{{ $ageGroup?->name }} · {{ $athlete->club->name }}</p>
-            <p class="mt-2 text-slate-600">
-                Pendaftar: {{ $state['registrant']['name'] }} · {{ $state['registrant']['phone'] }}
-                @if ($state['registrant']['email']) · {{ $state['registrant']['email'] }} @endif
-            </p>
+            <dl class="grid gap-3 sm:grid-cols-2">
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nama lengkap</dt>
+                    <dd class="mt-0.5 font-semibold text-slate-900">{{ $athlete->full_name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">L/P · Tahun lahir</dt>
+                    <dd class="mt-0.5 text-slate-600">{{ $athlete->gender->value }} · {{ $athlete->birth_year }} ({{ $ageGroup?->name }})</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Klub/sekolah</dt>
+                    <dd class="mt-0.5 text-slate-600">{{ $athlete->club->name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Kabupaten/kota</dt>
+                    <dd class="mt-0.5 text-slate-600">{{ $athlete->club->city ?: '—' }}</dd>
+                </div>
+            </dl>
         </div>
 
         <ul class="mt-4 space-y-3">
@@ -25,10 +37,12 @@
                 <li class="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Kode acara</p>
                             <p class="font-mono text-sm font-bold text-teal-800">{{ $event->paddedEventNumber() }}</p>
                             <p class="mt-0.5 font-medium text-slate-900">{{ $event->programName() }}</p>
                         </div>
                         <p class="shrink-0 text-right font-mono text-sm font-semibold">
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Catatan waktu</p>
                             @if (($parsed[$event->id] ?? null) === false)
                                 <span class="text-red-600">Format waktu tidak valid</span>
                             @else
@@ -49,7 +63,7 @@
             @endforeach
         </ul>
 
-        <a href="{{ route('register.events', $competition) }}" class="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-teal-800 hover:underline">Ubah pilihan nomor lomba</a>
+        <a href="{{ route('register.events', $competition) }}" class="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-teal-800 hover:underline">Ubah kode acara</a>
 
         @error('events') <p class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</p> @enderror
         @error('submit_token') <p class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</p> @enderror

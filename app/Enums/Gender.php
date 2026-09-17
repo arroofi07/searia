@@ -15,6 +15,14 @@ enum Gender: string
         };
     }
 
+    public function formLabel(): string
+    {
+        return match ($this) {
+            self::Male => 'L — Laki-laki',
+            self::Female => 'P — Perempuan',
+        };
+    }
+
     public function eventGender(): EventGender
     {
         return match ($this) {

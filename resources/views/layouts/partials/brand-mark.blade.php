@@ -1,6 +1,6 @@
 @php
-    $markClass = $class ?? 'h-9 w-9';
-    $markAlt = $alt ?? 'SeaRIA';
+    $markClass = $class ?? 'h-12 w-auto';
+    $markAlt = $alt ?? 'Aquatic SeaRIA';
 @endphp
-<img src="{{ asset('images/logo.svg') }}" alt="{{ $markAlt }}" width="36" height="36"
-    class="{{ $markClass }} shrink-0 rounded-[0.65rem]" decoding="async">
+<img src="{{ asset('images/logo.png') }}" alt="{{ $markAlt }}" width="160" height="104"
+    class="{{ $markClass }} shrink-0 object-contain object-left" decoding="async">

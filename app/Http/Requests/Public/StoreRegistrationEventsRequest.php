@@ -35,7 +35,7 @@ class StoreRegistrationEventsRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'event_ids' => 'nomor lomba',
+            'event_ids' => 'kode acara',
         ];
     }
 }

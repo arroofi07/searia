@@ -10,9 +10,8 @@
 
 <div class="flex h-full flex-col">
     <div class="flex items-center gap-2 px-4 py-4">
-        <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white">
-            @include('layouts.partials.brand-mark', ['class' => 'h-8 w-8', 'alt' => ''])
-            SeaRIA
+        <a href="{{ route('dashboard') }}" class="inline-flex items-center rounded-xl bg-white px-2 py-1.5">
+            @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto', 'alt' => 'Aquatic SeaRIA'])
         </a>
     </div>
 

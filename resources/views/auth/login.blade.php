@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mb-5 flex justify-center">
-        @include('layouts.partials.brand-mark', ['class' => 'h-12 w-12', 'alt' => 'SeaRIA'])
+        @include('layouts.partials.brand-mark', ['class' => 'h-24 w-auto', 'alt' => 'Aquatic SeaRIA'])
     </div>
     <h1 class="text-xl font-semibold text-slate-900">Masuk ke SeaRIA</h1>
     <p class="mt-1 text-sm text-slate-500">Khusus panitia dan juri. Peserta mendaftar lewat form publik tanpa akun.</p>

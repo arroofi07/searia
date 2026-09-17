@@ -1,8 +1,8 @@
 @php
     $current = $current ?? 1;
     $steps = [
-        1 => 'Data diri',
-        2 => 'Pilih nomor',
+        1 => 'Data peserta',
+        2 => 'Kode acara',
         3 => 'Cek & kirim',
     ];
 @endphp

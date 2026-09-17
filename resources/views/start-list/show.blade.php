@@ -6,12 +6,15 @@
 
 @section('content')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold">Buku acara</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $competition->venue }}, {{ $competition->city }}</p>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Ini susunan seri dan lintasan. Kolom <strong>waktu</strong> adalah catatan waktu saat daftar (seed), bukan hasil lomba.
-            </p>
+        <div class="flex items-start gap-4">
+            @include('layouts.partials.event-logo', ['class' => 'h-20 w-20 sm:h-24 sm:w-24'])
+            <div>
+                <h1 class="text-2xl font-semibold">Buku acara</h1>
+                <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $competition->venue }}, {{ $competition->city }}</p>
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                    Ini susunan seri dan lintasan. Kolom <strong>waktu</strong> adalah catatan waktu saat daftar (seed), bukan hasil lomba.
+                </p>
+            </div>
         </div>
         <a href="{{ route('start-list.pdf', $competition) }}" class="public-btn">Unduh PDF</a>
     </div>

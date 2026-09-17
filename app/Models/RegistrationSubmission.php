@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Satu kali pengiriman form pendaftaran publik. Menggantikan peran akun pelatih
- * sebagai pemilik entri: panitia menghubungi pendaftar lewat kontak di sini.
+ * sebagai pemilik entri. Nama peserta tersimpan di `registrant_name` agar kode
+ * lama tetap bisa mencari pengiriman; nomor telepon dan email opsional.
  */
 class RegistrationSubmission extends Model
 {

@@ -21,21 +21,21 @@
 
     <div class="mt-6 grid gap-4 lg:grid-cols-2">
         <div class="rounded-lg border border-slate-200 bg-white p-5 text-sm">
-            <h2 class="font-semibold">Kontak pendaftar</h2>
+            <h2 class="font-semibold">Pengiriman</h2>
             <dl class="mt-3 space-y-1">
-                <div class="flex gap-2"><dt class="w-32 text-slate-500">Nama</dt><dd>{{ $submission->registrant_name }}</dd></div>
-                <div class="flex gap-2"><dt class="w-32 text-slate-500">WhatsApp</dt><dd>{{ $submission->registrant_phone }}</dd></div>
-                <div class="flex gap-2"><dt class="w-32 text-slate-500">Email</dt><dd>{{ $submission->registrant_email ?: '—' }}</dd></div>
+                <div class="flex gap-2"><dt class="w-32 text-slate-500">Kode</dt><dd class="font-mono">{{ $submission->code }}</dd></div>
                 <div class="flex gap-2"><dt class="w-32 text-slate-500">Dikirim</dt><dd>{{ $submission->created_at->translatedFormat('d M Y H:i') }}</dd></div>
             </dl>
         </div>
 
         <div class="rounded-lg border border-slate-200 bg-white p-5 text-sm">
-            <h2 class="font-semibold">Atlet</h2>
+            <h2 class="font-semibold">Peserta</h2>
             <dl class="mt-3 space-y-1">
-                <div class="flex gap-2"><dt class="w-32 text-slate-500">Nama</dt><dd>{{ $submission->athlete?->full_name }}</dd></div>
+                <div class="flex gap-2"><dt class="w-32 text-slate-500">Nama lengkap</dt><dd>{{ $submission->athlete?->full_name }}</dd></div>
+                <div class="flex gap-2"><dt class="w-32 text-slate-500">L/P</dt><dd>{{ $submission->athlete?->gender?->formLabel() }}</dd></div>
                 <div class="flex gap-2"><dt class="w-32 text-slate-500">Tahun lahir</dt><dd>{{ $submission->athlete?->birth_year }}</dd></div>
-                <div class="flex gap-2"><dt class="w-32 text-slate-500">Klub</dt><dd>{{ $submission->athlete?->club?->name }} ({{ $submission->athlete?->club?->status->label() }})</dd></div>
+                <div class="flex gap-2"><dt class="w-32 text-slate-500">Klub/sekolah</dt><dd>{{ $submission->athlete?->club?->name }}{{ $submission->athlete?->club?->status ? ' ('.$submission->athlete->club->status->label().')' : '' }}</dd></div>
+                <div class="flex gap-2"><dt class="w-32 text-slate-500">Kabupaten/kota</dt><dd>{{ $submission->athlete?->club?->city ?: '—' }}</dd></div>
             </dl>
         </div>
     </div>
@@ -44,7 +44,7 @@
         <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-600">
                 <tr>
-                    <th class="px-4 py-3 font-medium">Nomor lomba</th>
+                    <th class="px-4 py-3 font-medium">Kode acara</th>
                     <th class="px-4 py-3 font-medium">Kelompok umur</th>
                     <th class="px-4 py-3 font-medium">Catatan waktu</th>
                     <th class="px-4 py-3 font-medium">Status</th>

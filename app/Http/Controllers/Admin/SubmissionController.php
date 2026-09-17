@@ -11,8 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Daftar pendaftaran mandiri beserta kontak pendaftarnya. Inilah tempat panitia
- * mencari nomor telepon yang harus dihubungi ketika sebuah entri bermasalah.
+ * Daftar pendaftaran mandiri. Panitia mencari peserta dari form publik
+ * berdasarkan kode REG-… atau nama atlet.
  */
 class SubmissionController extends Controller
 {
@@ -28,8 +28,10 @@ class SubmissionController extends Controller
                 $search = '%'.mb_strtolower((string) $request->string('search')).'%';
                 $query->where(function ($inner) use ($search): void {
                     $inner->whereRaw('LOWER(registrant_name) LIKE ?', [$search])
-                        ->orWhereRaw('LOWER(registrant_phone) LIKE ?', [$search])
-                        ->orWhereHas('athlete', fn ($athlete) => $athlete->whereRaw('LOWER(full_name) LIKE ?', [$search]));
+                        ->orWhereHas('athlete', function ($athlete) use ($search): void {
+                            $athlete->whereRaw('LOWER(full_name) LIKE ?', [$search])
+                                ->orWhereHas('club', fn ($club) => $club->whereRaw('LOWER(name) LIKE ?', [$search]));
+                        });
                 });
             })
             ->latest('id')

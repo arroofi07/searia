@@ -8,20 +8,20 @@
         <p class="text-sm font-semibold uppercase tracking-wide text-teal-800">Untuk peserta</p>
         <h1 class="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Daftar lomba tanpa akun</h1>
         <p class="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
-            Pilih kejuaraan, isi data atlet, pilih nomor lomba, lalu simpan kode pendaftaran.
+            Pilih kejuaraan, isi data peserta, pilih kode acara, lalu simpan kode pendaftaran.
             Setelah dikirim, perubahan hanya lewat panitia.
         </p>
 
         <ol class="mt-6 grid gap-3 sm:grid-cols-3">
             <li class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">1</p>
-                <p class="mt-1 text-sm font-semibold text-slate-900">Data diri</p>
-                <p class="mt-1 text-sm leading-5 text-slate-600">Kontak WhatsApp, nama atlet, klub, dan tahun lahir.</p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">Data peserta</p>
+                <p class="mt-1 text-sm leading-5 text-slate-600">Nama lengkap, L/P, tahun lahir, klub/sekolah, kabupaten/kota.</p>
             </li>
             <li class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">2</p>
-                <p class="mt-1 text-sm font-semibold text-slate-900">Pilih nomor</p>
-                <p class="mt-1 text-sm leading-5 text-slate-600">Centang nomor yang diikuti. Isi catatan waktu jika ada.</p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">Kode acara</p>
+                <p class="mt-1 text-sm leading-5 text-slate-600">Centang kode acara yang diikuti. Isi catatan waktu jika ada.</p>
             </li>
             <li class="rounded-2xl border border-slate-200 bg-white p-4">
                 <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">3</p>

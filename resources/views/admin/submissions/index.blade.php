@@ -11,7 +11,7 @@
     <form method="GET" class="mt-4 flex flex-wrap gap-3">
         <input name="code" value="{{ $filters['code'] ?? '' }}" placeholder="Kode pendaftaran"
             class="rounded-md border border-slate-300 px-3 py-2 text-sm uppercase">
-        <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nama pendaftar, atlet, atau nomor telepon"
+        <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nama peserta atau klub"
             class="w-72 rounded-md border border-slate-300 px-3 py-2 text-sm">
         <button class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Cari</button>
     </form>
@@ -21,8 +21,8 @@
             <thead class="bg-slate-50 text-slate-600">
                 <tr>
                     <th class="px-4 py-3 font-medium">Kode</th>
-                    <th class="px-4 py-3 font-medium">Atlet</th>
-                    <th class="px-4 py-3 font-medium">Pendaftar</th>
+                    <th class="px-4 py-3 font-medium">Nama lengkap</th>
+                    <th class="px-4 py-3 font-medium">Klub/sekolah</th>
                     <th class="px-4 py-3 font-medium">Entri</th>
                     <th class="px-4 py-3 font-medium">Masuk</th>
                 </tr>
@@ -35,11 +35,11 @@
                         </td>
                         <td class="px-4 py-3">
                             {{ $submission->athlete?->full_name }}
-                            <span class="block text-xs text-slate-500">{{ $submission->athlete?->club?->name }}</span>
+                            <span class="block text-xs text-slate-500">{{ $submission->athlete?->gender?->value }} · {{ $submission->athlete?->birth_year }}</span>
                         </td>
                         <td class="px-4 py-3">
-                            {{ $submission->registrant_name }}
-                            <span class="block text-xs text-slate-500">{{ $submission->registrant_phone }}</span>
+                            {{ $submission->athlete?->club?->name }}
+                            <span class="block text-xs text-slate-500">{{ $submission->athlete?->club?->city }}</span>
                         </td>
                         <td class="px-4 py-3">{{ $submission->registrations->count() }} nomor</td>
                         <td class="px-4 py-3 text-slate-500">{{ $submission->created_at->translatedFormat('d M Y H:i') }}</td>

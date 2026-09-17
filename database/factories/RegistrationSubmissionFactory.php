@@ -21,8 +21,8 @@ class RegistrationSubmissionFactory extends Factory
             'athlete_id' => Athlete::factory(),
             'code' => RegistrationSubmission::generateCode(),
             'registrant_name' => fake()->name(),
-            'registrant_phone' => '0812'.fake()->numerify('########'),
-            'registrant_email' => fake()->unique()->safeEmail(),
+            'registrant_phone' => null,
+            'registrant_email' => null,
             'ip_address' => '127.0.0.1',
         ];
     }

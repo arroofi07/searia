@@ -30,9 +30,8 @@
                     <button type="button" id="sidebar-toggle" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700" aria-controls="admin-sidebar" aria-expanded="false">
                         Menu
                     </button>
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 font-semibold text-teal-800">
-                        @include('layouts.partials.brand-mark', ['class' => 'h-8 w-8', 'alt' => ''])
-                        SeaRIA
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center">
+                        @include('layouts.partials.brand-mark', ['class' => 'h-12 w-auto', 'alt' => 'Aquatic SeaRIA'])
                     </a>
                 </header>
 

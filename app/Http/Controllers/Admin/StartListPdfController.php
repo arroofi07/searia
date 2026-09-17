@@ -41,6 +41,7 @@ class StartListPdfController extends Controller
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
             'includeToc' => ! $request->filled('event_id'),
+            'includeCover' => ! $request->filled('event_id'),
         ])->setPaper('a4');
 
         return $pdf->download($this->filename($competition, 'buku-acara'));
