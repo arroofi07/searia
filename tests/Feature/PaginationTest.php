@@ -4,6 +4,7 @@ use App\Enums\CompetitionStatus;
 use App\Enums\EventGender;
 use App\Models\Competition;
 use App\Models\Event;
+use App\Models\Heat;
 use App\Models\ImportBatch;
 use App\Models\User;
 use App\Support\ListPaginator;
@@ -31,6 +32,50 @@ it('paginates seeding pairs and keeps later combinations on the next page', func
         ->get(route('admin.seeding.index', [$meet['competition'], 'page' => 2]))
         ->assertOk()
         ->assertSee('Menampilkan 21–22 dari 22');
+});
+
+it('keeps seeding list filters on the heat sheet link and back again', function () {
+    $meet = openRegistrationMeet();
+    $last = null;
+
+    for ($number = 101; $number <= 121; $number++) {
+        $event = Event::factory()->create([
+            'competition_id' => $meet['competition']->id,
+            'event_number' => $number,
+            'sort_order' => $number,
+        ]);
+        $event->ageGroups()->attach($meet['group']->id);
+        $last = $event;
+    }
+
+    Heat::factory()->create([
+        'event_id' => $last->id,
+        'age_group_id' => $meet['group']->id,
+    ]);
+
+    $panitia = User::factory()->panitia()->create();
+    $listUrl = route('admin.seeding.index', [
+        $meet['competition'],
+        'q' => 'Group 3',
+        'page' => 2,
+    ]);
+    $showUrl = route('admin.seeding.show', [
+        $meet['competition'],
+        $last,
+        $meet['group'],
+        'from_q' => 'Group 3',
+        'from_page' => 2,
+    ]);
+
+    $this->actingAs($panitia)
+        ->get($listUrl)
+        ->assertOk()
+        ->assertSee(e($showUrl), false);
+
+    $this->actingAs($panitia)
+        ->get($showUrl)
+        ->assertOk()
+        ->assertSee(e($listUrl), false);
 });
 
 it('paginates the event management table', function () {

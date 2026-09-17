@@ -16,7 +16,7 @@
 @section('title', 'Susunan seri')
 
 @section('content')
-    <p class="text-sm"><a href="{{ route('admin.seeding.index', $competition) }}" class="text-teal-800 hover:underline">← Daftar pembagian seri</a></p>
+    <p class="text-sm"><a href="{{ route('admin.seeding.index', [$competition] + ($listQuery ?? [])) }}" class="text-teal-800 hover:underline">← Daftar pembagian seri</a></p>
 
     <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>

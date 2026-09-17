@@ -12,6 +12,9 @@
     $missingTotal = $missingTotal ?? 0;
     $registrationOpen = in_array($competition->status, [CompetitionStatus::Draft, CompetitionStatus::Registration], true);
     $statusFilter = (string) ($filters['status'] ?? '');
+    $listQuery = $listQuery ?? [];
+    $fromQuery = $fromQuery ?? [];
+    $stickyWithoutStatus = collect($listQuery)->except(['page', 'status'])->all();
 @endphp
 
 @extends('layouts.app')
@@ -149,22 +152,22 @@
             <div class="h-full rounded-full bg-teal-600" style="width: {{ $progress }}%"></div>
         </div>
         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <a href="{{ route('admin.seeding.index', $competition) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === '' ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50' }}">
+            <a href="{{ route('admin.seeding.index', [$competition] + $stickyWithoutStatus) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === '' ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Nomor × kelompok umur</p>
                 <p class="mt-1 text-xl font-semibold">{{ $pairTotal }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">Semua kombinasi</p>
             </a>
-            <a href="{{ route('admin.seeding.index', [$competition, 'status' => 'unseeded']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'unseeded' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 hover:bg-slate-50' }}">
+            <a href="{{ route('admin.seeding.index', [$competition] + $stickyWithoutStatus + ['status' => 'unseeded']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'unseeded' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Belum dibagi</p>
                 <p class="mt-1 text-xl font-semibold {{ $unseeded > 0 ? 'text-amber-700' : 'text-teal-800' }}">{{ $unseeded }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">Peserta disetujui belum masuk</p>
             </a>
-            <a href="{{ route('admin.seeding.index', [$competition, 'status' => 'preview']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'preview' ? 'border-sky-300 bg-sky-50' : 'border-slate-200 hover:bg-slate-50' }}">
+            <a href="{{ route('admin.seeding.index', [$competition] + $stickyWithoutStatus + ['status' => 'preview']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'preview' ? 'border-sky-300 bg-sky-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pratinjau</p>
                 <p class="mt-1 text-xl font-semibold">{{ $unlocked }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">Boleh dicek dan diubah</p>
             </a>
-            <a href="{{ route('admin.seeding.index', [$competition, 'status' => 'locked']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'locked' ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50' }}">
+            <a href="{{ route('admin.seeding.index', [$competition] + $stickyWithoutStatus + ['status' => 'locked']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'locked' ? 'border-teal-300 bg-teal-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Terkunci</p>
                 <p class="mt-1 text-xl font-semibold text-teal-800">{{ $lockedCount }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">Siap masuk buku acara</p>
@@ -301,7 +304,7 @@
                         <td class="px-4 py-3 text-right" data-label="Aksi">
                             <div class="flex flex-wrap items-center justify-end gap-2">
                                 @if ($pair['heatCount'] > 0)
-                                    <a href="{{ route('admin.seeding.show', [$competition, $pair['event'], $pair['ageGroup']]) }}" class="inline-flex min-h-9 items-center rounded-md {{ $pair['needsSeeding'] ? 'border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50' : 'bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}">
+                                    <a href="{{ route('admin.seeding.show', [$competition, $pair['event'], $pair['ageGroup']] + $fromQuery) }}" class="inline-flex min-h-9 items-center rounded-md {{ $pair['needsSeeding'] ? 'border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50' : 'bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}">
                                         Lihat susunan
                                     </a>
                                 @endif

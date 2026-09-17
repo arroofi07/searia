@@ -109,10 +109,12 @@ class SeedingController extends Controller
                 'age_group_id' => $request->query('age_group_id', ''),
                 'status' => $request->query('status', ''),
             ],
+            'listQuery' => $this->listQuery($request),
+            'fromQuery' => $this->fromQuery($request),
         ]);
     }
 
-    public function show(Competition $competition, Event $event, AgeGroup $ageGroup): View
+    public function show(Request $request, Competition $competition, Event $event, AgeGroup $ageGroup): View
     {
         $this->authorize('seed', $competition);
         abort_unless($event->competition_id === $competition->id, 404);
@@ -185,6 +187,7 @@ class SeedingController extends Controller
             'anyLocked' => $anyLocked,
             'unassigned' => $unassigned,
             'pendingRegistrations' => $pendingRegistrations,
+            'listQuery' => $this->listQuery($request, fromPrefix: true),
         ]);
     }
 
@@ -283,6 +286,46 @@ class SeedingController extends Controller
                     };
                 })->values();
             });
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function listQuery(Request $request, bool $fromPrefix = false): array
+    {
+        $source = $fromPrefix
+            ? [
+                'q' => $request->query('from_q'),
+                'event_id' => $request->query('from_event_id'),
+                'age_group_id' => $request->query('from_age_group_id'),
+                'status' => $request->query('from_status'),
+                'page' => $request->query('from_page'),
+            ]
+            : [
+                'q' => $request->query('q'),
+                'event_id' => $request->query('event_id'),
+                'age_group_id' => $request->query('age_group_id'),
+                'status' => $request->query('status'),
+                'page' => $request->query('page'),
+            ];
+
+        return collect($source)
+            ->map(fn (mixed $value): string => trim((string) $value))
+            ->reject(fn (string $value): bool => $value === '')
+            ->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function fromQuery(Request $request): array
+    {
+        $from = [];
+        foreach ($this->listQuery($request) as $key => $value) {
+            $from['from_'.$key] = $value;
+        }
+
+        return $from;
     }
 
     private function lockCompetition(Competition $competition): void
