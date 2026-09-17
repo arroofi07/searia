@@ -55,9 +55,16 @@
     @error('heat_lane')
         <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
     @enderror
-    @error('seeding')
-        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
-    @enderror
+    @if (session('pending_seeding'))
+        @include('admin.seeding._pending-list', [
+            'items' => session('pending_seeding'),
+            'title' => 'Nomor ini belum lengkap',
+            'intro' => 'Masih ada kelompok umur dengan peserta yang belum dibagi seri.',
+            'showBulk' => false,
+        ])
+    @elseif ($errors->has('seeding'))
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{{ $errors->first('seeding') }}</div>
+    @endif
 
     <details class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
         <summary class="cursor-pointer font-semibold text-slate-900">Cara memeriksa halaman ini</summary>

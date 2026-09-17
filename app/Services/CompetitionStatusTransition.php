@@ -59,11 +59,12 @@ class CompetitionStatusTransition
         }
 
         if ($to === CompetitionStatus::Seeded) {
-            $unseeded = $this->unseededEvents($competition);
+            $items = $competition->pendingSeedingItems();
 
-            if ($unseeded->isNotEmpty()) {
+            if ($items->isNotEmpty()) {
                 throw new CannotTransitionCompetitionException(
                     'Perpindahan ke seeded ditolak karena masih ada nomor dengan peserta yang belum diseeding.',
+                    $items->all(),
                 );
             }
         }

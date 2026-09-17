@@ -34,9 +34,15 @@
 
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'seeding'])
 
-    @error('seeding')
-        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
-    @enderror
+    @if (session('pending_seeding'))
+        @include('admin.seeding._pending-list', [
+            'items' => session('pending_seeding'),
+            'title' => 'Belum bisa mengunci seri',
+            'intro' => 'Kunci hanya setelah kombinasi dengan peserta punya seri. Bagi yang masih kosong dulu.',
+        ])
+    @elseif ($errors->has('seeding'))
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{{ $errors->first('seeding') }}</div>
+    @endif
 
     @if ($pendingCount > 0)
         <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">

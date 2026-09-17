@@ -68,11 +68,22 @@ it('rejects moving to seeded when an event has verified swimmers without heats',
     ]);
     $panitia = User::factory()->panitia()->create();
 
-    expect(fn () => (new CompetitionStatusTransition)->transition(
-        $competition,
-        CompetitionStatus::Seeded,
-        $panitia,
-    ))->toThrow(CannotTransitionCompetitionException::class);
+    try {
+        (new CompetitionStatusTransition)->transition(
+            $competition,
+            CompetitionStatus::Seeded,
+            $panitia,
+        );
+        expect(false)->toBeTrue();
+    } catch (CannotTransitionCompetitionException $exception) {
+        expect($exception->getMessage())->toContain('belum diseeding')
+            ->and($exception->details)->toHaveCount(1)
+            ->and($exception->details[0]['event_number'])->toBe('13')
+            ->and($exception->details[0]['event_name'])->toBe($event->formattedName())
+            ->and($exception->details[0]['age_group_name'])->toBe($group->name);
+    }
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Closed);
 });
 
 it('allows moving to seeded when leftover events have no swimmers', function () {

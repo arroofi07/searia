@@ -43,3 +43,32 @@ it('lets panitia move to seeded when leftover events have no swimmers', function
 
     expect($meet['competition']->fresh()->status)->toBe(CompetitionStatus::Seeded);
 });
+
+it('lists the unseeded event when moving to seeded is rejected', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Closed]);
+    verifiedRegistration($meet);
+    $panitia = User::factory()->panitia()->create();
+
+    $this->actingAs($panitia)
+        ->from(route('admin.competitions.show', $meet['competition']))
+        ->patch(route('admin.competitions.status', $meet['competition']), [
+            'status' => CompetitionStatus::Seeded->value,
+        ])
+        ->assertRedirect(route('admin.competitions.show', $meet['competition']))
+        ->assertSessionHasErrors('status');
+
+    expect(session('errors')->first('status'))->toContain('belum diseeding')
+        ->and(session('pending_seeding'))->toHaveCount(1)
+        ->and(session('pending_seeding')[0]['event_name'])->toBe($meet['event']->formattedName())
+        ->and(session('pending_seeding')[0]['age_group_name'])->toBe($meet['group']->name);
+
+    $this->actingAs($panitia)
+        ->get(route('admin.competitions.show', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Belum bisa ke Sudah diseeding')
+        ->assertSee($meet['event']->formattedName())
+        ->assertSee($meet['group']->name)
+        ->assertSee('Bagi seri ini')
+        ->assertSee('Buka semua yang belum dibagi');
+});

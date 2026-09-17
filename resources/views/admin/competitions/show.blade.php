@@ -21,9 +21,17 @@
         </form>
     </div>
 
-    @error('status')
-        <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
-    @enderror
+    @if (session('pending_seeding'))
+        @include('admin.seeding._pending-list', [
+            'items' => session('pending_seeding'),
+            'title' => 'Belum bisa ke Sudah diseeding',
+            'intro' => 'Nomor berikut sudah punya peserta disetujui, tetapi belum punya seri dan lintasan.',
+        ])
+    @elseif ($errors->has('status'))
+        <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">
+            {{ $errors->first('status') }}
+        </div>
+    @endif
 
     <dl class="mt-6 grid gap-4 rounded-lg border border-slate-200 bg-white p-5 sm:grid-cols-3">
         <div>

@@ -34,9 +34,11 @@ class CompetitionStatusController extends Controller
                 );
             }
         } catch (CannotTransitionCompetitionException $exception) {
-            return back()->withErrors([
-                'status' => $exception->getMessage(),
-            ]);
+            return back()
+                ->withErrors([
+                    'status' => $exception->getMessage(),
+                ])
+                ->with('pending_seeding', $exception->details);
         }
 
         return back()->with('status', 'Status kejuaraan diubah menjadi '.$to->label().'.');

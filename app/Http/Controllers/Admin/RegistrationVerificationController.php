@@ -21,15 +21,8 @@ class RegistrationVerificationController extends Controller
     {
         $this->authorize('viewAny', Registration::class);
 
-        $registrations = Registration::query()
+        $registrations = $this->pendingQuery($competition, $request)
             ->with(['athlete.club', 'event', 'ageGroup'])
-            ->where('competition_id', $competition->id)
-            ->where('status', RegistrationStatus::Pending)
-            ->when($request->filled('club_id'), function ($query) use ($request): void {
-                $query->whereHas('athlete', fn ($athlete) => $athlete->where('club_id', $request->integer('club_id')));
-            })
-            ->when($request->filled('event_id'), fn ($query) => $query->where('event_id', $request->integer('event_id')))
-            ->when($request->filled('age_group_id'), fn ($query) => $query->where('age_group_id', $request->integer('age_group_id')))
             ->orderBy('id')
             ->paginate(50)
             ->withQueryString();
@@ -76,6 +69,24 @@ class RegistrationVerificationController extends Controller
         return back()->with('status', $registrations->count().' pendaftaran disetujui.');
     }
 
+    public function approveAll(Request $request, Competition $competition): RedirectResponse
+    {
+        $this->authorize('viewAny', Registration::class);
+
+        $registrations = $this->pendingQuery($competition, $request)
+            ->with(['athlete.club', 'event', 'registrar'])
+            ->orderBy('id')
+            ->get();
+
+        if ($registrations->isEmpty()) {
+            return back()->withErrors(['status' => 'Tidak ada pendaftaran pending yang bisa disetujui.']);
+        }
+
+        $this->mark($registrations, RegistrationStatus::Verified);
+
+        return back()->with('status', $registrations->count().' pendaftaran disetujui.');
+    }
+
     public function bulkReject(RejectRegistrationRequest $request, Competition $competition): RedirectResponse
     {
         $ids = $request->validated('registration_ids') ?? [];
@@ -99,15 +110,28 @@ class RegistrationVerificationController extends Controller
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Builder<Registration>
+     */
+    private function pendingQuery(Competition $competition, Request $request)
+    {
+        return Registration::query()
+            ->where('competition_id', $competition->id)
+            ->where('status', RegistrationStatus::Pending)
+            ->when($request->filled('club_id'), function ($query) use ($request): void {
+                $query->whereHas('athlete', fn ($athlete) => $athlete->where('club_id', $request->integer('club_id')));
+            })
+            ->when($request->filled('event_id'), fn ($query) => $query->where('event_id', $request->integer('event_id')))
+            ->when($request->filled('age_group_id'), fn ($query) => $query->where('age_group_id', $request->integer('age_group_id')));
+    }
+
+    /**
      * @param  list<int>  $ids
      * @return \Illuminate\Database\Eloquent\Collection<int, Registration>
      */
     private function pendingFor(Competition $competition, array $ids)
     {
-        return Registration::query()
+        return $this->pendingQuery($competition, request())
             ->with(['athlete.club', 'event', 'registrar'])
-            ->where('competition_id', $competition->id)
-            ->where('status', RegistrationStatus::Pending)
             ->whereIn('id', $ids)
             ->get();
     }

@@ -202,15 +202,78 @@ class Competition extends Model
 
         return $events
             ->filter(function (Event $event): bool {
-                $eligibleGroups = $event->registrations->pluck('age_group_id')->unique()->filter();
-                if ($eligibleGroups->isEmpty()) {
-                    return false;
-                }
-
-                $seededGroups = $event->heats->pluck('age_group_id')->unique();
-
-                return $eligibleGroups->diff($seededGroups)->isNotEmpty();
+                return $this->unseededAgeGroupIds($event)->isNotEmpty();
             })
+            ->values();
+    }
+
+    /**
+     * Nomor × kelompok umur yang masih punya peserta, tetapi belum punya seri.
+     *
+     * @return Collection<int, array{event_id: int, age_group_id: int, event_number: string, event_name: string, age_group_name: string|null, label: string}>
+     */
+    public function pendingSeedingItems(?Event $only = null): Collection
+    {
+        $events = $this->eventsPendingSeeding();
+        if ($only instanceof Event) {
+            $events = $events->where('id', $only->id)->values();
+        }
+
+        $groupIds = $events
+            ->flatMap(fn (Event $event) => $this->unseededAgeGroupIds($event))
+            ->unique()
+            ->all();
+
+        $groups = AgeGroup::query()
+            ->whereIn('id', $groupIds)
+            ->get()
+            ->keyBy('id');
+
+        return $events
+            ->flatMap(function (Event $event) use ($groups): Collection {
+                return $this->unseededAgeGroupIds($event)
+                    ->map(function (int $groupId) use ($event, $groups): array {
+                        $group = $groups->get($groupId);
+                        $groupName = $group instanceof AgeGroup ? $group->name : null;
+                        $label = $event->paddedEventNumber().' '.$event->formattedName();
+                        if ($groupName !== null) {
+                            $label .= ' · '.$groupName;
+                        }
+
+                        return [
+                            'event_id' => $event->id,
+                            'age_group_id' => $groupId,
+                            'event_number' => $event->paddedEventNumber(),
+                            'event_name' => $event->formattedName(),
+                            'age_group_name' => $groupName,
+                            'label' => $label,
+                        ];
+                    });
+            })
+            ->values();
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function pendingSeedingLabels(?Event $only = null): Collection
+    {
+        return $this->pendingSeedingItems($only)->pluck('label')->values();
+    }
+
+    /**
+     * @return Collection<int, int>
+     */
+    private function unseededAgeGroupIds(Event $event): Collection
+    {
+        $eligibleGroups = $event->registrations->pluck('age_group_id')->unique()->filter();
+        if ($eligibleGroups->isEmpty()) {
+            return collect();
+        }
+
+        return $eligibleGroups
+            ->diff($event->heats->pluck('age_group_id')->unique())
+            ->map(fn (mixed $id): int => (int) $id)
             ->values();
     }
 

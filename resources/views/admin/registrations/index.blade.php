@@ -1,5 +1,14 @@
 @php
     use App\Support\SwimTime;
+
+    $pendingTotal = $registrations->total();
+    $hasFilters = collect($filters)->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty();
+    $approveAllLabel = $hasFilters
+        ? 'Setujui semua hasil saringan ('.$pendingTotal.')'
+        : 'Setujui semua antrean ('.$pendingTotal.')';
+    $approveAllConfirm = $hasFilters
+        ? 'Setujui '.$pendingTotal.' pendaftaran sesuai saringan yang tampil?'
+        : 'Setujui seluruh '.$pendingTotal.' pendaftaran pending di antrean ini?';
 @endphp
 
 @extends('layouts.app')
@@ -11,6 +20,10 @@
     <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · antrean status pending</p>
 
     @include('admin.registrations._tabs', ['competition' => $competition, 'current' => 'registrations'])
+
+    @error('status')
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
+    @enderror
 
     <form method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3">
         <select name="club_id" class="rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -36,11 +49,42 @@
         </div>
     </form>
 
+    @if ($pendingTotal > 0)
+        <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm leading-6 text-teal-950">
+                <p class="font-semibold">{{ number_format($pendingTotal, 0, ',', '.') }} pendaftaran menunggu persetujuan</p>
+                <p>
+                    @if ($hasFilters)
+                        Tombol di kanan menyetujui semua baris yang cocok dengan saringan, termasuk halaman berikutnya.
+                    @else
+                        Pilih baris di tabel, atau setujui seluruh antrean sekaligus.
+                    @endif
+                </p>
+            </div>
+            <form method="POST" action="{{ route('admin.registrations.approve-all', $competition) }}" onsubmit="return confirm(@json($approveAllConfirm))">
+                @csrf
+                @foreach ($filters as $name => $value)
+                    @if ($value !== null && $value !== '')
+                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                    @endif
+                @endforeach
+                <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
+                    {{ $approveAllLabel }}
+                </button>
+            </form>
+        </div>
+    @endif
+
     <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-600">
                 <tr>
-                    <th class="px-3 py-2"><input type="checkbox" id="check-all"></th>
+                    <th class="px-3 py-2">
+                        <label class="inline-flex items-center gap-2 font-medium">
+                            <input type="checkbox" id="check-all" @disabled($registrations->isEmpty())>
+                            <span class="text-xs">Halaman ini</span>
+                        </label>
+                    </th>
                     <th class="px-3 py-2 font-medium">Atlet</th>
                     <th class="px-3 py-2 font-medium">Klub</th>
                     <th class="px-3 py-2 font-medium">Nomor</th>
@@ -75,10 +119,13 @@
         </table>
     </div>
 
-    <form method="POST" action="{{ route('admin.registrations.bulk-approve', $competition) }}" class="mt-3" id="bulk-approve">
+    <form method="POST" action="{{ route('admin.registrations.bulk-approve', $competition) }}" class="mt-3 flex flex-wrap items-center gap-3" id="bulk-approve">
         @csrf
         <div class="bulk-ids"></div>
-        <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">Setujui yang dipilih</button>
+        <button class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800" id="bulk-approve-button" disabled>
+            Setujui yang dipilih
+        </button>
+        <p class="text-xs text-slate-500" id="selected-count">Tidak ada baris dipilih.</p>
     </form>
 
     <form method="POST" action="{{ route('admin.registrations.bulk-reject', $competition) }}" class="mt-6 max-w-xl space-y-3 rounded-lg border border-slate-200 bg-white p-5" id="bulk-reject">
@@ -94,12 +141,39 @@
 
     <script>
         const boxes = [...document.querySelectorAll('.row-check')];
-        document.getElementById('check-all')?.addEventListener('change', (event) => {
+        const checkAll = document.getElementById('check-all');
+        const selectedCount = document.getElementById('selected-count');
+        const approveButton = document.getElementById('bulk-approve-button');
+
+        function selectedBoxes() {
+            return boxes.filter((box) => box.checked);
+        }
+
+        function syncSelection() {
+            const selected = selectedBoxes();
+            if (checkAll) {
+                checkAll.checked = boxes.length > 0 && selected.length === boxes.length;
+                checkAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
+            }
+            if (approveButton) {
+                approveButton.disabled = selected.length === 0;
+            }
+            if (selectedCount) {
+                selectedCount.textContent = selected.length === 0
+                    ? 'Tidak ada baris dipilih.'
+                    : selected.length + ' baris di halaman ini dipilih.';
+            }
+        }
+
+        checkAll?.addEventListener('change', (event) => {
             boxes.forEach((box) => { box.checked = event.target.checked; });
+            syncSelection();
         });
+        boxes.forEach((box) => box.addEventListener('change', syncSelection));
+
         function fillIds(form) {
             form.querySelector('.bulk-ids').innerHTML = '';
-            boxes.filter((box) => box.checked).forEach((box) => {
+            selectedBoxes().forEach((box) => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'registration_ids[]';
@@ -107,7 +181,17 @@
                 form.querySelector('.bulk-ids').appendChild(input);
             });
         }
-        document.getElementById('bulk-approve')?.addEventListener('submit', (event) => fillIds(event.target));
-        document.getElementById('bulk-reject')?.addEventListener('submit', (event) => fillIds(event.target));
+
+        function requireSelection(event) {
+            if (selectedBoxes().length === 0) {
+                event.preventDefault();
+                return;
+            }
+            fillIds(event.target);
+        }
+
+        document.getElementById('bulk-approve')?.addEventListener('submit', requireSelection);
+        document.getElementById('bulk-reject')?.addEventListener('submit', requireSelection);
+        syncSelection();
     </script>
 @endsection

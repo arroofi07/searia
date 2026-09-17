@@ -102,3 +102,104 @@ it('sends one status email per submission when approving in bulk', function () {
     );
     Notification::assertCount(1);
 });
+
+it('shows an approve-all action for the full pending queue', function () {
+    $meet = openRegistrationMeet();
+    Registration::factory()->count(2)->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Pending,
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.registrations.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Setujui semua antrean (2)', false)
+        ->assertSee('Halaman ini', false);
+});
+
+it('approves every pending registration without sending ids', function () {
+    $meet = openRegistrationMeet();
+    $other = openRegistrationMeet();
+
+    Registration::factory()->count(3)->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Pending,
+    ]);
+    $alreadyVerified = Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Verified,
+    ]);
+    $otherPending = Registration::factory()->create([
+        'competition_id' => $other['competition']->id,
+        'event_id' => $other['event']->id,
+        'age_group_id' => $other['group']->id,
+        'registered_by' => $other['panitia']->id,
+        'status' => RegistrationStatus::Pending,
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.registrations.index', $meet['competition']))
+        ->post(route('admin.registrations.approve-all', $meet['competition']))
+        ->assertRedirect(route('admin.registrations.index', $meet['competition']))
+        ->assertSessionHas('status', '3 pendaftaran disetujui.');
+
+    expect(Registration::query()->where('competition_id', $meet['competition']->id)->where('status', RegistrationStatus::Verified)->count())->toBe(4)
+        ->and($alreadyVerified->fresh()->status)->toBe(RegistrationStatus::Verified)
+        ->and($otherPending->fresh()->status)->toBe(RegistrationStatus::Pending);
+});
+
+it('approves only pending registrations that match the club filter', function () {
+    $meet = openRegistrationMeet();
+    $otherClub = \App\Models\Club::factory()->create();
+    $otherAthlete = Athlete::factory()->create([
+        'club_id' => $otherClub->id,
+        'gender' => $meet['athlete']->gender,
+        'birth_year' => 2016,
+    ]);
+    Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Pending,
+    ]);
+    $otherClubEntry = Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $otherAthlete->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Pending,
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.registrations.index', [$meet['competition'], 'club_id' => $meet['club']->id]))
+        ->post(route('admin.registrations.approve-all', $meet['competition']), [
+            'club_id' => $meet['club']->id,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('status', '1 pendaftaran disetujui.');
+
+    expect(Registration::query()->where('athlete_id', $meet['athlete']->id)->first()->status)->toBe(RegistrationStatus::Verified)
+        ->and($otherClubEntry->fresh()->status)->toBe(RegistrationStatus::Pending);
+});
+
+it('rejects approve-all when the pending queue is empty', function () {
+    $meet = openRegistrationMeet();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.registrations.index', $meet['competition']))
+        ->post(route('admin.registrations.approve-all', $meet['competition']))
+        ->assertRedirect(route('admin.registrations.index', $meet['competition']))
+        ->assertSessionHasErrors('status');
+});

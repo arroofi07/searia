@@ -165,7 +165,9 @@ class SeedingController extends Controller
                 $this->lockCompetition($competition);
             }
         } catch (CannotLockSeedingException $exception) {
-            return back()->withErrors(['seeding' => $exception->getMessage()]);
+            return back()
+                ->withErrors(['seeding' => $exception->getMessage()])
+                ->with('pending_seeding', $exception->details);
         }
 
         \App\Support\PublicPageCache::bump();
@@ -215,9 +217,11 @@ class SeedingController extends Controller
 
     private function lockCompetition(Competition $competition): void
     {
-        if ($competition->eventsPendingSeeding()->isNotEmpty()) {
+        $items = $competition->pendingSeedingItems();
+        if ($items->isNotEmpty()) {
             throw new CannotLockSeedingException(
                 'Penguncian ditolak karena masih ada nomor dengan peserta yang belum diseeding.',
+                $items->all(),
             );
         }
 
@@ -230,11 +234,13 @@ class SeedingController extends Controller
     private function lockEvent(Competition $competition, Event $event): void
     {
         $pending = $competition->eventsPendingSeeding()
-            ->contains(fn (Event $item): bool => $item->id === $event->id);
+            ->first(fn (Event $item): bool => $item->id === $event->id);
 
-        if ($pending) {
+        if ($pending instanceof Event) {
             throw new CannotLockSeedingException(
-                'Penguncian ditolak karena nomor lomba ini masih punya peserta yang belum diseeding.',
+                'Penguncian ditolak karena nomor '.$pending->paddedEventNumber().' '.$pending->formattedName()
+                    .' masih punya peserta yang belum diseeding.',
+                $competition->pendingSeedingItems($pending)->all(),
             );
         }
 

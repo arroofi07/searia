@@ -59,6 +59,11 @@ it('rejects locking when a verified event still has no heats', function () {
         ->post(route('admin.seeding.lock', $meet['competition']))
         ->assertRedirect(route('admin.seeding.index', $meet['competition']))
         ->assertSessionHasErrors('seeding');
+
+    expect(session('errors')->first('seeding'))->toContain('belum diseeding')
+        ->and(session('pending_seeding'))->toHaveCount(1)
+        ->and(session('pending_seeding')[0]['event_name'])->toBe($meet['event']->formattedName())
+        ->and(session('pending_seeding')[0]['age_group_name'])->toBe($meet['group']->name);
 });
 
 it('treats empty age groups as skippable instead of unseeded', function () {
