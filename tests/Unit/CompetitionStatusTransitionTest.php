@@ -48,7 +48,7 @@ it('allows only the adjacent transitions drawn in the status diagram', function 
                 continue;
             }
 
-            expect(fn () => $service->transition($competition, $to, $superAdmin, 'tidak sah'))
+            expect(fn() => $service->transition($competition, $to, $superAdmin, 'tidak sah'))
                 ->toThrow(CannotTransitionCompetitionException::class);
         }
     }
@@ -107,7 +107,7 @@ it('rejects moving to seeded when heats exist but a verified swimmer is missing 
     ]);
     $panitia = User::factory()->panitia()->create();
 
-    expect(fn () => (new CompetitionStatusTransition)->transition(
+    expect(fn() => (new CompetitionStatusTransition)->transition(
         $competition,
         CompetitionStatus::Seeded,
         $panitia,
@@ -177,7 +177,7 @@ it('rejects moving to published when a result is still unverified', function () 
     ]);
     $panitia = User::factory()->panitia()->create();
 
-    expect(fn () => (new CompetitionStatusTransition)->transition(
+    expect(fn() => (new CompetitionStatusTransition)->transition(
         $competition,
         CompetitionStatus::Published,
         $panitia,

@@ -25,10 +25,44 @@ it('asks for confirmation before moving status forward', function () {
         ->get(route('admin.competitions.show', $competition))
         ->assertOk()
         ->assertSee('Ubah status')
-        ->assertSee('Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.')
         ->assertSee('Lanjut ke Sudah diseeding')
         ->assertSee('status-forward-modal', false)
-        ->assertSee('Batal');
+        ->assertSee('Batal')
+        ->assertDontSee('Kembalikan ke Pendaftaran ditutup');
+});
+
+it('lets panitia return a seeded meet to closed so seeding can be redone', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Seeded)->create();
+    $panitia = User::factory()->panitia()->create();
+
+    $this->actingAs($panitia)
+        ->get(route('admin.competitions.show', $competition))
+        ->assertOk()
+        ->assertSee('Kembalikan ke Pendaftaran ditutup')
+        ->assertSee('status-back-modal', false);
+
+    $this->actingAs($panitia)
+        ->patch(route('admin.competitions.status', $competition), [
+            'status' => CompetitionStatus::Closed->value,
+            'reason' => 'Ada peserta baru yang belum masuk seri',
+        ])
+        ->assertRedirect();
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Closed);
+});
+
+it('requires a reason when panitia reverts seeded to closed', function () {
+    $competition = Competition::factory()->status(CompetitionStatus::Seeded)->create();
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.competitions.show', $competition))
+        ->patch(route('admin.competitions.status', $competition), [
+            'status' => CompetitionStatus::Closed->value,
+        ])
+        ->assertRedirect(route('admin.competitions.show', $competition))
+        ->assertSessionHasErrors('reason');
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Seeded);
 });
 
 it('lets panitia move to seeded when leftover events have no swimmers', function () {

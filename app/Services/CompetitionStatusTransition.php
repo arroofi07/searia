@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\Heat;
 use App\Models\Result;
 use App\Models\User;
+use App\Support\PublicPageCache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -46,9 +47,11 @@ class CompetitionStatusTransition
 
         $backward = $this->isBackward($from, $to);
 
-        if ($backward && ! $actor->isSuperAdmin()) {
+        if ($backward && ! $this->actorMayRevert($actor, $from, $to)) {
             throw new CannotTransitionCompetitionException(
-                'Hanya Super Admin yang dapat memundurkan status kejuaraan.',
+                $from === CompetitionStatus::Seeded
+                    ? 'Hanya panitia atau Super Admin yang dapat mengembalikan status ke Pendaftaran ditutup.'
+                    : 'Hanya Super Admin yang dapat memundurkan status kejuaraan.',
             );
         }
 
@@ -103,8 +106,23 @@ class CompetitionStatusTransition
                 'ip_address' => $ipAddress,
             ]);
 
+            if ($from->isSeededOrLater() !== $to->isSeededOrLater()) {
+                PublicPageCache::bump();
+            }
+
             return $competition->refresh();
         });
+    }
+
+    private function actorMayRevert(User $actor, CompetitionStatus $from, CompetitionStatus $to): bool
+    {
+        if ($actor->isSuperAdmin()) {
+            return true;
+        }
+
+        return $actor->managesMasterData()
+            && $from === CompetitionStatus::Seeded
+            && $to === CompetitionStatus::Closed;
     }
 
     /**

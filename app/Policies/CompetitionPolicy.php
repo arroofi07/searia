@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\User;
 
@@ -44,7 +45,12 @@ class CompetitionPolicy
 
     public function revert(User $user, Competition $competition): bool
     {
-        return $user->isSuperAdmin();
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return $user->managesMasterData()
+            && $competition->status === CompetitionStatus::Seeded;
     }
 
     public function seed(User $user, Competition $competition): bool

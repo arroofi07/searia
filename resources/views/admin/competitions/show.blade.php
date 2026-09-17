@@ -64,11 +64,19 @@
     @php
         $next = $competition->status->allowedForward()[0] ?? null;
         $back = $competition->status->allowedBackward()[0] ?? null;
+        $canRevert = $back !== null && auth()->user()?->can('revert', $competition);
+        $revertLabel = $competition->status === CompetitionStatus::Seeded && $back
+            ? 'Kembalikan ke '.$back->label()
+            : 'Mundurkan status';
     @endphp
 
     <div class="mt-6 max-w-xl rounded-lg border border-slate-200 bg-white p-5">
         <h2 class="font-medium">Ubah status</h2>
-        <p class="mt-1 text-sm text-slate-500">Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.</p>
+        <p class="mt-1 text-sm text-slate-500">
+            Hanya perpindahan berurutan yang diizinkan.
+            Dari Sudah diseeding, panitia dapat mengembalikan ke Pendaftaran ditutup untuk mengulang pembagian seri.
+            Mundur dari status lain hanya Super Admin.
+        </p>
 
         @if ($next)
             @if ($next === CompetitionStatus::Registration && ! $ready)
@@ -80,9 +88,9 @@
             @endif
         @endif
 
-        @if ($back && auth()->user()?->isSuperAdmin())
+        @if ($canRevert)
             <button type="button" class="mt-4 rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800" data-open-modal="status-back-modal">
-                Mundurkan status
+                {{ $revertLabel }}
             </button>
             @error('reason') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
         @endif
@@ -96,7 +104,7 @@
                 <input type="hidden" name="status" value="{{ $next->value }}">
                 <h2 id="status-forward-title" class="text-lg font-semibold">Ubah status</h2>
                 <p class="mt-2 text-sm leading-6 text-slate-600">
-                    Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.
+                    Status akan maju ke langkah berikutnya. Buku acara atau hasil publik mengikuti status ini.
                 </p>
                 <p class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-800">
                     {{ $competition->status->label() }}
@@ -115,15 +123,19 @@
         </dialog>
     @endif
 
-    @if ($back && auth()->user()?->isSuperAdmin())
+    @if ($canRevert)
         <dialog id="status-back-modal" class="admin-modal w-[min(100%-2rem,28rem)] rounded-2xl border-0 bg-white p-0 text-slate-900 shadow-2xl" aria-labelledby="status-back-title">
             <form method="POST" action="{{ route('admin.competitions.status', $competition) }}" class="p-5">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="status" value="{{ $back->value }}">
-                <h2 id="status-back-title" class="text-lg font-semibold">Ubah status</h2>
+                <h2 id="status-back-title" class="text-lg font-semibold">{{ $revertLabel }}</h2>
                 <p class="mt-2 text-sm leading-6 text-slate-600">
-                    Hanya perpindahan berurutan yang diizinkan. Mundur hanya untuk Super Admin.
+                    @if ($competition->status === CompetitionStatus::Seeded)
+                        Buku acara publik disembunyikan sampai status maju lagi. Seri yang sudah ada tetap tersimpan; ulangi pembagian jika ada peserta baru.
+                    @else
+                        Hanya perpindahan berurutan yang diizinkan. Mundur dari status ini hanya Super Admin.
+                    @endif
                 </p>
                 <p class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-950">
                     {{ $competition->status->label() }}
@@ -137,7 +149,7 @@
                         Batal
                     </button>
                     <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800">
-                        Mundurkan status
+                        {{ $revertLabel }}
                     </button>
                 </div>
             </form>
