@@ -8,6 +8,7 @@ use App\Support\SwimTime;
 class ResultsBookLane
 {
     public function __construct(
+        public int $heatNumber,
         public int $laneNumber,
         public ?int $registrationId,
         public ?string $athleteName,

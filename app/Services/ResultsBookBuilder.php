@@ -5,14 +5,12 @@ namespace App\Services;
 use App\DataTransferObjects\ResultsBookAgeGroupBlock;
 use App\DataTransferObjects\ResultsBookDocument;
 use App\DataTransferObjects\ResultsBookEventBlock;
-use App\DataTransferObjects\ResultsBookHeat;
 use App\DataTransferObjects\ResultsBookLane;
 use App\DataTransferObjects\ResultsBookSession;
 use App\Models\AgeGroup;
 use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Heat;
-use App\Models\HeatLane;
 use App\Models\Result;
 use Illuminate\Support\Collection;
 
@@ -73,23 +71,23 @@ class ResultsBookBuilder
                     }
 
                     $rankByRegistrationId = $this->ranksFor($event, $ageGroup);
-                    $heatBlocks = [];
+                    $lanes = [];
 
                     foreach ($groupHeats->sortBy('heat_number') as $heat) {
-                        $lanesByNumber = $heat->lanes->keyBy('lane_number');
-                        $lanes = [];
+                        foreach ($heat->lanes as $lane) {
+                            $registration = $lane->registration;
+                            if ($registration === null) {
+                                continue;
+                            }
 
-                        for ($laneNumber = 1; $laneNumber <= $laneCount; $laneNumber++) {
-                            /** @var HeatLane|null $lane */
-                            $lane = $lanesByNumber->get($laneNumber);
-                            $registration = $lane?->registration;
-                            $athlete = $registration?->athlete;
+                            $athlete = $registration->athlete;
                             $club = $athlete?->club;
-                            $result = $lane?->result;
+                            $result = $lane->result;
 
                             $lanes[] = new ResultsBookLane(
-                                laneNumber: $laneNumber,
-                                registrationId: $registration?->id,
+                                heatNumber: $heat->heat_number,
+                                laneNumber: $lane->lane_number,
+                                registrationId: $registration->id,
                                 athleteName: $athlete?->full_name,
                                 birthYear: $athlete?->birth_year,
                                 ageGroupCode: $ageGroup->display_code ?: $ageGroup->code,
@@ -97,28 +95,24 @@ class ResultsBookBuilder
                                 city: $club?->city,
                                 resultTimeMs: $result?->time_ms,
                                 resultStatus: $result?->status,
-                                rank: $registration ? ($rankByRegistrationId[$registration->id] ?? null) : null,
+                                rank: $rankByRegistrationId[$registration->id] ?? null,
                                 dsqCode: $result?->dsq_code?->value ?? (is_string($result?->dsq_code) ? $result->dsq_code : null),
                             );
                         }
-
-                        $heatBlocks[] = new ResultsBookHeat(
-                            heatId: $heat->id,
-                            heatNumber: $heat->heat_number,
-                            lanes: $lanes,
-                        );
                     }
 
-                    if ($heatBlocks === []) {
+                    if ($lanes === []) {
                         continue;
                     }
+
+                    usort($lanes, $this->compareRankedLanes(...));
 
                     $ageGroupBlocks[] = new ResultsBookAgeGroupBlock(
                         ageGroupId: $ageGroup->id,
                         name: $ageGroup->name,
                         displayCode: $ageGroup->display_code ?: $ageGroup->code,
                         sortOrder: $ageGroup->sort_order,
-                        heats: $heatBlocks,
+                        lanes: $lanes,
                     );
                 }
 
@@ -188,5 +182,22 @@ class ResultsBookBuilder
         }
 
         return $map;
+    }
+
+    private function compareRankedLanes(ResultsBookLane $left, ResultsBookLane $right): int
+    {
+        return [
+            $left->rank ?? PHP_INT_MAX,
+            $left->resultTimeMs ?? PHP_INT_MAX,
+            $left->resultStatus?->value ?? 'zz',
+            $left->heatNumber,
+            $left->laneNumber,
+        ] <=> [
+            $right->rank ?? PHP_INT_MAX,
+            $right->resultTimeMs ?? PHP_INT_MAX,
+            $right->resultStatus?->value ?? 'zz',
+            $right->heatNumber,
+            $right->laneNumber,
+        ];
     }
 }
