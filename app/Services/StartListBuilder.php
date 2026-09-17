@@ -116,15 +116,17 @@ class StartListBuilder
                             );
                         }
 
-                        if ($clubId !== null && collect($lanes)->every(fn (StartListLane $lane): bool => $lane->isEmpty())) {
-                            continue;
-                        }
-
-                        $heatBlocks[] = new StartListHeat(
+                        $heatBlock = new StartListHeat(
                             heatId: $heat->id,
                             heatNumber: $heat->heat_number,
                             lanes: $lanes,
                         );
+
+                        if (! $heatBlock->hasSwimmers()) {
+                            continue;
+                        }
+
+                        $heatBlocks[] = $heatBlock;
                     }
 
                     if ($heatBlocks === []) {

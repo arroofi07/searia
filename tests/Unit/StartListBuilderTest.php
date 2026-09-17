@@ -6,6 +6,7 @@ use App\Enums\EventGender;
 use App\Enums\Stroke;
 use App\Models\AgeGroup;
 use App\Models\Event;
+use App\Models\Heat;
 use App\Services\StartListBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,36 @@ it('filters by session and event', function () {
         ->and($sessionOne->sessions[0]->session)->toBe(1)
         ->and($singleEvent->sessions[0]->events)->toHaveCount(1)
         ->and($singleEvent->sessions[0]->events[0]->eventId)->toBe($event->id);
+});
+
+it('omits heats and events that have no swimmers', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(2, lanes: 6);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+
+    $emptyEvent = Event::factory()->create([
+        'competition_id' => $competition->id,
+        'event_number' => 99,
+        'session' => 1,
+        'sort_order' => 99,
+        'gender' => EventGender::Male,
+        'distance' => 50,
+        'stroke' => Stroke::Freestyle,
+        'equipment' => Equipment::None,
+    ]);
+    $emptyEvent->ageGroups()->attach($group->id);
+
+    Heat::factory()->create([
+        'event_id' => $emptyEvent->id,
+        'age_group_id' => $group->id,
+        'heat_number' => 1,
+        'round' => 'final',
+    ]);
+
+    $document = app(StartListBuilder::class)->build($competition->fresh());
+    $eventIds = collect($document->sessions[0]->events)->pluck('eventId')->all();
+
+    expect($eventIds)->toContain($event->id)
+        ->and($eventIds)->not->toContain($emptyEvent->id);
 });
 
 it('builds a thousand-entrant start list in under three seconds', function () {

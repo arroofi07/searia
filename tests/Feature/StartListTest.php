@@ -2,6 +2,10 @@
 
 use App\Actions\RunSeeding;
 use App\Enums\CompetitionStatus;
+use App\Enums\Equipment;
+use App\Enums\EventGender;
+use App\Enums\Stroke;
+use App\Models\Event;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -143,4 +147,30 @@ it('orders club start list by program order rather than athlete name', function 
     }
 
     expect($names)->not->toBe(collect($names)->sort()->values()->all());
+});
+
+it('does not open an empty start list page for unseeded events', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(2);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $competition->update(['status' => CompetitionStatus::Seeded]);
+
+    for ($n = 1; $n <= 20; $n++) {
+        Event::factory()->create([
+            'competition_id' => $competition->id,
+            'event_number' => 200 + $n,
+            'session' => 1,
+            'sort_order' => $n,
+            'gender' => EventGender::Male,
+            'distance' => 50,
+            'stroke' => Stroke::Freestyle,
+            'equipment' => Equipment::None,
+        ]);
+    }
+
+    $event->update(['sort_order' => 99]);
+
+    $this->get(route('start-list.show', $competition))
+        ->assertOk()
+        ->assertSee('ATHLETE 01')
+        ->assertDontSee('Belum ada susunan seri');
 });

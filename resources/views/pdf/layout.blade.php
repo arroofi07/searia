@@ -32,6 +32,10 @@
         .signature { margin-top: 18px; width: 45%; }
         .signature .line { border-bottom: 0.5px solid #0f172a; height: 28px; margin-bottom: 4px; }
         .page-break { page-break-after: always; }
+        .cover-page { page-break-after: always; page-break-inside: avoid; }
+        .toc-page { page-break-after: always; }
+        .session-block.session-break { page-break-after: always; }
+        .heat-block { page-break-inside: avoid; }
     </style>
 </head>
 <body>
@@ -44,8 +48,9 @@
         }
     @endphp
     @if ($includeCover)
-        @include('pdf.cover', ['coverTitle' => $coverTitle])
-        <div class="page-break"></div>
+        <div class="cover-page">
+            @include('pdf.cover', ['coverTitle' => $coverTitle])
+        </div>
     @endif
     <div class="header">
         <table class="header-table">

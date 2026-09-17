@@ -23,6 +23,7 @@ class StartListController extends Controller
 
         if ($eventId === null) {
             $eventPages = $competition->events()
+                ->whereHas('heats', fn ($query) => $query->where('round', 'final'))
                 ->orderBy('session')
                 ->orderBy('sort_order')
                 ->orderBy('event_number')

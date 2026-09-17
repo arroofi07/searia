@@ -12,4 +12,15 @@ class StartListHeat
         public int $heatNumber,
         public array $lanes,
     ) {}
+
+    public function hasSwimmers(): bool
+    {
+        foreach ($this->lanes as $lane) {
+            if (! $lane->isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
