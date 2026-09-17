@@ -5,9 +5,11 @@
     $progress = $fillableTotal > 0
         ? (int) round(($seededCount / $fillableTotal) * 100)
         : ($pairTotal > 0 ? 100 : 0);
-    $allLocked = $seededCount > 0 && $unseeded === 0 && $unlocked === 0;
-    $readyToAdvance = $pairTotal > 0 && $unseeded === 0 && $unlocked === 0;
+    $allLocked = $seededCount > 0 && $unseeded === 0 && $unlocked === 0 && $pendingCount === 0;
+    $readyToAdvance = $pairTotal > 0 && $unseeded === 0 && $unlocked === 0 && $pendingCount === 0;
     $canLock = $seededCount > 0 && $unseeded === 0;
+    $staleLockedCount = $staleLockedCount ?? 0;
+    $missingTotal = $missingTotal ?? 0;
     $registrationOpen = in_array($competition->status, [CompetitionStatus::Draft, CompetitionStatus::Registration], true);
     $statusFilter = (string) ($filters['status'] ?? '');
 @endphp
@@ -48,13 +50,15 @@
         <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm leading-6 text-amber-950">
                 <p class="font-semibold">Ada {{ $pendingCount }} entri belum disetujui</p>
-                <p>Mereka tidak masuk ke seri. Setujui dulu agar pembagian lengkap.</p>
+                <p>Mereka tidak masuk ke seri yang sudah ada. Setujui dulu, lalu ulangi pembagian seri pada nomor terkait.</p>
             </div>
             <a href="{{ route('admin.registrations.index', $competition) }}" class="inline-flex min-h-11 items-center justify-center rounded-md bg-amber-900 px-4 py-2 text-sm font-medium text-white hover:bg-amber-950">
                 Buka antrean pendaftaran
             </a>
         </div>
-    @elseif ($registrationOpen)
+    @endif
+
+    @if ($registrationOpen && $pendingCount === 0)
         <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
             Status masih <strong>{{ $competition->status->label() }}</strong>.
             Boleh dicoba, tetapi sebaiknya tunggu pendaftaran ditutup agar susunan tidak berubah karena peserta baru.
@@ -66,20 +70,27 @@
             atau
             <a href="{{ route('admin.competitions.age-groups.index', $competition) }}" class="font-medium text-teal-800 hover:underline">kelompok umur</a>.
         </div>
-    @elseif ($unseeded > 0)
+    @endif
+
+    @if ($unseeded > 0)
         <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-teal-200 bg-teal-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm leading-6 text-teal-950">
-                <p class="font-semibold">Langkah berikutnya: bagi seri</p>
-                <p>{{ $unseeded }} kombinasi belum punya lintasan. Sistem mengurutkan catatan waktu, lalu mengisi seri.</p>
+                <p class="font-semibold">Ada peserta yang belum masuk seri</p>
+                <p>{{ $unseeded }} kombinasi masih punya {{ $missingTotal }} peserta disetujui di luar lintasan. Bagi ulang agar mereka masuk buku acara.</p>
+                @if ($staleLockedCount > 0)
+                    <p class="mt-1">{{ $staleLockedCount }} di antaranya sudah dikunci — tekan <strong>Ulangi pembagian</strong> pada baris itu.</p>
+                @endif
             </div>
-            <form method="POST" action="{{ route('admin.seeding.run', $competition) }}">
-                @csrf
-                <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
-                    Bagi seri seluruh kejuaraan
-                </button>
-            </form>
+            @if ($unseeded > $staleLockedCount)
+                <form method="POST" action="{{ route('admin.seeding.run', $competition) }}">
+                    @csrf
+                    <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
+                        Bagi seri seluruh kejuaraan
+                    </button>
+                </form>
+            @endif
         </div>
-    @elseif ($unlocked > 0)
+    @elseif ($unlocked > 0 && $pendingCount === 0)
         <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm leading-6 text-sky-950">
                 <p class="font-semibold">Langkah berikutnya: cek, lalu kunci</p>
@@ -119,7 +130,14 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Progres pembagian</p>
                 <p class="mt-1 text-sm text-slate-700">
-                    {{ $seededCount }} dari {{ $fillableTotal }} kombinasi dengan peserta sudah dibagi · {{ $verifiedCount }} entri disetujui
+                    {{ $seededCount }} dari {{ $fillableTotal }} kombinasi dengan peserta sudah lengkap
+                    · {{ $verifiedCount }} entri disetujui
+                    @if ($missingTotal > 0)
+                        · {{ $missingTotal }} belum masuk seri
+                    @endif
+                    @if ($pendingCount > 0)
+                        · {{ $pendingCount }} menunggu verifikasi
+                    @endif
                     @if ($emptyCount > 0)
                         · {{ $emptyCount }} tanpa peserta dilewati
                     @endif
@@ -139,7 +157,7 @@
             <a href="{{ route('admin.seeding.index', [$competition, 'status' => 'unseeded']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'unseeded' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Belum dibagi</p>
                 <p class="mt-1 text-xl font-semibold {{ $unseeded > 0 ? 'text-amber-700' : 'text-teal-800' }}">{{ $unseeded }}</p>
-                <p class="mt-0.5 text-xs text-slate-500">Perlu diisi dulu</p>
+                <p class="mt-0.5 text-xs text-slate-500">Peserta disetujui belum masuk</p>
             </a>
             <a href="{{ route('admin.seeding.index', [$competition, 'status' => 'preview']) }}" class="rounded-xl border px-4 py-3 {{ $statusFilter === 'preview' ? 'border-sky-300 bg-sky-50' : 'border-slate-200 hover:bg-slate-50' }}">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Pratinjau</p>
@@ -249,6 +267,7 @@
                 <tr>
                     <th class="px-4 py-3 font-medium">Nomor lomba</th>
                     <th class="px-4 py-3 font-medium">Kelompok umur</th>
+                    <th class="px-4 py-3 font-medium">Peserta</th>
                     <th class="px-4 py-3 font-medium">Jumlah seri</th>
                     <th class="px-4 py-3 font-medium">Status</th>
                     <th class="px-4 py-3 font-medium"><span class="sr-only">Aksi</span></th>
@@ -262,18 +281,31 @@
                             {{ $pair['event']->formattedName() }}
                         </td>
                         <td class="px-4 py-3" data-label="Kelompok umur">{{ $pair['ageGroup']->name }}</td>
-                        <td class="px-4 py-3" data-label="Jumlah seri">{{ $pair['seeded'] ? $pair['heatCount'] : '—' }}</td>
+                        <td class="px-4 py-3" data-label="Peserta">
+                            {{ $pair['assignedCount'] }}/{{ $pair['entrantCount'] }}
+                            @if ($pair['pendingCount'] > 0)
+                                <span class="mt-0.5 block text-xs text-amber-800">{{ $pair['pendingCount'] }} menunggu verifikasi</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3" data-label="Jumlah seri">{{ $pair['heatCount'] > 0 ? $pair['heatCount'] : '—' }}</td>
                         <td class="px-4 py-3" data-label="Status">
-                            @include('admin.seeding._status', ['seeded' => $pair['seeded'], 'locked' => $pair['locked'], 'empty' => $pair['empty']])
+                            @include('admin.seeding._status', [
+                                'seeded' => $pair['seeded'],
+                                'locked' => $pair['locked'],
+                                'empty' => $pair['empty'],
+                                'missingCount' => $pair['missingCount'],
+                                'pendingCount' => $pair['pendingCount'],
+                                'hasHeats' => $pair['heatCount'] > 0,
+                            ])
                         </td>
                         <td class="px-4 py-3 text-right" data-label="Aksi">
                             <div class="flex flex-wrap items-center justify-end gap-2">
-                                @if ($pair['seeded'])
-                                    <a href="{{ route('admin.seeding.show', [$competition, $pair['event'], $pair['ageGroup']]) }}" class="inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800">
+                                @if ($pair['heatCount'] > 0)
+                                    <a href="{{ route('admin.seeding.show', [$competition, $pair['event'], $pair['ageGroup']]) }}" class="inline-flex min-h-9 items-center rounded-md {{ $pair['needsSeeding'] ? 'border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50' : 'bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}">
                                         Lihat susunan
                                     </a>
                                 @endif
-                                @unless ($pair['empty'])
+                                @if ($pair['entrantCount'] > 0)
                                     <form method="POST" action="{{ route('admin.seeding.run', $competition) }}" class="inline">
                                         @csrf
                                         <input type="hidden" name="event_id" value="{{ $pair['event']->id }}">
@@ -281,18 +313,22 @@
                                         @if ($pair['locked'])
                                             <input type="hidden" name="force" value="1">
                                         @endif
-                                        <button class="{{ $pair['seeded'] ? 'text-xs text-slate-600 hover:underline' : 'inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' }}"
+                                        <button class="{{ $pair['needsSeeding'] || ! $pair['seeded'] ? 'inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800' : 'text-xs text-slate-600 hover:underline' }}"
                                             @if ($pair['locked']) onclick="return confirm('Nomor ini sudah dikunci. Ulangi pembagian akan mengganti susunan. Lanjutkan?')" @endif>
-                                            {{ $pair['seeded'] ? 'Ulangi pembagian' : 'Bagi seri ini' }}
+                                            {{ $pair['heatCount'] > 0 ? 'Ulangi pembagian' : 'Bagi seri ini' }}
                                         </button>
                                     </form>
-                                @endunless
+                                @elseif ($pair['pendingCount'] > 0)
+                                    <a href="{{ route('admin.registrations.index', $competition) }}" class="inline-flex min-h-9 items-center rounded-md bg-amber-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-950">
+                                        Setujui dulu
+                                    </a>
+                                @endif
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-slate-500">
+                        <td colspan="6" class="px-4 py-8 text-center text-slate-500">
                             @if ($pairTotal === 0)
                                 Belum ada nomor lomba dengan kelompok umur. Lengkapi pengaturan acara dulu.
                             @else

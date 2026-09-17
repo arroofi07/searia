@@ -186,7 +186,7 @@ class Competition extends Model
     }
 
     /**
-     * Nomor yang masih punya peserta disetujui, tetapi kelompok itu belum punya seri.
+     * Nomor yang masih punya peserta disetujui yang belum masuk lintasan.
      * Nomor atau grup tanpa peserta tidak ikut dihitung.
      *
      * @return Collection<int, Event>
@@ -195,7 +195,8 @@ class Competition extends Model
     {
         $events = $this->events()
             ->with([
-                'heats:id,event_id,age_group_id',
+                'heats:id,event_id,age_group_id,locked_at',
+                'heats.lanes:id,heat_id,registration_id',
                 'registrations' => fn ($query) => $query->eligibleForSeeding()->select('id', 'event_id', 'age_group_id'),
             ])
             ->get();
@@ -208,9 +209,9 @@ class Competition extends Model
     }
 
     /**
-     * Nomor × kelompok umur yang masih punya peserta, tetapi belum punya seri.
+     * Nomor × kelompok umur yang masih punya peserta disetujui di luar lintasan.
      *
-     * @return Collection<int, array{event_id: int, age_group_id: int, event_number: string, event_name: string, age_group_name: string|null, label: string}>
+     * @return Collection<int, array{event_id: int, age_group_id: int, event_number: string, event_name: string, age_group_name: string|null, label: string, missing_count: int, locked: bool}>
      */
     public function pendingSeedingItems(?Event $only = null): Collection
     {
@@ -240,6 +241,11 @@ class Competition extends Model
                             $label .= ' · '.$groupName;
                         }
 
+                        $groupHeats = $event->heats->where('age_group_id', $groupId);
+                        $assignedIds = $groupHeats
+                            ->flatMap(fn (Heat $heat) => $heat->lanes->pluck('registration_id'))
+                            ->filter();
+
                         return [
                             'event_id' => $event->id,
                             'age_group_id' => $groupId,
@@ -247,6 +253,12 @@ class Competition extends Model
                             'event_name' => $event->formattedName(),
                             'age_group_name' => $groupName,
                             'label' => $label,
+                            'missing_count' => $event->registrations
+                                ->where('age_group_id', $groupId)
+                                ->reject(fn (Registration $registration): bool => $assignedIds->contains($registration->id))
+                                ->count(),
+                            'locked' => $groupHeats->isNotEmpty()
+                                && $groupHeats->every(fn (Heat $heat): bool => $heat->isLocked()),
                         ];
                     });
             })
@@ -266,13 +278,22 @@ class Competition extends Model
      */
     private function unseededAgeGroupIds(Event $event): Collection
     {
-        $eligibleGroups = $event->registrations->pluck('age_group_id')->unique()->filter();
-        if ($eligibleGroups->isEmpty()) {
+        $eligible = $event->registrations;
+        if ($eligible->isEmpty()) {
             return collect();
         }
 
-        return $eligibleGroups
-            ->diff($event->heats->pluck('age_group_id')->unique())
+        $assignedIds = $event->heats
+            ->loadMissing('lanes')
+            ->flatMap(fn (Heat $heat) => $heat->lanes->pluck('registration_id'))
+            ->filter()
+            ->unique();
+
+        return $eligible
+            ->reject(fn (Registration $registration): bool => $assignedIds->contains($registration->id))
+            ->pluck('age_group_id')
+            ->unique()
+            ->filter()
             ->map(fn (mixed $id): int => (int) $id)
             ->values();
     }

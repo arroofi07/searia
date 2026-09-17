@@ -23,7 +23,13 @@
             <h1 class="text-2xl font-semibold">Nomor {{ $event->event_number }} {{ $event->formattedName() }}</h1>
             <p class="mt-1 text-sm text-slate-600">{{ $competition->name }} · {{ $ageGroup->name }} · {{ $laneCount }} lintasan</p>
             <div class="mt-2">
-                @include('admin.seeding._status', ['seeded' => $heats->total() > 0, 'locked' => $anyLocked])
+                @include('admin.seeding._status', [
+                    'seeded' => $heats->total() > 0 && $unassigned->isEmpty(),
+                    'locked' => $anyLocked,
+                    'missingCount' => $unassigned->count(),
+                    'pendingCount' => $pendingRegistrations->count(),
+                    'hasHeats' => $heats->total() > 0,
+                ])
             </div>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -64,6 +70,31 @@
         ])
     @elseif ($errors->has('seeding'))
         <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{{ $errors->first('seeding') }}</div>
+    @endif
+
+    @if ($pendingRegistrations->isNotEmpty())
+        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
+            <p class="font-semibold">{{ $pendingRegistrations->count() }} pendaftar baru menunggu verifikasi</p>
+            <p class="mt-1">Mereka belum bisa masuk seri. Setujui di pendaftaran, lalu ulangi pembagian nomor ini.</p>
+            <ul class="mt-2 list-disc pl-5">
+                @foreach ($pendingRegistrations as $registration)
+                    <li>{{ $registration->athlete?->full_name ?? 'Peserta #'.$registration->id }}</li>
+                @endforeach
+            </ul>
+            <a href="{{ route('admin.registrations.index', $competition) }}" class="mt-3 inline-flex min-h-10 items-center font-medium text-amber-950 hover:underline">Buka antrean pendaftaran</a>
+        </div>
+    @endif
+
+    @if ($unassigned->isNotEmpty())
+        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950">
+            <p class="font-semibold">{{ $unassigned->count() }} peserta disetujui belum masuk seri</p>
+            <p class="mt-1">Seri di bawah ini disusun sebelum mereka disetujui. Ulangi pembagian nomor ini agar lintasan diperbarui.</p>
+            <ul class="mt-2 list-disc pl-5">
+                @foreach ($unassigned as $registration)
+                    <li>{{ $registration->athlete?->full_name ?? 'Peserta #'.$registration->id }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <details class="mt-5 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">

@@ -216,6 +216,100 @@ it('withdraws an entrant without shifting other lanes', function () {
         ->and(ActivityLog::query()->where('action', 'heat_lane.withdraw')->count())->toBe(1);
 });
 
+it('shows a locked meet as incomplete when a verified swimmer joined after seeding', function () {
+    [$competition, $event, $group, $registrations] = seedMeetWithEntrants(3);
+    app(RunSeeding::class)->handle($competition, $event, $group)->each->lock();
+    $competition->update(['status' => CompetitionStatus::Closed]);
+
+    $newAthlete = \App\Models\Athlete::factory()->create([
+        'club_id' => $registrations[0]->athlete->club_id,
+        'gender' => $registrations[0]->athlete->gender,
+        'birth_year' => 2016,
+        'full_name' => 'PESERTA FORM BARU',
+    ]);
+    verifiedRegistration([
+        'competition' => $competition,
+        'event' => $event,
+        'athlete' => $newAthlete,
+        'group' => $group,
+        'panitia' => User::factory()->panitia()->create(),
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.index', $competition))
+        ->assertOk()
+        ->assertSee('Ada peserta yang belum masuk seri')
+        ->assertSee('Peserta belum masuk seri')
+        ->assertSee('3/4')
+        ->assertSee('belum masuk seri')
+        ->assertDontSee('Semua seri terkunci')
+        ->assertDontSee('Tidak ada seri yang perlu dikunci');
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.show', [$competition, $event, $group]))
+        ->assertOk()
+        ->assertSee('PESERTA FORM BARU')
+        ->assertSee('peserta disetujui belum masuk seri');
+});
+
+it('does not treat a meet as fully seeded while a form entry is still pending', function () {
+    [$competition, $event, $group, $registrations] = seedMeetWithEntrants(3);
+    app(RunSeeding::class)->handle($competition, $event, $group)->each->lock();
+    $competition->update(['status' => CompetitionStatus::Closed]);
+
+    $newAthlete = \App\Models\Athlete::factory()->create([
+        'club_id' => $registrations[0]->athlete->club_id,
+        'gender' => $registrations[0]->athlete->gender,
+        'birth_year' => 2016,
+        'full_name' => 'MENUNGGU VERIFIKASI',
+    ]);
+    \App\Models\Registration::factory()->create([
+        'competition_id' => $competition->id,
+        'event_id' => $event->id,
+        'athlete_id' => $newAthlete->id,
+        'age_group_id' => $group->id,
+        'status' => \App\Enums\RegistrationStatus::Pending,
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->get(route('admin.seeding.index', $competition))
+        ->assertOk()
+        ->assertSee('belum disetujui')
+        ->assertSee('Ada pendaftar baru')
+        ->assertSee('menunggu verifikasi')
+        ->assertDontSee('Semua seri terkunci')
+        ->assertDontSee('Tidak ada seri yang perlu dikunci');
+});
+
+it('rejects locking when heats exist but a verified swimmer is still off the lanes', function () {
+    [$competition, $event, $group, $registrations] = seedMeetWithEntrants(3);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+
+    $newAthlete = \App\Models\Athlete::factory()->create([
+        'club_id' => $registrations[0]->athlete->club_id,
+        'gender' => $registrations[0]->athlete->gender,
+        'birth_year' => 2016,
+        'full_name' => 'TERLAMBAT DISETUJUI',
+    ]);
+    verifiedRegistration([
+        'competition' => $competition,
+        'event' => $event,
+        'athlete' => $newAthlete,
+        'group' => $group,
+        'panitia' => User::factory()->panitia()->create(),
+    ]);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->from(route('admin.seeding.index', $competition))
+        ->post(route('admin.seeding.lock', $competition))
+        ->assertRedirect(route('admin.seeding.index', $competition))
+        ->assertSessionHasErrors('seeding');
+
+    expect(session('errors')->first('seeding'))->toContain('belum diseeding')
+        ->and(session('pending_seeding'))->toHaveCount(1)
+        ->and(Heat::query()->where('event_id', $event->id)->whereNull('locked_at')->count())->toBeGreaterThan(0);
+});
+
 it('rejects moving across a different age group', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(6);
     app(RunSeeding::class)->handle($competition, $event, $group);

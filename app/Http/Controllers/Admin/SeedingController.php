@@ -13,6 +13,7 @@ use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Heat;
 use App\Models\HeatLane;
+use App\Models\Registration;
 use App\Support\ListPaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,22 @@ class SeedingController extends Controller
 
         $events = $competition->events()->with(['heats.ageGroup', 'ageGroups'])->get();
 
-        $eligibleCounts = $competition->registrations()
+        $eligible = $competition->registrations()
             ->eligibleForSeeding()
+            ->get(['id', 'event_id', 'age_group_id']);
+        $eligibleIds = $eligible->pluck('id');
+        $assignedIds = $eligibleIds->isEmpty()
+            ? collect()
+            : HeatLane::query()->whereIn('registration_id', $eligibleIds)->pluck('registration_id');
+        $eligibleCounts = $eligible
+            ->groupBy(fn ($row): string => (int) $row->event_id.'-'.(int) $row->age_group_id)
+            ->map->count();
+        $missingCounts = $eligible
+            ->reject(fn ($row): bool => $assignedIds->contains($row->id))
+            ->groupBy(fn ($row): string => (int) $row->event_id.'-'.(int) $row->age_group_id)
+            ->map->count();
+        $pendingCounts = $competition->registrations()
+            ->where('status', RegistrationStatus::Pending)
             ->selectRaw('event_id, age_group_id, COUNT(*) as aggregate')
             ->groupBy('event_id', 'age_group_id')
             ->get()
@@ -38,32 +53,40 @@ class SeedingController extends Controller
         foreach ($events as $event) {
             foreach ($event->ageGroups as $group) {
                 $heats = $event->heats->where('age_group_id', $group->id)->sortBy('heat_number');
-                $entrantCount = $eligibleCounts[$event->id.'-'.$group->id] ?? 0;
-                $empty = $heats->isEmpty() && $entrantCount === 0;
+                $key = $event->id.'-'.$group->id;
+                $entrantCount = $eligibleCounts[$key] ?? 0;
+                $missingCount = $missingCounts[$key] ?? 0;
+                $pendingPairCount = $pendingCounts[$key] ?? 0;
+                $hasHeats = $heats->isNotEmpty();
+                $empty = $entrantCount === 0 && $pendingPairCount === 0 && ! $hasHeats;
                 $pairs->push([
                     'event' => $event,
                     'ageGroup' => $group,
                     'heatCount' => $heats->count(),
                     'entrantCount' => $entrantCount,
+                    'assignedCount' => $entrantCount - $missingCount,
+                    'missingCount' => $missingCount,
+                    'pendingCount' => $pendingPairCount,
                     'empty' => $empty,
-                    'locked' => $heats->isNotEmpty() && $heats->every(fn (Heat $heat): bool => $heat->isLocked()),
-                    'seeded' => $heats->isNotEmpty(),
+                    'locked' => $hasHeats && $heats->every(fn (Heat $heat): bool => $heat->isLocked()),
+                    'seeded' => $hasHeats && $entrantCount > 0 && $missingCount === 0,
+                    'needsSeeding' => $missingCount > 0,
                 ]);
             }
         }
 
-        $unseeded = $pairs->where('seeded', false)->where('empty', false)->count();
+        $unseeded = $pairs->where('needsSeeding', true)->count();
         $unlocked = $pairs->where('seeded', true)->where('locked', false)->count();
-        $lockedCount = $pairs->where('locked', true)->count();
+        $lockedCount = $pairs->where('locked', true)->where('needsSeeding', false)->count();
         $seededCount = $pairs->where('seeded', true)->count();
         $emptyCount = $pairs->where('empty', true)->count();
+        $staleLockedCount = $pairs->where('needsSeeding', true)->where('locked', true)->count();
+        $missingTotal = $pairs->sum('missingCount');
         $pairTotal = $pairs->count();
         $pendingCount = $competition->registrations()
             ->where('status', RegistrationStatus::Pending)
             ->count();
-        $verifiedCount = $competition->registrations()
-            ->eligibleForSeeding()
-            ->count();
+        $verifiedCount = $eligible->count();
 
         return view('admin.seeding.index', [
             'competition' => $competition,
@@ -76,6 +99,8 @@ class SeedingController extends Controller
             'unlocked' => $unlocked,
             'pendingCount' => $pendingCount,
             'verifiedCount' => $verifiedCount,
+            'staleLockedCount' => $staleLockedCount,
+            'missingTotal' => $missingTotal,
             'filterEvents' => $events,
             'filterAgeGroups' => $competition->ageGroups,
             'filters' => [
@@ -124,6 +149,32 @@ class SeedingController extends Controller
             ])
             ->values();
 
+        $assignedIds = HeatLane::query()
+            ->whereNotNull('registration_id')
+            ->whereHas('heat', function ($query) use ($event, $ageGroup): void {
+                $query->where('event_id', $event->id)
+                    ->where('age_group_id', $ageGroup->id)
+                    ->where('round', 'final');
+            })
+            ->pluck('registration_id');
+
+        $unassigned = Registration::query()
+            ->eligibleForSeeding()
+            ->where('event_id', $event->id)
+            ->where('age_group_id', $ageGroup->id)
+            ->whereNotIn('id', $assignedIds)
+            ->with('athlete.club')
+            ->orderBy('id')
+            ->get();
+
+        $pendingRegistrations = Registration::query()
+            ->where('event_id', $event->id)
+            ->where('age_group_id', $ageGroup->id)
+            ->where('status', RegistrationStatus::Pending)
+            ->with('athlete')
+            ->orderBy('id')
+            ->get();
+
         return view('admin.seeding.show', [
             'competition' => $competition,
             'event' => $event,
@@ -132,6 +183,8 @@ class SeedingController extends Controller
             'swapLanes' => $swapLanes,
             'laneCount' => $competition->pool_lanes,
             'anyLocked' => $anyLocked,
+            'unassigned' => $unassigned,
+            'pendingRegistrations' => $pendingRegistrations,
         ]);
     }
 
@@ -193,8 +246,8 @@ class SeedingController extends Controller
     }
 
     /**
-     * @param  Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool}>  $pairs
-     * @return Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool}>
+     * @param  Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool, empty: bool, needsSeeding: bool}>  $pairs
+     * @return Collection<int, array{event: Event, ageGroup: AgeGroup, heatCount: int, locked: bool, seeded: bool, empty: bool, needsSeeding: bool}>
      */
     private function filterPairs(Collection $pairs, Request $request): Collection
     {
@@ -222,10 +275,10 @@ class SeedingController extends Controller
             ->when($status !== '', function (Collection $items) use ($status): Collection {
                 return $items->filter(function (array $pair) use ($status): bool {
                     return match ($status) {
-                        'unseeded' => ! $pair['seeded'] && ! $pair['empty'],
+                        'unseeded' => $pair['needsSeeding'],
                         'empty' => $pair['empty'],
                         'preview' => $pair['seeded'] && ! $pair['locked'],
-                        'locked' => $pair['locked'],
+                        'locked' => $pair['locked'] && ! $pair['needsSeeding'],
                         default => true,
                     };
                 })->values();

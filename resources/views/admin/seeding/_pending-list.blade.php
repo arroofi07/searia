@@ -1,8 +1,8 @@
 @php
-    /** @var list<array{event_id: int, age_group_id: int, event_number: string, event_name: string, age_group_name: string|null, label: string}> $items */
+    /** @var list<array{event_id: int, age_group_id: int, event_number: string, event_name: string, age_group_name: string|null, label: string, missing_count?: int, locked?: bool}> $items */
     $items = $items ?? [];
     $title = $title ?? 'Masih ada nomor yang belum dibagi seri';
-    $intro = $intro ?? 'Nomor berikut sudah punya peserta disetujui, tetapi belum punya seri dan lintasan.';
+    $intro = $intro ?? 'Nomor berikut punya peserta disetujui yang belum masuk lintasan. Bisa nomor yang belum pernah dibagi, atau peserta baru setelah seri lama dibuat.';
     $showSeedForm = $showSeedForm ?? true;
     $showBulk = $showBulk ?? true;
 @endphp
@@ -30,14 +30,21 @@
                         @if (! empty($item['age_group_name']))
                             <p class="mt-0.5 text-xs text-slate-500">{{ $item['age_group_name'] }}</p>
                         @endif
+                        @if (! empty($item['missing_count']))
+                            <p class="mt-0.5 text-xs text-amber-800">{{ $item['missing_count'] }} peserta belum masuk seri</p>
+                        @endif
                     </div>
                     @if ($showSeedForm)
-                        <form method="POST" action="{{ route('admin.seeding.run', $competition) }}" class="shrink-0">
+                        <form method="POST" action="{{ route('admin.seeding.run', $competition) }}" class="shrink-0"
+                            @if (! empty($item['locked'])) onsubmit="return confirm('Nomor ini sudah dikunci. Ulangi pembagian akan mengganti susunan. Lanjutkan?')" @endif>
                             @csrf
                             <input type="hidden" name="event_id" value="{{ $item['event_id'] }}">
                             <input type="hidden" name="age_group_id" value="{{ $item['age_group_id'] }}">
+                            @if (! empty($item['locked']))
+                                <input type="hidden" name="force" value="1">
+                            @endif
                             <button class="inline-flex min-h-9 items-center rounded-md bg-teal-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-teal-800">
-                                Bagi seri ini
+                                {{ ! empty($item['locked']) ? 'Ulangi pembagian' : 'Bagi seri ini' }}
                             </button>
                         </form>
                     @endif

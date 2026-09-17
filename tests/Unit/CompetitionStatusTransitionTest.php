@@ -86,6 +86,37 @@ it('rejects moving to seeded when an event has verified swimmers without heats',
     expect($competition->fresh()->status)->toBe(CompetitionStatus::Closed);
 });
 
+it('rejects moving to seeded when heats exist but a verified swimmer is missing from lanes', function () {
+    [$competition, $event, $group, $registrations] = seedMeetWithEntrants(3);
+    app(\App\Actions\RunSeeding::class)->handle($competition, $event, $group);
+    $competition->update(['status' => CompetitionStatus::Closed]);
+
+    $newAthlete = Athlete::factory()->create([
+        'club_id' => $registrations[0]->athlete->club_id,
+        'gender' => $registrations[0]->athlete->gender,
+        'birth_year' => 2016,
+        'full_name' => 'LATE ENTRY',
+    ]);
+    Registration::factory()->create([
+        'competition_id' => $competition->id,
+        'event_id' => $event->id,
+        'age_group_id' => $group->id,
+        'athlete_id' => $newAthlete->id,
+        'status' => RegistrationStatus::Verified,
+        'registered_by' => $registrations[0]->registered_by,
+    ]);
+    $panitia = User::factory()->panitia()->create();
+
+    expect(fn () => (new CompetitionStatusTransition)->transition(
+        $competition,
+        CompetitionStatus::Seeded,
+        $panitia,
+    ))->toThrow(CannotTransitionCompetitionException::class);
+
+    expect($competition->fresh()->status)->toBe(CompetitionStatus::Closed)
+        ->and($competition->pendingSeedingItems())->toHaveCount(1);
+});
+
 it('allows moving to seeded when leftover events have no swimmers', function () {
     $competition = Competition::factory()->status(CompetitionStatus::Closed)->create();
     Event::factory()->create(['competition_id' => $competition->id, 'event_number' => 13]);
