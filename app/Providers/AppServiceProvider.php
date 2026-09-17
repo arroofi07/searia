@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,8 +23,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Carbon::setLocale(config('app.locale', 'id'));
 
-        if ($this->app->environment('production')) {
-            URL::forceScheme('https');
+        // Root-relative CSS/JS so an HTTPS page never loads HTTP assets (Chrome "Not Secure").
+        Vite::createAssetPathsUsing(fn (string $path, ?bool $secure = null): string => '/'.ltrim($path, '/'));
+
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceHttps();
         }
 
         Gate::before(function (User $user, string $ability): ?bool {

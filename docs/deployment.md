@@ -23,17 +23,19 @@ FILESYSTEM_DISK=local
 
 Jangan pernah menjalankan produksi dengan `APP_DEBUG=true`.
 
-## CapRover / reverse proxy
+## CapRover: hilangkan peringatan Not Secure
 
-Gambar logo memakai `asset()`, jadi URL-nya mengikuti skema HTTP yang dilihat PHP.
+Chrome menampilkan **Not Secure** jika situs masih `http://`, atau halaman `https://` memuat gambar/CSS `http://` (mixed content).
 
-1. Di App Configs, set `APP_URL=https://domain-publik-anda` (bukan `http://localhost` dan bukan hostname internal `srv-captain--...`).
-2. Opsional: set `ASSET_URL` ke URL HTTPS yang sama.
-3. Document root container harus folder `public/` (bukan root repo). Cek `https://domain-anda/images/logo.png` — harus 200, bukan 404.
-4. Setelah commit logo masuk git, klik **Force Rebuild** / deploy ulang. Menghubungkan repo saja tidak mengirim commit lama.
-5. `public/build` tidak ada di git. Deploy harus menjalankan `npm ci && npm run build` atau halaman akan error Vite manifest.
+1. Di app CapRover buka **HTTP Settings**.
+2. Isi domain publik, lalu **Enable HTTPS** (Let's Encrypt). Tunggu sampai sertifikat terbit.
+3. Centang **Force HTTPS by CapRover / redirect HTTP to HTTPS**.
+4. Di **App Configs**, set `APP_URL=https://domain-publik-anda` (bukan `http://localhost` dan bukan `srv-captain--...`).
+5. **Force Rebuild** setelah mengubah env. Lalu buka situs lewat `https://...`, bukan `http://`.
 
-Bila HTML halaman tampil tapi logo pecah, buka DevTools → Network pada `logo.png`: `blocked:mixed-content` berarti `APP_URL`/proxy HTTPS; 404 berarti document root atau file belum ter-deploy.
+Document root container harus folder `public/`. Cek `https://domain-anda/images/logo.png` — harus 200.
+
+`public/build` tidak ada di git. Deploy harus menjalankan `npm ci && npm run build` atau halaman akan error Vite manifest.
 
 ## Langkah penerapan
 

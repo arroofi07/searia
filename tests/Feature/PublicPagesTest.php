@@ -51,7 +51,7 @@ it('uses the swimming brand mark and favicon on the login page', function () {
         ->assertSee('images/logo.png', false);
 });
 
-it('emits https brand asset urls behind a tls-terminating reverse proxy', function () {
+it('uses root-relative brand assets so https pages do not mix in http urls', function () {
     $this->withServerVariables([
         'HTTPS' => 'off',
         'SERVER_PORT' => '80',
@@ -61,7 +61,8 @@ it('emits https brand asset urls behind a tls-terminating reverse proxy', functi
         'HTTP_X_FORWARDED_PORT' => '443',
     ])->get(route('home'))
         ->assertOk()
-        ->assertSee('https://searia.example.com/images/logo.png', false)
+        ->assertSee('src="/images/logo.png"', false)
+        ->assertSee('href="/favicon.svg"', false)
         ->assertDontSee('http://searia.example.com/images/logo.png', false);
 });
 
