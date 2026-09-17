@@ -42,11 +42,18 @@ class ImportEventProgram
         $competition->load(['ageGroups', 'events.registrations']);
         $parsed = $this->parseRows($sheet->rows, $competition->ageGroups);
 
-        if ($parsed['errors'] !== []) {
-            return $this->emptyResult($parsed['errors']);
+        if ($parsed['rows'] === []) {
+            return $this->emptyResult(
+                $parsed['errors'] !== []
+                    ? $parsed['errors']
+                    : ['Tidak ada baris nomor lomba yang bisa dibaca.'],
+            );
         }
 
-        return $this->commit($competition, $parsed['rows'], $parsed['group_names']);
+        $result = $this->commit($competition, $parsed['rows'], $parsed['group_names']);
+        $result['errors'] = array_values(array_merge($parsed['errors'], $result['errors']));
+
+        return $result;
     }
 
     /**

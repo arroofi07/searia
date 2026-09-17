@@ -228,3 +228,34 @@ it('does not change an event that already has registrations', function () {
 
     expect($meet['event']->fresh()->stroke)->toBe(Stroke::Breaststroke);
 });
+
+it('imports valid event rows when one kode acara is duplicated', function () {
+    $competition = Competition::factory()->create();
+    AgeGroup::factory()->create([
+        'competition_id' => $competition->id,
+        'code' => '2',
+        'name' => 'Group 2',
+    ]);
+    $panitia = User::factory()->panitia()->create();
+    $path = writeEventProgramCsv([
+        ['8', '50 M Gaya Punggung (Fins)', 'Putri', 'Group 2'],
+        ['8', '50 M Gaya Dada', 'Putri', 'Group 2'],
+        ['13', '50 M Gaya Dada', 'Putra', 'Group 2'],
+        ['15', '50 M Gaya Bebas', 'Putra', 'Group 2'],
+    ]);
+
+    $this->actingAs($panitia)
+        ->from(route('admin.competitions.events.index', $competition))
+        ->post(route('admin.competitions.events.import', $competition), [
+            'file' => new UploadedFile($path, 'nomor.csv', 'text/csv', null, true),
+        ])
+        ->assertRedirect(route('admin.competitions.events.index', $competition))
+        ->assertSessionHas('status')
+        ->assertSessionHas('import_errors');
+
+    expect($competition->events()->count())->toBe(3)
+        ->and($competition->events()->where('event_number', 8)->first()?->stroke)->toBe(Stroke::Backstroke)
+        ->and($competition->events()->where('event_number', 13)->exists())->toBeTrue()
+        ->and($competition->events()->where('event_number', 14)->exists())->toBeFalse()
+        ->and($competition->events()->where('event_number', 15)->exists())->toBeTrue();
+});
