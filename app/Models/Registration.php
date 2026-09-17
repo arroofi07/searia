@@ -134,4 +134,13 @@ class Registration extends Model
         return $this->competition?->status === \App\Enums\CompetitionStatus::Registration
             && in_array($this->status, [RegistrationStatus::Pending, RegistrationStatus::Rejected, RegistrationStatus::Draft], true);
     }
+
+    public function isAgeGroupOverride(): bool
+    {
+        $this->loadMissing(['athlete', 'ageGroup']);
+
+        return $this->ageGroup !== null
+            && $this->athlete !== null
+            && ! $this->ageGroup->containsBirthYear($this->athlete->birth_year);
+    }
 }

@@ -61,6 +61,7 @@ final class AdminNavigation
 
         return match (true) {
             str_starts_with($name, 'admin.imports.') => 'imports',
+            str_starts_with($name, 'admin.age-group-promotions.') => 'naik-kelas',
             str_starts_with($name, 'admin.registrations.'),
             str_starts_with($name, 'admin.submissions.') => 'registrations',
             str_starts_with($name, 'admin.seeding.') => 'seeding',

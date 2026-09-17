@@ -39,6 +39,26 @@
             </select>
         </div>
         <div>
+            <label for="age_group_id" class="block text-sm font-medium text-slate-700">Naik kelas (opsional)</label>
+            <select id="age_group_id" name="age_group_id" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <option value="">Grup sesuai tahun lahir</option>
+                @foreach ($ageGroups as $group)
+                    <option value="{{ $group->id }}" @selected((string) old('age_group_id') === (string) $group->id)>
+                        {{ $group->name }} · {{ $group->birth_year_start }}–{{ $group->birth_year_end }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-slate-500">Hanya grup lebih tua (tahun lahir lebih awal). Tahun lahir atlet tidak diubah. Turun kelas ditolak.</p>
+            @error('age_group_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="override_reason" class="block text-sm font-medium text-slate-700">Alasan naik kelas</label>
+            <input id="override_reason" type="text" name="override_reason" value="{{ old('override_reason') }}" maxlength="500"
+                placeholder="Wajib diisi jika naik kelas"
+                class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+            @error('override_reason') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
             <label class="block text-sm font-medium text-slate-700">Catatan waktu (opsional)</label>
             <input type="text" name="seed_time" value="{{ old('seed_time') }}" placeholder="013470 atau 00:52.20 · kosong = NT"
                 class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">

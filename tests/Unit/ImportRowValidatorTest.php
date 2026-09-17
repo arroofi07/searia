@@ -25,6 +25,8 @@ function importRow(array $meet, array $overrides = []): ParticipantRow
         city: $overrides['city'] ?? (string) $meet['club']->city,
         eventCode: $overrides['event_code'] ?? '13',
         seedTime: array_key_exists('seed_time', $overrides) ? (string) $overrides['seed_time'] : '00:52.20',
+        ageGroupOverride: $overrides['age_group_override'] ?? '',
+        overrideReason: $overrides['override_reason'] ?? '',
     );
 }
 
@@ -32,7 +34,7 @@ function importCodes(array $meet, ParticipantRow $row, array $batch = []): array
 {
     $validator = app(RowValidator::class);
     $all = $batch === [] ? [$row] : $batch;
-    $result = $validator->validateMany($meet['competition'], $all, $meet['panitia']);
+    $result = $validator->validateMany($meet['competition'], $all);
 
     return collect($result->rows)
         ->first(fn ($item) => $item->row->excelRow === $row->excelRow)
@@ -181,7 +183,7 @@ it('reports W-01 when the club name is new', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['club_name' => 'Klub Baru Import']),
-    ], $meet['panitia']);
+    ]);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-01');
 });
@@ -191,7 +193,7 @@ it('reports W-02 when the club name is similar to an existing club', function ()
     Club::factory()->create(['name' => 'SeaRIA Aquatic Padang']);
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['club_name' => 'SeaRIA Aquatic Pdg']),
-    ], $meet['panitia']);
+    ]);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-02')
         ->and($result->rows[0]->clubSuggestions)->not->toBeEmpty();
@@ -208,7 +210,7 @@ it('reports W-03 when an athlete name is similar in the same club', function () 
 
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['full_name' => 'AHZA DANISH RAHMAN', 'club_name' => $meet['club']->name]),
-    ], $meet['panitia']);
+    ]);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-03');
 });
@@ -217,7 +219,7 @@ it('reports W-04 when the seed time is empty', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['seed_time' => '', 'full_name' => 'TANPA WAKTU']),
-    ], $meet['panitia']);
+    ]);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-04')
         ->and($result->rows[0]->isValid())->toBeTrue();
@@ -227,9 +229,110 @@ it('reports W-05 when the city is empty', function () {
     $meet = openRegistrationMeet();
     $result = app(RowValidator::class)->validateMany($meet['competition'], [
         importRow($meet, ['city' => '', 'full_name' => 'TANPA KOTA']),
-    ], $meet['panitia']);
+    ]);
 
     expect(collect($result->rows[0]->warnings)->pluck('code')->all())->toContain('W-05');
+});
+
+it('treats a trailing asterisk as naik kelas when an older group is on the event', function () {
+    $meet = competeUpMeet();
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2019',
+        'event_code' => '13*',
+        'full_name' => 'SYAUQI BINTANG',
+    ]));
+
+    expect($errors)->toBe([]);
+});
+
+it('accepts a zero-padded event code', function () {
+    $meet = openRegistrationMeet();
+    $errors = importCodes($meet, importRow($meet, ['event_code' => '013']));
+
+    expect($errors)->toBe([]);
+});
+
+it('reports E-07 when a 2019 athlete enters an older-group event without naik kelas', function () {
+    $meet = competeUpMeet();
+    $event = Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 9,
+        'gender' => EventGender::Male,
+        'distance' => 25,
+        'stroke' => \App\Enums\Stroke::Butterfly,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $event->ageGroups()->attach($meet['olderGroup']->id);
+
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2019',
+        'event_code' => '9',
+        'full_name' => 'SYAUQI ARKANA VALERI',
+    ]));
+
+    expect(collect($errors)->firstWhere('code', 'E-07')['message'])->toContain('tidak mengikuti kode acara 9');
+});
+
+it('accepts a 2019 athlete in event 9 when the event code is marked 9*', function () {
+    $meet = competeUpMeet();
+    $event = Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 9,
+        'gender' => EventGender::Male,
+        'distance' => 25,
+        'stroke' => \App\Enums\Stroke::Butterfly,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $event->ageGroups()->attach($meet['olderGroup']->id);
+
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2019',
+        'event_code' => '9*',
+        'full_name' => 'SYAUQI ARKANA VALERI',
+    ]));
+
+    expect($errors)->toBe([]);
+});
+
+it('reports E-14 when 9* has no older eligible group', function () {
+    $meet = competeUpMeet();
+    $meet['event']->ageGroups()->sync([$meet['youngerGroup']->id]);
+
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2019',
+        'event_code' => '13*',
+        'full_name' => 'SYAUQI TANPA GRUP TUA',
+    ]));
+
+    expect(collect($errors)->firstWhere('code', 'E-14')['message'])
+        ->toBe('Tidak ada kelompok lebih tua yang boleh mengikuti nomor '.$meet['event']->event_number);
+});
+
+it('reports E-15 when Excel naik kelas would move the athlete down', function () {
+    $meet = competeUpMeet();
+
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2018',
+        'event_code' => '13',
+        'full_name' => 'TURUN KELAS EXCEL',
+        'age_group_override' => '8',
+        'override_reason' => 'Minta turun',
+    ]));
+
+    expect(collect($errors)->firstWhere('code', 'E-15')['message'])->toBe('Turun kelas tidak diizinkan.');
+});
+
+it('reports E-14 when the naik kelas group is unknown', function () {
+    $meet = competeUpMeet();
+
+    $errors = importCodes($meet, importRow($meet, [
+        'birth_year' => '2019',
+        'full_name' => 'GRUP TIDAK ADA',
+        'age_group_override' => '99',
+        'override_reason' => 'Salah ketik',
+    ]));
+
+    expect(collect($errors)->firstWhere('code', 'E-14')['message'])->toBe('Kelompok naik kelas 99 tidak dikenal');
 });
 
 it('validates two thousand rows in under thirty seconds', function () {
@@ -243,7 +346,7 @@ it('validates two thousand rows in under thirty seconds', function () {
     }
 
     $started = microtime(true);
-    $result = app(RowValidator::class)->validateMany($meet['competition'], $rows, $meet['panitia']);
+    $result = app(RowValidator::class)->validateMany($meet['competition'], $rows);
     $elapsed = microtime(true) - $started;
 
     expect($result->valid)->toBe(2000)

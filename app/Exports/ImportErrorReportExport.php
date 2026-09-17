@@ -58,7 +58,7 @@ class ImportErrorReportExport implements FromArray, ShouldAutoSize, WithHeadings
                 $fields->birthYear,
                 $fields->clubName,
                 $fields->city,
-                $fields->eventCode,
+                $fields->displayEventCode(),
                 $fields->seedTime,
                 $codes,
                 $messages,

@@ -30,7 +30,8 @@ it('activates competition scoped sidebar links when an event exists', function (
         ->get(route('admin.competitions.index'))
         ->assertOk()
         ->assertSee(route('admin.imports.entry'), false)
-        ->assertSee(route('admin.registrations.index', $meet['competition']), false);
+        ->assertSee(route('admin.registrations.index', $meet['competition']), false)
+        ->assertSee(route('admin.age-group-promotions.index', $meet['competition']), false);
 
     $this->actingAs($panitia)
         ->get(route('admin.imports.entry'))

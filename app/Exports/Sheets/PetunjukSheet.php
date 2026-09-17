@@ -35,7 +35,7 @@ class PetunjukSheet implements FromArray, ShouldAutoSize, WithEvents, WithTitle
             ['Yang diisi', 'Lembar NOMOR LOMBA dan PESERTA. Lembar PETUNJUK hanya baca.'],
             ['Kolom wajib', 'NAMA LENGKAP, L/P, TAHUN LAHIR, KLUB/SEKOLAH, KODE ACARA'],
             ['L/P', 'Isi L untuk putra atau P untuk putri'],
-            ['KODE ACARA', 'Salin nomor dari kolom KODE ACARA di lembar NOMOR LOMBA, bukan nama gaya'],
+            ['KODE ACARA', 'Salin nomor dari lembar NOMOR LOMBA. Tulis 9 untuk nomor 9. Tambah bintang (9*) jika anak naik kelas ke nomor itu. Panitia mengatur grup di menu Naik kelas.'],
             ['CATATAN WAKTU', 'Boleh dikosongkan (berarti NT)'],
             [''],
             ['Lembar NOMOR LOMBA (jangan diubah)'],

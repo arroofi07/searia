@@ -47,11 +47,12 @@ class SubmissionController extends Controller
     {
         $this->authorize('viewAny', Registration::class);
 
-        $submission->load(['competition', 'athlete.club', 'registrations.event', 'registrations.ageGroup']);
+        $submission->load(['competition.ageGroups', 'athlete.club', 'registrations.event', 'registrations.ageGroup', 'registrations.athlete']);
 
         return view('admin.submissions.show', [
             'submission' => $submission,
             'competition' => $submission->competition,
+            'ageGroups' => $submission->competition->ageGroups,
             'registrations' => ListPaginator::for($submission->registrations),
         ]);
     }

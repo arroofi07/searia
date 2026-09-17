@@ -44,6 +44,12 @@
                         'active' => $current === 'registrations',
                         'activeCompetition' => $activeCompetition,
                     ])
+                    @include('layouts.partials.sidebar-nav-link', [
+                        'label' => 'Naik kelas',
+                        'routeName' => 'admin.age-group-promotions.index',
+                        'active' => $current === 'naik-kelas',
+                        'activeCompetition' => $activeCompetition,
+                    ])
                 @endcan
                 @can('viewAny', App\Models\ImportBatch::class)
                     <a href="{{ route('admin.imports.entry') }}" class="{{ AdminNavigation::linkClass($current === 'imports') }}">Import Excel</a>

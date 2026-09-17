@@ -110,6 +110,11 @@ class AgeGroup extends Model
         return $this->birth_year_start <= $year && $year <= $this->birth_year_end;
     }
 
+    public function isOlderThanBirthYear(int $year): bool
+    {
+        return $this->birth_year_end < $year;
+    }
+
     public function overlaps(int $start, int $end): bool
     {
         return max($this->birth_year_start, $start) <= min($this->birth_year_end, $end);

@@ -39,7 +39,7 @@ Kode fitur: `F-<peran>-<nomor>`.
 | F-PAN-04 | Matriks kelayakan grup × nomor |
 | F-PAN-05 | Verifikasi klub baru |
 | F-PAN-06 | Import Excel |
-| F-PAN-07 | Input/edit/hapus entri manual |
+| F-PAN-07 | Input/edit/hapus entri manual; menu Naik kelas; Excel `9*` ke grup lebih tua (tercatat) |
 | F-PAN-08 | Verifikasi pendaftaran |
 | F-PAN-09 | Jalankan & kunci seeding |
 | F-PAN-10 | Unduh PDF buku acara |

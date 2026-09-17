@@ -24,6 +24,12 @@
     @error('status')
         <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
     @enderror
+    @error('age_group_id')
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
+    @enderror
+    @error('reason')
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</div>
+    @enderror
 
     <form method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3">
         <select name="club_id" class="rounded-md border border-slate-300 px-3 py-2 text-sm">
@@ -100,7 +106,13 @@
                         <td class="px-3 py-2">{{ $registration->athlete->full_name }}</td>
                         <td class="px-3 py-2">{{ $registration->athlete->club->name }}</td>
                         <td class="px-3 py-2">{{ $registration->event->event_number }} {{ $registration->event->shortName() }}</td>
-                        <td class="px-3 py-2">{{ $registration->ageGroup->name }}</td>
+                        <td class="px-3 py-2">
+                            <div>{{ $registration->ageGroup->name }}</div>
+                            @if ($registration->isAgeGroupOverride())
+                                <span class="mt-0.5 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900">Naik kelas · lahir {{ $registration->athlete->birth_year }}</span>
+                            @endif
+                            @include('admin.registrations._override-form', ['registration' => $registration, 'ageGroups' => $ageGroups])
+                        </td>
                         <td class="px-3 py-2">{{ SwimTime::formatMilliseconds($registration->seed_time_ms) }}</td>
                         <td class="px-3 py-2">
                             <form method="POST" action="{{ route('admin.registrations.approve', $registration) }}">

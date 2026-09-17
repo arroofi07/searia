@@ -27,7 +27,7 @@ it('reads headers regardless of extra spaces and letter case', function () {
         'catatan waktu',
     ]);
 
-    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
+    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition']);
 
     expect($result->read)->toBe(1)
         ->and($result->rows[0]->row->fullName)->toBe('PESERTA HEADER')
@@ -48,11 +48,11 @@ it('rejects a file that is missing the KODE ACARA column', function () {
         'CATATAN WAKTU',
     ]);
 
-    expect(fn () => app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']))
+    expect(fn () => app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition']))
         ->toThrow(MissingImportColumnsException::class);
 
     try {
-        app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
+        app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition']);
     } catch (MissingImportColumnsException $exception) {
         expect($exception->columns)->toContain(ImportHeaders::KODE_ACARA)
             ->and($exception->getMessage())->toContain('KODE ACARA');
@@ -67,10 +67,23 @@ it('skips empty rows in the middle of the file', function () {
         ['3', 'PESERTA DUA', 'L', '2016', $meet['club']->name, $meet['club']->city, '13', '00:48.15'],
     ]);
 
-    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition'], $meet['panitia']);
+    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition']);
 
     expect($result->read)->toBe(2)
         ->and($result->rows[1]->row->excelRow)->toBe(4);
+});
+
+it('treats a trailing star on the event code as naik kelas', function () {
+    $meet = competeUpMeet();
+    $path = writeParticipantCsv([
+        ['1', 'SYAUQI ARKANA VALERI', 'L', '2019', $meet['club']->name, $meet['club']->city, '13*', ''],
+    ]);
+
+    $result = app(ParticipantFileReader::class)->readAndValidate($path, 'csv', $meet['competition']);
+
+    expect($result->rows[0]->row->eventCode)->toBe('13')
+        ->and($result->rows[0]->row->wantsCompeteUp)->toBeTrue()
+        ->and($result->rows[0]->row->displayEventCode())->toBe('13*');
 });
 
 it('cancels a batch by deleting every registration that came from it', function () {

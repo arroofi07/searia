@@ -13,6 +13,7 @@ use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Rules\ReasonableSwimTime;
+use App\Services\AgeGroupOverride;
 use App\Services\AgeGroupResolver;
 use App\Services\AthleteMatcher;
 use App\Services\RegistrationDraft;
@@ -26,6 +27,7 @@ class RowValidator
         private readonly AgeGroupResolver $ageGroups,
         private readonly AthleteMatcher $matcher,
         private readonly RegistrationValidator $registrations,
+        private readonly AgeGroupOverride $overrides,
     ) {}
 
     /**
@@ -128,8 +130,35 @@ class RowValidator
 
         if ($event !== null && $gender !== null && $year !== null && $row->fullName !== '' && $row->clubName !== '') {
             $draftAthlete = $athlete ?? $this->makeTransientAthlete($row, $gender, $year, $club);
+            $overrideGroup = null;
+            $overrideReason = $row->overrideReason === '' ? null : $row->overrideReason;
+
+            if ($row->wantsCompeteUp) {
+                $overrideGroup = $row->ageGroupOverride !== ''
+                    ? $this->overrides->findTarget($competition, $row->ageGroupOverride)
+                    : $this->overrides->nearestOlderEligible($competition, $draftAthlete, $event);
+
+                if ($overrideGroup === null) {
+                    $errors[] = $this->issue(
+                        'E-14',
+                        $row->ageGroupOverride !== ''
+                            ? 'Kelompok naik kelas '.$row->ageGroupOverride.' tidak dikenal'
+                            : 'Tidak ada kelompok lebih tua yang boleh mengikuti nomor '.$event->event_number,
+                    );
+                }
+
+                $overrideReason ??= AgeGroupOverride::IMPORT_STAR_REASON;
+            }
+
             $mapped = $this->registrations->validate(
-                new RegistrationDraft($competition, $draftAthlete, $event, $row->seedTime === '' ? null : $row->seedTime),
+                new RegistrationDraft(
+                    $competition,
+                    $draftAthlete,
+                    $event,
+                    $row->seedTime === '' ? null : $row->seedTime,
+                    $overrideGroup,
+                    $overrideReason,
+                ),
             );
 
             foreach ($mapped as $item) {
@@ -217,14 +246,16 @@ class RowValidator
      */
     private function event(array $context, string $code): ?Event
     {
-        if ($code === '' || ! preg_match('/^\d+$/', $code)) {
+        $number = ParticipantRow::normalizeEventCode($code);
+
+        if ($number === '' || ! preg_match('/^\d+$/', $number)) {
             return null;
         }
 
         /** @var Collection<int, Event> $events */
         $events = $context['events'];
 
-        return $events->get((int) $code);
+        return $events->get((int) $number);
     }
 
     /**
@@ -316,7 +347,8 @@ class RowValidator
                 'E-09',
                 'Waktu '.$row->seedTime.' terlalu cepat untuk '.$event->distance.' m',
             ),
-            'V-09' => null,
+            'V-09' => $this->issue('E-15', $item['message']),
+            'V-10' => $this->issue('E-16', $item['message']),
             default => $this->issue($item['code'], $item['message']),
         };
     }

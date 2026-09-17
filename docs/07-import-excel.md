@@ -40,7 +40,7 @@ Satu baris mewakili satu pendaftaran, yaitu satu atlet pada satu nomor lomba. At
 | D | `TAHUN LAHIR` | ya | 2016 | Empat digit |
 | E | `KLUB/SEKOLAH` | ya | Gunung Sport Center | |
 | F | `KABUPATEN/KOTA` | ya | Padang | |
-| G | `KODE ACARA` | ya | 13 | Nomor acara dari lembar `NOMOR LOMBA` |
+| G | `KODE ACARA` | ya | 13 atau `9*` | Nomor acara dari lembar `NOMOR LOMBA`. Angka; `09` dibaca sebagai `9`. Tambah bintang (`9*`) jika anak naik kelas ke nomor itu |
 | H | `CATATAN WAKTU` | tidak | 00:52.20 | Dikosongkan berarti NT |
 
 Contoh isi:
@@ -49,8 +49,11 @@ Contoh isi:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | AHZA DANISH RAHMAN | L | 2016 | Gunung Sport Center | Padang | 13 | 00:52.20 |
 | 2 | AHZA DANISH RAHMAN | L | 2016 | Gunung Sport Center | Padang | 15 | 00:48.15 |
-| 3 | MUTYA ZAHIRA TANJUNG | P | 2017 | Angkasa Swimming Club | Labuhan Batu | 14 | |
+| 3 | MUTYA ZAHIRA TANJUNG | P | 2017 | Angkasa Swimming Club | Labuhan Batu | 14 |  |
 | 4 | KAYLA GUSVADELSON | P | 2017 | Rani Boedik Swimming Club | Bukittinggi | 16 | 00:55.30 |
+| 5 | SYAUQI ARKANA VALERI | L | 2019 | SeaRIA Aquatic | Padang | 9* |  |
+
+`9*` artinya anak naik kelas ke nomor 9. Grup tujuan adalah kelompok lebih tua terdekat yang ada di matriks nomor itu (misalnya Group 7 untuk 2019). Tahun lahir tidak diubah. Panitia mengatur atau mengubah grup di menu **Naik kelas**. Turun kelas ditolak.
 
 Kolom `KODE ACARA` sengaja memakai nomor, bukan nama gaya. Nama gaya yang diketik bebas menghasilkan puluhan variasi ejaan seperti "dada", "Gaya Dada", dan "breaststroke", yang semuanya harus ditebak sistem. Nomor acara tidak punya masalah itu.
 
@@ -89,6 +92,8 @@ Validasi dijalankan per baris. Satu baris bisa memiliki lebih dari satu kesalaha
 | E-11 | Atlet belum terdaftar di nomor tersebut lewat jalur lain | Atlet sudah terdaftar di kode acara 13 |
 | E-12 | Jumlah nomor per atlet tidak melebihi batas | Atlet ini memiliki 4 baris, batasnya 3 |
 | E-13 | Status kejuaraan masih `registration` | Pendaftaran sudah ditutup |
+| E-14 | `9*` hanya jika nomor itu punya grup lebih tua | Tidak ada kelompok lebih tua yang boleh mengikuti nomor 9 |
+| E-15 | Naik kelas hanya ke grup lebih tua | Turun kelas tidak diizinkan |
 
 ### Peringatan yang tidak menggagalkan baris
 

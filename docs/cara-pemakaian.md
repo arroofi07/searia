@@ -133,10 +133,11 @@ Langkah:
 1. **Unduh template** Excel. Template sudah menyesuaikan kejuaraan ini. Lembar `NOMOR LOMBA` (KODE ACARA, nama nomor, gender, grup) **terkunci** — hanya rujukan. Jangan diubah.
 2. Isi lembar `PESERTA`. Satu baris = satu atlet pada satu nomor lomba. Atlet yang ikut tiga nomor ditulis tiga kali. Salin `KODE ACARA` dari lembar `NOMOR LOMBA`.
 3. Kolom wajib: nama lengkap, L/P, tahun lahir, klub/sekolah, kode acara. Catatan waktu boleh kosong (NT).
-4. Unggah berkas `.xlsx` atau `.csv` (maksimal 5 MB, 2.000 baris).
-5. Sistem menampilkan pratinjau: baris valid, baris bermasalah, dan peringatan (misalnya nama klub mirip).
-6. Perbaiki baris bermasalah di layar, atau unduh laporan kesalahan untuk dikembalikan ke klub.
-7. Tekan **Import … baris valid**. Data masuk sebagai pendaftaran `pending`.
+4. `KODE ACARA` salin dari lembar NOMOR LOMBA. Tulis angka (`9` atau `09`). Anak naik kelas: tulis bintang di ekor, misalnya `9*`.
+5. Unggah berkas `.xlsx` atau `.csv` (maksimal 5 MB, 2.000 baris).
+6. Sistem menampilkan pratinjau: baris valid, baris bermasalah, dan peringatan (misalnya nama klub mirip).
+7. Perbaiki baris bermasalah di layar, atau unduh laporan kesalahan untuk dikembalikan ke klub.
+8. Tekan **Import … baris valid**. Data masuk sebagai pendaftaran `pending`.
 
 Setelah itu tetap lewat **verifikasi** (Bagian D) sebelum ikut pembagian seri.
 
@@ -145,6 +146,8 @@ Berkas di atas 200 baris divalidasi di latar belakang; halaman akan menyegarkan 
 ### Input manual (satu per satu)
 
 Di **Pendaftaran** → **Tambah manual** (atlet × nomor lomba). Bisa ubah seed time atau batalkan entri selama pendaftaran masih terbuka. Berguna untuk koreksi kecil, bukan daftar klub utuh.
+
+Jika anak lebih muda (misalnya lahir 2019) diminta bertanding di grup lebih tua (2018 / Group 7), klub menulis `9*` di kolom `KODE ACARA`. Impor menempatkan anak ke grup lebih tua terdekat yang boleh ikut nomor itu. Panitia mengatur atau mengubahnya di sidebar **Naik kelas** (juga tab di Pendaftaran), form manual, atau antrean verifikasi. Tahun lahir di data atlet tidak diubah. Anak tetap tampil dengan YOB asli di buku acara, tetapi seri dan juara mengikuti grup tujuan. Arah sebaliknya (turun kelas) ditolak. Form publik tidak bisa memilih grup sendiri.
 
 ---
 

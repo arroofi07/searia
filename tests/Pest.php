@@ -71,6 +71,45 @@ function openRegistrationMeet(): array
 }
 
 /**
+ * @return array{
+ *     club: Club,
+ *     panitia: User,
+ *     competition: Competition,
+ *     group: AgeGroup,
+ *     olderGroup: AgeGroup,
+ *     youngerGroup: AgeGroup,
+ *     event: Event,
+ *     athlete: Athlete
+ * }
+ */
+function competeUpMeet(): array
+{
+    $meet = openRegistrationMeet();
+    $olderGroup = AgeGroup::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'code' => '7',
+        'name' => 'Group 7',
+        'display_code' => 'VII',
+        'birth_year_start' => 2018,
+        'birth_year_end' => 2018,
+        'sort_order' => 7,
+    ]);
+    $youngerGroup = AgeGroup::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'code' => '8',
+        'name' => 'Group 8',
+        'display_code' => 'VIII',
+        'birth_year_start' => 2019,
+        'birth_year_end' => 2019,
+        'sort_order' => 8,
+    ]);
+    $meet['event']->ageGroups()->sync([$meet['group']->id, $olderGroup->id, $youngerGroup->id]);
+    $meet['athlete']->update(['birth_year' => 2019]);
+
+    return $meet + compact('olderGroup', 'youngerGroup');
+}
+
+/**
  * @param  array{competition: Competition, event: Event, athlete: Athlete, group: AgeGroup, panitia: User}  $meet
  * @param  array<string, mixed>  $overrides
  */

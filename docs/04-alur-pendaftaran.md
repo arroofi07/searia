@@ -34,7 +34,7 @@ Template + validasi baris + pratinjau + commit. Rincian di [07-import-excel.md](
 
 ## Input Manual Panitia
 
-Panitia menambah atau mengubah pasangan atlet × nomor lomba dari admin tanpa lewat wizard publik.
+Panitia menambah atau mengubah pasangan atlet × nomor lomba dari admin tanpa lewat wizard publik. Dari form ini (atau dari antrean/detail entri) panitia juga dapat **menaikkan kelas** satu nomor: `registrations.age_group_id` diganti ke grup lebih tua, dengan alasan wajib, sementara tahun lahir atlet tetap. Form publik tidak menawarkan pilihan ini.
 
 ## Verifikasi
 
@@ -50,3 +50,5 @@ Panitia menyetujui atau menolak entri. Setelah `verified`, entri masuk antrean s
 | V-04 | Jumlah nomor ≤ batas per atlet |
 | V-05 | Tidak dobel atlet × nomor pada kejuaraan yang sama |
 | V-06 | Format seed time valid atau kosong (NT) |
+
+Naik kelas (hanya panitia): grup tujuan harus lebih tua, tetap ada di matriks nomor itu, alasan wajib (V-10), turun kelas ditolak (V-09). Excel: `9*` ke grup lebih tua terdekat. Jejak audit: `registration.age_group_override`. Menu: **Naik kelas**.

@@ -25,6 +25,7 @@ class AgeGroupController extends Controller
         return view('admin.competitions.age-groups.index', [
             'competition' => $competition,
             'ageGroups' => $competition->ageGroups()
+                ->withCount('registrations')
                 ->paginate(ListPaginator::PER_PAGE)
                 ->withQueryString(),
         ]);
@@ -89,7 +90,20 @@ class AgeGroupController extends Controller
     {
         abort_unless($ageGroup->competition_id === $competition->id, 404);
 
-        $ageGroup->update($request->validated());
+        $data = $request->validated();
+
+        if ($ageGroup->registrations()->exists()) {
+            $yearsChanged = (int) $data['birth_year_start'] !== $ageGroup->birth_year_start
+                || (int) $data['birth_year_end'] !== $ageGroup->birth_year_end;
+
+            if ($yearsChanged) {
+                return back()->withInput()->withErrors([
+                    'birth_year_end' => 'Kelompok umur yang sudah memiliki pendaftaran tidak dapat diubah tahun lahirnya.',
+                ]);
+            }
+        }
+
+        $ageGroup->update($data);
 
         return back()->with('status', 'Kelompok umur diperbarui.');
     }

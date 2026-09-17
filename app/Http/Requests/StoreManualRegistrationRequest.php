@@ -21,6 +21,19 @@ class StoreManualRegistrationRequest extends FormRequest
             'event_id' => ['required', 'integer', 'exists:events,id'],
             'seed_time' => ['nullable', 'string', 'max:20'],
             'verify_now' => ['sometimes', 'boolean'],
+            'age_group_id' => ['nullable', 'integer', 'exists:age_groups,id'],
+            'override_reason' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'age_group_id' => 'kelompok umur',
+            'override_reason' => 'alasan naik kelas',
         ];
     }
 }

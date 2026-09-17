@@ -46,6 +46,7 @@
 | Pengiriman | Satu baris `registration_submissions`: satu kali pengisian form untuk satu atlet, bisa mencakup beberapa nomor lomba |
 | Pendaftaran / entri | Satu baris yang menghubungkan satu atlet dengan satu nomor lomba |
 | Matriks kelayakan | Tabel yang menentukan kelompok umur mana boleh mengikuti nomor lomba mana |
+| Naik kelas | Entri dipindah ke kelompok umur lebih tua (misalnya lahir 2019 ke grup 2018). Excel: `9*`. Menu panitia: **Naik kelas**. Tahun lahir atlet tidak diubah; turun kelas ditolak |
 | Mode `balanced` | Pembagian seri yang meratakan jumlah peserta antar seri |
 | Mode `fill_from_last` | Pembagian seri yang mengisi seri terakhir sampai penuh lebih dulu |
 | Penguncian seeding | Penandaan bahwa susunan seri dan lintasan sudah final dan buku acara boleh dicetak |

@@ -213,7 +213,7 @@ Indeks: `code` unik, indeks pada `competition_id`.
 
 Indeks: unik pada `event_id + athlete_id` yang menegakkan aturan V-05, indeks pada `competition_id + status`, indeks pada `event_id + age_group_id + seed_time_ms` yang menjadi indeks utama proses seeding.
 
-Alasan `age_group_id` dibekukan: bila panitia mengubah rentang tahun lahir di tengah masa pendaftaran, peserta yang sudah mendaftar tidak boleh berpindah grup tanpa sepengetahuan siapa pun. Perpindahan hanya terjadi lewat tindakan panitia yang tercatat.
+Alasan `age_group_id` dibekukan: bila panitia mengubah rentang tahun lahir di tengah masa pendaftaran, peserta yang sudah mendaftar tidak boleh berpindah grup tanpa sepengetahuan siapa pun. Perpindahan hanya terjadi lewat tindakan panitia yang tercatat (`registration.age_group_override`): naik kelas ke grup lebih tua, alasan wajib, tahun lahir atlet tidak berubah. Turun kelas tidak diizinkan. Bila seeding pasangan nomor × grup sudah dikunci, pindah ditolak sampai panitia buka kunci dan seeding ulang.
 
 ### heats
 

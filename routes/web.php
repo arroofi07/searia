@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AgeGroupController;
+use App\Http\Controllers\Admin\AgeGroupPromotionController;
 use App\Http\Controllers\Admin\AthleteMergeController;
 use App\Http\Controllers\Admin\ClubController;
 use App\Http\Controllers\Admin\CompetitionController;
@@ -145,7 +146,10 @@ Route::middleware('auth')->group(function (): void {
         Route::get('competitions/{competition}/registrations/create', [RegistrationEntryController::class, 'create'])->name('registrations.create');
         Route::post('competitions/{competition}/registrations', [RegistrationEntryController::class, 'store'])->name('registrations.store');
         Route::put('registrations/{registration}', [RegistrationEntryController::class, 'update'])->name('registrations.update');
+        Route::patch('registrations/{registration}/age-group', [RegistrationEntryController::class, 'overrideAgeGroup'])->name('registrations.override-age-group');
         Route::delete('registrations/{registration}', [RegistrationEntryController::class, 'destroy'])->name('registrations.destroy');
+
+        Route::get('competitions/{competition}/naik-kelas', [AgeGroupPromotionController::class, 'index'])->name('age-group-promotions.index');
 
         Route::get('competitions/{competition}/registrations', [RegistrationVerificationController::class, 'index'])->name('registrations.index');
         Route::patch('registrations/{registration}/approve', [RegistrationVerificationController::class, 'approve'])->name('registrations.approve');

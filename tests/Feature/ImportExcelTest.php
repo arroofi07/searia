@@ -67,10 +67,24 @@ it('downloads a template with the three required sheet names', function () {
     $petunjuk = $spreadsheet->getSheetByName('PETUNJUK')->toArray();
     $joined = collect($petunjuk)->flatten()->filter()->implode(' ');
 
+    $pesertaHeadings = $spreadsheet->getSheetByName('PESERTA')->toArray()[0];
+
     expect($joined)
         ->toContain('Panitia dan Super Admin')
         ->toContain('GRUP YANG BOLEH IKUT')
-        ->toContain('Matriks kelayakan');
+        ->toContain('Matriks kelayakan')
+        ->toContain('9*')
+        ->toContain('Naik kelas')
+        ->and($pesertaHeadings)->toBe([
+            'NO',
+            'NAMA LENGKAP',
+            'L/P',
+            'TAHUN LAHIR',
+            'KLUB/SEKOLAH',
+            'KABUPATEN/KOTA',
+            'KODE ACARA',
+            'CATATAN WAKTU',
+        ]);
 });
 
 it('shows all four invalid rows from an uploaded file', function () {
@@ -140,6 +154,37 @@ it('turns an invalid row valid after it is edited on the preview screen', functi
 
     expect($batch->fresh()->invalid_rows)->toBe(0)
         ->and($batch->fresh()->valid_rows)->toBe(1);
+});
+
+it('commits a 2019 athlete into Group 7 when Excel marks the event with a star', function () {
+    $meet = competeUpMeet();
+    $event = Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 9,
+        'gender' => EventGender::Male,
+        'distance' => 25,
+        'stroke' => \App\Enums\Stroke::Butterfly,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $event->ageGroups()->attach($meet['olderGroup']->id);
+
+    $path = writeParticipantCsv([
+        ['1', 'SYAUQI ARKANA VALERI', 'L', '2019', $meet['club']->name, $meet['club']->city, '9*', ''],
+    ]);
+    $panitia = User::factory()->panitia()->create();
+    uploadCsv($meet, $path, $panitia);
+    $batch = ImportBatch::query()->latest('id')->first();
+    $registration = Registration::query()->where('import_batch_id', $batch->id)->first();
+    $log = \App\Models\ActivityLog::query()->where('action', 'registration.age_group_override')->first();
+
+    expect($batch->fresh()->status)->toBe(ImportStatus::Committed)
+        ->and($registration)->not->toBeNull()
+        ->and($registration->event_id)->toBe($event->id)
+        ->and($registration->age_group_id)->toBe($meet['olderGroup']->id)
+        ->and($registration->isAgeGroupOverride())->toBeTrue()
+        ->and(\App\Models\Athlete::query()->where('full_name', 'SYAUQI ARKANA VALERI')->first()?->birth_year)->toBe(2019)
+        ->and($log)->not->toBeNull()
+        ->and($log->reason)->toBe(\App\Services\AgeGroupOverride::IMPORT_STAR_REASON);
 });
 
 it('commits valid rows into clubs, athletes, and registrations', function () {

@@ -94,7 +94,7 @@
                         <input name="birth_year" value="{{ $row->row->birthYear }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Tahun lahir">
                         <input name="club_name" value="{{ $row->row->clubName }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Klub">
                         <input name="city" value="{{ $row->row->city }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Kabupaten/kota">
-                        <input name="event_code" value="{{ $row->row->eventCode }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Kode acara">
+                        <input name="event_code" value="{{ $row->row->displayEventCode() }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Kode acara (9*)">
                         <input name="seed_time" value="{{ $row->row->seedTime }}" class="rounded-md border border-slate-300 px-3 py-2" placeholder="Catatan waktu">
                     </div>
                     @if ($row->clubSuggestions)
@@ -142,7 +142,7 @@
                             <td class="px-3 py-2">{{ $row->row->excelRow }}</td>
                             <td class="px-3 py-2">{{ $row->row->fullName }}</td>
                             <td class="px-3 py-2">{{ $row->row->birthYear }}</td>
-                            <td class="px-3 py-2">{{ $row->row->eventCode }}</td>
+                            <td class="px-3 py-2">{{ $row->row->displayEventCode() }}</td>
                             <td class="px-3 py-2">{{ $row->row->seedTime !== '' ? $row->row->seedTime : 'NT' }}</td>
                             <td class="px-3 py-2 text-amber-700">
                                 @foreach ($row->warnings as $warning)

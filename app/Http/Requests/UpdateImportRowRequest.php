@@ -28,6 +28,8 @@ class UpdateImportRowRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:100'],
             'event_code' => ['required', 'string', 'max:10'],
             'seed_time' => ['nullable', 'string', 'max:20'],
+            'age_group_override' => ['nullable', 'string', 'max:40'],
+            'override_reason' => ['nullable', 'string', 'max:500'],
             'mapped_club_id' => ['nullable', 'integer', 'exists:clubs,id'],
             'mapped_athlete_id' => ['nullable', 'integer', 'exists:athletes,id'],
         ];

@@ -11,6 +11,8 @@
     @endcan
     <a href="{{ route('admin.submissions.index', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $tab === 'submissions' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Pendaftaran masuk</a>
+    <a href="{{ route('admin.age-group-promotions.index', $competition) }}"
+        class="rounded-md px-3 py-1.5 {{ $tab === 'promotions' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Naik kelas</a>
     <a href="{{ route('admin.registrations.create', $competition) }}"
         class="rounded-md px-3 py-1.5 {{ $tab === 'create' ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-800' }}">Tambah manual</a>
 </nav>

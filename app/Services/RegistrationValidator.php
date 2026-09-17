@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\CompetitionStatus;
 use App\Enums\RegistrationStatus;
+use App\Exceptions\CannotOverrideAgeGroupException;
 use App\Exceptions\InvalidSwimTimeException;
 use App\Models\Athlete;
 use App\Models\Registration;
@@ -12,7 +13,10 @@ use App\Support\SwimTime;
 
 class RegistrationValidator
 {
-    public function __construct(private readonly AgeGroupResolver $ageGroups) {}
+    public function __construct(
+        private readonly AgeGroupResolver $ageGroups,
+        private readonly ?AgeGroupOverride $overrides = null,
+    ) {}
 
     /**
      * @param  list<RegistrationDraft>  $batch
@@ -34,6 +38,25 @@ class RegistrationValidator
 
         if ($ageGroup === null) {
             $errors[] = $this->error('V-02', 'Usia atlet di luar rentang kejuaraan ini');
+        }
+
+        if ($draft->ageGroupOverride !== null && $ageGroup !== null) {
+            try {
+                $competing = $this->overrides()->decide(
+                    $competition,
+                    $athlete,
+                    $event,
+                    $draft->ageGroupOverride,
+                );
+
+                if (! $competing->is($ageGroup) && trim((string) $draft->overrideReason) === '') {
+                    $errors[] = $this->error('V-10', 'Alasan naik kelas wajib diisi.');
+                }
+
+                $ageGroup = $competing;
+            } catch (CannotOverrideAgeGroupException $exception) {
+                $errors[] = $this->error($exception->validationCode, $exception->getMessage());
+            }
         }
 
         if ($ageGroup !== null && ! $event->ageGroups->contains('id', $ageGroup->id)) {
@@ -127,6 +150,11 @@ class RegistrationValidator
             ->count();
 
         return $stored + $incoming;
+    }
+
+    private function overrides(): AgeGroupOverride
+    {
+        return $this->overrides ?? new AgeGroupOverride($this->ageGroups);
     }
 
     /**

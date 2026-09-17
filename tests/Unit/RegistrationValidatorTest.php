@@ -142,3 +142,71 @@ it('reports all three violations together instead of stopping at the first', fun
 
     expect(collect($errors)->pluck('code')->all())->toContain('V-02', 'V-04', 'V-07');
 });
+
+it('uses the override age group for V-03 when the athlete competes up', function () {
+    $meet = competeUpMeet();
+    $draft = new RegistrationDraft(
+        $meet['competition'],
+        $meet['athlete'],
+        $meet['event']->load('ageGroups'),
+        '00:52.20',
+        $meet['olderGroup'],
+        'Anak siap lawan 2018',
+    );
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate($draft, []);
+
+    expect($errors)->toBe([]);
+});
+
+it('reports V-09 when the override would move the athlete down an age group', function () {
+    $meet = competeUpMeet();
+    $meet['athlete']->update(['birth_year' => 2018]);
+    $draft = new RegistrationDraft(
+        $meet['competition'],
+        $meet['athlete']->fresh(),
+        $meet['event']->load('ageGroups'),
+        '00:52.20',
+        $meet['youngerGroup'],
+        'Minta turun kelas',
+    );
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate($draft, []);
+
+    expect(collect($errors)->pluck('code')->all())->toContain('V-09')
+        ->and(collect($errors)->firstWhere('code', 'V-09')['message'])->toBe('Turun kelas tidak diizinkan.');
+});
+
+it('reports V-10 when compete-up is requested without a reason', function () {
+    $meet = competeUpMeet();
+    $draft = new RegistrationDraft(
+        $meet['competition'],
+        $meet['athlete'],
+        $meet['event']->load('ageGroups'),
+        '00:52.20',
+        $meet['olderGroup'],
+        '',
+    );
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate($draft, []);
+
+    expect(collect($errors)->pluck('code')->all())->toContain('V-10');
+});
+
+it('reports V-03 when the override group is not on the event matrix', function () {
+    $meet = competeUpMeet();
+    $meet['event']->ageGroups()->detach($meet['olderGroup']->id);
+    $draft = new RegistrationDraft(
+        $meet['competition'],
+        $meet['athlete'],
+        $meet['event']->load('ageGroups'),
+        '00:52.20',
+        $meet['olderGroup'],
+        'Naik kelas',
+    );
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate($draft, []);
+
+    expect(collect($errors)->pluck('code')->all())->toContain('V-03')
+        ->and(collect($errors)->firstWhere('code', 'V-03')['message'])->toContain('Group 7 tidak mengikuti nomor');
+});

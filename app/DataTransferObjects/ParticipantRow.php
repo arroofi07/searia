@@ -4,6 +4,10 @@ namespace App\DataTransferObjects;
 
 class ParticipantRow
 {
+    public string $eventCode;
+
+    public bool $wantsCompeteUp;
+
     public function __construct(
         public int $excelRow,
         public string $no,
@@ -12,17 +16,28 @@ class ParticipantRow
         public string $birthYear,
         public string $clubName,
         public string $city,
-        public string $eventCode,
+        string $eventCode,
         public string $seedTime,
         public ?int $mappedClubId = null,
         public ?int $mappedAthleteId = null,
-    ) {}
+        public string $ageGroupOverride = '',
+        public string $overrideReason = '',
+        ?bool $wantsCompeteUp = null,
+    ) {
+        $marked = self::hasCompeteUpMarker($eventCode);
+        $this->eventCode = self::normalizeEventCode($eventCode);
+        $this->ageGroupOverride = trim($this->ageGroupOverride);
+        $this->overrideReason = trim($this->overrideReason);
+        $this->wantsCompeteUp = $wantsCompeteUp ?? ($marked || $this->ageGroupOverride !== '');
+    }
 
     /**
      * @param  array<string, mixed>  $fields
      */
     public static function fromFields(array $fields, int $excelRow): self
     {
+        $eventCode = self::stringify($fields['event_code'] ?? $fields['kode_acara'] ?? '');
+
         return new self(
             excelRow: $excelRow,
             no: self::stringify($fields['no'] ?? ''),
@@ -31,10 +46,12 @@ class ParticipantRow
             birthYear: self::stringify($fields['birth_year'] ?? $fields['tahun_lahir'] ?? ''),
             clubName: self::stringify($fields['club_name'] ?? $fields['klub_sekolah'] ?? ''),
             city: self::stringify($fields['city'] ?? $fields['kabupaten_kota'] ?? ''),
-            eventCode: self::stringify($fields['event_code'] ?? $fields['kode_acara'] ?? ''),
+            eventCode: $eventCode,
             seedTime: self::stringify($fields['seed_time'] ?? $fields['catatan_waktu'] ?? ''),
             mappedClubId: isset($fields['mapped_club_id']) ? (int) $fields['mapped_club_id'] : null,
             mappedAthleteId: isset($fields['mapped_athlete_id']) ? (int) $fields['mapped_athlete_id'] : null,
+            ageGroupOverride: self::stringify($fields['age_group_override'] ?? $fields['naik_kelas'] ?? ''),
+            overrideReason: self::stringify($fields['override_reason'] ?? $fields['alasan_naik_kelas'] ?? ''),
         );
     }
 
@@ -51,11 +68,45 @@ class ParticipantRow
             'birth_year' => $this->birthYear,
             'club_name' => $this->clubName,
             'city' => $this->city,
-            'event_code' => $this->eventCode,
+            'event_code' => $this->displayEventCode(),
             'seed_time' => $this->seedTime,
             'mapped_club_id' => $this->mappedClubId,
             'mapped_athlete_id' => $this->mappedAthleteId,
+            'age_group_override' => $this->ageGroupOverride,
+            'override_reason' => $this->overrideReason,
+            'wants_compete_up' => $this->wantsCompeteUp,
         ];
+    }
+
+    public static function hasCompeteUpMarker(string $code): bool
+    {
+        return (bool) preg_match('/\*\s*$/', trim($code));
+    }
+
+    public static function normalizeEventCode(string $code): string
+    {
+        $code = trim($code);
+        $stripped = preg_replace('/\*+$/', '', $code);
+
+        return trim(is_string($stripped) ? $stripped : $code);
+    }
+
+    public function displayEventCode(): string
+    {
+        if ($this->eventCode === '') {
+            return '';
+        }
+
+        return $this->wantsCompeteUp ? $this->eventCode.'*' : $this->eventCode;
+    }
+
+    public function eventNumber(): ?int
+    {
+        if ($this->eventCode === '' || ! preg_match('/^\d+$/', $this->eventCode)) {
+            return null;
+        }
+
+        return (int) $this->eventCode;
     }
 
     public static function stringify(mixed $value): string

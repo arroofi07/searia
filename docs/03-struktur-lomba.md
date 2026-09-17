@@ -62,6 +62,7 @@ Aturan penentuan grup:
 2. Cari satu kelompok umur pada kejuaraan tersebut yang memenuhi `birth_year_start <= tahun_lahir <= birth_year_end`.
 3. Bila tidak ada yang cocok, pendaftaran ditolak dengan pesan bahwa atlet berada di luar rentang usia kejuaraan.
 4. Rentang antar grup tidak boleh saling tumpang tindih. Validasi ini dijalankan saat panitia menyimpan konfigurasi grup.
+5. **Naik kelas** adalah pengecualian tercatat: panitia boleh menempatkan satu entri ke kelompok umur yang lebih tua (`birth_year_end` lebih kecil daripada tahun lahir atlet), misalnya lahir 2019 bertanding di grup 2018. Tahun lahir di data atlet tidak diubah. Form publik tetap memakai grup natural. Import Excel: tulis `9*` pada `KODE ACARA` untuk naik ke grup lebih tua terdekat pada nomor itu; panitia mengatur hasilnya di menu **Naik kelas**. Turun kelas (masuk grup yang lebih muda) ditolak. Grup tujuan tetap harus ada di matriks kelayakan nomor itu. Perpindahan ditolak jika seeding pasangan nomor × grup lama atau baru sudah dikunci.
 
 ## Nomor Lomba
 
