@@ -3,6 +3,7 @@
     use App\Enums\SeedingMode;
 
     $lanesLocked = isset($competition) && ! $competition->isDraft();
+    $selectedSeedingMode = old('seeding_mode', $competition?->seeding_mode?->value ?? SeedingMode::Balanced->value);
 @endphp
 
 <div>
@@ -81,16 +82,34 @@
         <label for="seeding_mode" class="block text-sm font-medium text-slate-700">Cara membagi seri</label>
         <select id="seeding_mode" name="seeding_mode" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
             @foreach (SeedingMode::cases() as $mode)
-                <option value="{{ $mode->value }}" @selected(old('seeding_mode', $competition?->seeding_mode?->value) === $mode->value)>{{ $mode->label() }}</option>
+                <option value="{{ $mode->value }}" @selected($selectedSeedingMode === $mode->value)>{{ $mode->label() }}</option>
             @endforeach
         </select>
-        <p class="mt-1 text-xs leading-5 text-slate-500">
-            Ini yang sering disebut <strong>seeding</strong>: menyusun siapa berenang di seri berapa dan lintasan berapa, dari catatan waktu saat daftar.
-            <strong>Seimbang</strong> membuat jumlah per seri merata (bawaan).
-            <strong>Isi dari seri terakhir</strong> mengisi penuh seri akhir dulu.
-        </p>
     </div>
 </div>
+
+<div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs leading-5 text-slate-600">
+    <p class="text-slate-500">
+        <strong class="text-slate-700">Seeding</strong> = menyusun siapa berenang di seri berapa dan lintasan berapa, berdasarkan catatan waktu saat daftar (bukan hasil lomba).
+    </p>
+    @foreach (SeedingMode::cases() as $mode)
+        <div data-seeding-mode-help="{{ $mode->value }}" @class(['mt-2 border-t border-slate-200 pt-2', 'hidden' => $selectedSeedingMode !== $mode->value])>
+            <p class="font-medium text-slate-800">{{ $mode->label() }}</p>
+            <p class="mt-0.5">{{ $mode->description() }}</p>
+            <p class="mt-1 text-slate-500"><span class="font-medium text-slate-700">Contoh:</span> {{ $mode->example() }}</p>
+        </div>
+    @endforeach
+</div>
+
+<script>
+    document.getElementById('seeding_mode')?.addEventListener('change', (event) => {
+        const value = event.target.value;
+
+        document.querySelectorAll('[data-seeding-mode-help]').forEach((panel) => {
+            panel.classList.toggle('hidden', panel.dataset.seedingModeHelp !== value);
+        });
+    });
+</script>
 
 <div class="grid gap-4 sm:grid-cols-3">
     <div>
