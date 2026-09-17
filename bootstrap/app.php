@@ -19,7 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('queue:prune-failed --hours=168')->weekly();
     })
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // CapRover/cPanel/nginx terminate TLS in front of PHP. Without this,
+        // asset() emits http:// URLs and browsers block the images as mixed content.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->report(function (\Throwable $e): void {

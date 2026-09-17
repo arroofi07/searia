@@ -51,6 +51,20 @@ it('uses the swimming brand mark and favicon on the login page', function () {
         ->assertSee('images/logo.png', false);
 });
 
+it('emits https brand asset urls behind a tls-terminating reverse proxy', function () {
+    $this->withServerVariables([
+        'HTTPS' => 'off',
+        'SERVER_PORT' => '80',
+        'REMOTE_ADDR' => '10.0.0.1',
+        'HTTP_X_FORWARDED_PROTO' => 'https',
+        'HTTP_X_FORWARDED_HOST' => 'searia.example.com',
+        'HTTP_X_FORWARDED_PORT' => '443',
+    ])->get(route('home'))
+        ->assertOk()
+        ->assertSee('https://searia.example.com/images/logo.png', false)
+        ->assertDontSee('http://searia.example.com/images/logo.png', false);
+});
+
 it('caches public home responses without serializing closures', function () {
     config(['cache.default' => 'database']);
     Illuminate\Support\Facades\Cache::flush();

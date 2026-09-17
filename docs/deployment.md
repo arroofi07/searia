@@ -23,6 +23,18 @@ FILESYSTEM_DISK=local
 
 Jangan pernah menjalankan produksi dengan `APP_DEBUG=true`.
 
+## CapRover / reverse proxy
+
+Gambar logo memakai `asset()`, jadi URL-nya mengikuti skema HTTP yang dilihat PHP.
+
+1. Di App Configs, set `APP_URL=https://domain-publik-anda` (bukan `http://localhost` dan bukan hostname internal `srv-captain--...`).
+2. Opsional: set `ASSET_URL` ke URL HTTPS yang sama.
+3. Document root container harus folder `public/` (bukan root repo). Cek `https://domain-anda/images/logo.png` — harus 200, bukan 404.
+4. Setelah commit logo masuk git, klik **Force Rebuild** / deploy ulang. Menghubungkan repo saja tidak mengirim commit lama.
+5. `public/build` tidak ada di git. Deploy harus menjalankan `npm ci && npm run build` atau halaman akan error Vite manifest.
+
+Bila HTML halaman tampil tapi logo pecah, buka DevTools → Network pada `logo.png`: `blocked:mixed-content` berarti `APP_URL`/proxy HTTPS; 404 berarti document root atau file belum ter-deploy.
+
 ## Langkah penerapan
 
 ```bash
