@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\SwimTimeCast;
+use App\Enums\CompetitionStatus;
 use App\Enums\RegistrationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -142,5 +143,13 @@ class Registration extends Model
         return $this->ageGroup !== null
             && $this->athlete !== null
             && ! $this->ageGroup->containsBirthYear($this->athlete->birth_year);
+    }
+
+    public function canChangeEvent(): bool
+    {
+        $this->loadMissing(['competition', 'heatLane']);
+
+        return $this->competition?->status === CompetitionStatus::Registration
+            && $this->heatLane === null;
     }
 }

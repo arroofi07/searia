@@ -79,6 +79,10 @@ class RegistrationValidator
             ->where('event_id', $event->id)
             ->where('athlete_id', $athlete->id)
             ->where('status', '!=', RegistrationStatus::Withdrawn)
+            ->when(
+                $draft->exceptRegistrationId !== null,
+                fn ($query) => $query->whereKeyNot($draft->exceptRegistrationId),
+            )
             ->exists();
 
         $duplicateInBatch = collect($batch)
@@ -137,11 +141,17 @@ class RegistrationValidator
      */
     private function quotaUsed(int $competitionId, Athlete $athlete, array $batch): int
     {
+        $exceptIds = collect($batch)
+            ->map(fn (RegistrationDraft $draft): ?int => $draft->exceptRegistrationId)
+            ->filter()
+            ->all();
+
         $stored = Registration::query()
             ->where('competition_id', $competitionId)
             ->where('athlete_id', $athlete->id)
             ->get()
             ->filter(fn (Registration $registration): bool => $registration->status->countsTowardQuota())
+            ->reject(fn (Registration $registration): bool => in_array($registration->id, $exceptIds, true))
             ->count();
 
         $incoming = collect($batch)

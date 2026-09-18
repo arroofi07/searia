@@ -16,5 +16,6 @@ class RegistrationDraft
         public ?string $seedTimeInput = null,
         public ?AgeGroup $ageGroupOverride = null,
         public ?string $overrideReason = null,
+        public ?int $exceptRegistrationId = null,
     ) {}
 }

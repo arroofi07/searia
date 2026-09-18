@@ -2,16 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CompetitionStatus;
+use App\Enums\RegistrationStatus;
 use App\Http\Requests\StoreAthleteRequest;
 use App\Http\Requests\UpdateAthleteRequest;
+use App\Models\AgeGroup;
 use App\Models\Athlete;
 use App\Models\Club;
+use App\Models\Competition;
+use App\Models\Event;
+use App\Models\Registration;
+use App\Services\AgeGroupResolver;
 use App\Services\AthleteMatcher;
 use App\Support\DatabaseError;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -88,7 +96,7 @@ class AthleteController extends Controller
             ->with('similar_athletes', $similar->pluck('id')->all());
     }
 
-    public function show(Athlete $athlete, AthleteMatcher $matcher): View
+    public function show(Request $request, Athlete $athlete, AthleteMatcher $matcher, AgeGroupResolver $ageGroups): View
     {
         $this->authorize('view', $athlete);
 
@@ -103,9 +111,50 @@ class AthleteController extends Controller
             )->unique('id')->values();
         }
 
+        $registrations = $athlete->registrations()
+            ->with(['competition', 'event', 'ageGroup', 'heatLane'])
+            ->where('status', '!=', RegistrationStatus::Withdrawn)
+            ->get();
+
+        $groupedRegistrations = $registrations
+            ->groupBy('competition_id')
+            ->map(fn (Collection $items): Collection => $items
+                ->sortBy(fn (Registration $registration): int => $registration->event?->event_number ?? 0)
+                ->values())
+            ->sortByDesc(fn (Collection $items): string => $items->first()?->competition?->start_date?->format('Y-m-d') ?? '');
+
+        $openCompetitions = Competition::query()
+            ->where('status', CompetitionStatus::Registration)
+            ->orderByDesc('start_date')
+            ->orderBy('name')
+            ->get();
+
+        $selectedCompetitionId = (int) old('competition_id', $request->input('competition_id'));
+        $selectedCompetition = $openCompetitions->firstWhere('id', $selectedCompetitionId);
+        $selectedAgeGroup = $selectedCompetition !== null
+            ? $ageGroups->resolve($selectedCompetition, $athlete->birth_year)
+            : null;
+        $availableEvents = $this->availableEventsFor(
+            $athlete,
+            $selectedCompetition,
+            $selectedAgeGroup,
+            $registrations,
+        );
+        $eventOptionsByRegistrationId = $this->eventOptionsByRegistration(
+            $athlete,
+            $registrations,
+            $ageGroups,
+        );
+
         return view('athletes.show', [
             'athlete' => $athlete,
             'similarAthletes' => $similar,
+            'groupedRegistrations' => $groupedRegistrations,
+            'openCompetitions' => $openCompetitions,
+            'selectedCompetition' => $selectedCompetition,
+            'selectedAgeGroup' => $selectedAgeGroup,
+            'availableEvents' => $availableEvents,
+            'eventOptionsByRegistrationId' => $eventOptionsByRegistrationId,
         ]);
     }
 
@@ -180,5 +229,85 @@ class AthleteController extends Controller
         return redirect()
             ->route('athletes.index')
             ->with('status', 'Atlet dihapus.');
+    }
+
+    /**
+     * @param  Collection<int, Registration>  $registrations
+     * @return Collection<int, Event>
+     */
+    private function availableEventsFor(
+        Athlete $athlete,
+        ?Competition $competition,
+        ?AgeGroup $ageGroup,
+        Collection $registrations,
+    ): Collection {
+        if ($competition === null) {
+            return collect();
+        }
+
+        $takenIds = $registrations
+            ->where('competition_id', $competition->id)
+            ->pluck('event_id');
+
+        return $competition->events()
+            ->where('is_active', true)
+            ->with('ageGroups')
+            ->orderBy('sort_order')
+            ->orderBy('event_number')
+            ->get()
+            ->filter(fn (Event $event): bool => $event->acceptsAthlete($athlete, $ageGroup)
+                && ! $takenIds->contains($event->id))
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, Registration>  $registrations
+     * @return array<int, Collection<int, Event>>
+     */
+    private function eventOptionsByRegistration(
+        Athlete $athlete,
+        Collection $registrations,
+        AgeGroupResolver $ageGroups,
+    ): array {
+        $editableCompetitionIds = $registrations
+            ->filter(fn (Registration $registration): bool => $registration->canChangeEvent())
+            ->pluck('competition_id')
+            ->unique()
+            ->values();
+
+        if ($editableCompetitionIds->isEmpty()) {
+            return [];
+        }
+
+        $eventsByCompetition = Event::query()
+            ->whereIn('competition_id', $editableCompetitionIds)
+            ->where('is_active', true)
+            ->with('ageGroups')
+            ->orderBy('sort_order')
+            ->orderBy('event_number')
+            ->get()
+            ->groupBy('competition_id');
+
+        $options = [];
+
+        foreach ($registrations as $registration) {
+            if (! $registration->canChangeEvent()) {
+                continue;
+            }
+
+            $ageGroup = $registration->competition !== null
+                ? $ageGroups->resolve($registration->competition, $athlete->birth_year)
+                : null;
+            $takenIds = $registrations
+                ->where('competition_id', $registration->competition_id)
+                ->pluck('event_id');
+
+            $options[$registration->id] = ($eventsByCompetition[$registration->competition_id] ?? collect())
+                ->filter(fn (Event $event): bool => $event->id === $registration->event_id
+                    || ($event->acceptsAthlete($athlete, $ageGroup) && ! $takenIds->contains($event->id)))
+                ->values();
+        }
+
+        return $options;
     }
 }

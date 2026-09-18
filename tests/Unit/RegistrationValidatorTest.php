@@ -210,3 +210,37 @@ it('reports V-03 when the override group is not on the event matrix', function (
     expect(collect($errors)->pluck('code')->all())->toContain('V-03')
         ->and(collect($errors)->firstWhere('code', 'V-03')['message'])->toContain('Group 7 tidak mengikuti nomor');
 });
+
+it('does not count the current entry against quota when changing nomor', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['max_events_per_athlete' => 1]);
+    $registration = Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Verified,
+    ]);
+    $other = Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 15,
+        'gender' => EventGender::Male,
+        'distance' => 50,
+        'stroke' => \App\Enums\Stroke::Freestyle,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $other->ageGroups()->attach($meet['group']->id);
+
+    $draft = new RegistrationDraft(
+        $meet['competition'],
+        $meet['athlete'],
+        $other->load('ageGroups'),
+        '00:52.20',
+        exceptRegistrationId: $registration->id,
+    );
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate($draft, []);
+
+    expect($errors)->toBe([]);
+});

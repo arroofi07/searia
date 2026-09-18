@@ -209,4 +209,19 @@ class Event extends Model
     {
         return $this->heats()->exists();
     }
+
+    public function acceptsAthlete(Athlete $athlete, ?AgeGroup $ageGroup): bool
+    {
+        if ($athlete->gender->eventGender() !== $this->gender) {
+            return false;
+        }
+
+        if ($ageGroup === null) {
+            return false;
+        }
+
+        $this->loadMissing('ageGroups');
+
+        return $this->ageGroups->contains('id', $ageGroup->id);
+    }
 }

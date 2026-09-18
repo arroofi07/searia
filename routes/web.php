@@ -26,10 +26,11 @@ use App\Http\Controllers\Admin\StartListPdfController;
 use App\Http\Controllers\Admin\SubmissionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AthleteController;
-use App\Http\Controllers\BrandImageController;
+use App\Http\Controllers\AthleteRegistrationController;
 use App\Http\Controllers\AthleteResultController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AwardsPdfController;
+use App\Http\Controllers\BrandImageController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
@@ -239,4 +240,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('competitions/{competition}/certificates/archive', [CertificateController::class, 'requestArchive'])->name('certificates.archive');
 
     Route::resource('athletes', AthleteController::class);
+    Route::post('athletes/{athlete}/registrations', [AthleteRegistrationController::class, 'store'])->name('athletes.registrations.store');
+    Route::put('athletes/{athlete}/registrations/{registration}', [AthleteRegistrationController::class, 'update'])->name('athletes.registrations.update');
+    Route::delete('athletes/{athlete}/registrations/{registration}', [AthleteRegistrationController::class, 'destroy'])->name('athletes.registrations.destroy');
 });
