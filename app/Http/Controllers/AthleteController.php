@@ -124,7 +124,7 @@ class AthleteController extends Controller
             ->sortByDesc(fn (Collection $items): string => $items->first()?->competition?->start_date?->format('Y-m-d') ?? '');
 
         $openCompetitions = Competition::query()
-            ->where('status', CompetitionStatus::Registration)
+            ->whereIn('status', [CompetitionStatus::Registration, CompetitionStatus::Closed])
             ->orderByDesc('start_date')
             ->orderBy('name')
             ->get();

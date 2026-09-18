@@ -161,6 +161,10 @@ class RowValidator
                 ),
             );
 
+            if ($competition->allowsCommitteeRegistration() && ! $competition->isOpenForRegistration()) {
+                $errors[] = $this->issue('E-13', 'Pendaftaran sudah ditutup');
+            }
+
             foreach ($mapped as $item) {
                 $errors[] = $this->mapValidatorIssue($item, $row, $event, $all, $competition);
             }

@@ -171,6 +171,11 @@ class Competition extends Model
         return $this->status === CompetitionStatus::Registration;
     }
 
+    public function allowsCommitteeRegistration(): bool
+    {
+        return in_array($this->status, [CompetitionStatus::Registration, CompetitionStatus::Closed], true);
+    }
+
     public function year(): int
     {
         return (int) $this->start_date->year;

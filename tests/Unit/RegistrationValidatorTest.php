@@ -18,14 +18,23 @@ function draftsFrom(array $meet, Event $event, ?string $time = '00:52.20'): Regi
     return new RegistrationDraft($meet['competition'], $meet['athlete'], $event->load('ageGroups'), $time);
 }
 
-it('reports V-01 when the competition is not open for registration', function () {
+it('allows committee entries while registration is closed', function () {
     $meet = openRegistrationMeet();
     $meet['competition']->update(['status' => CompetitionStatus::Closed]);
 
     $errors = (new RegistrationValidator(new AgeGroupResolver))->validate(draftsFrom($meet, $meet['event']), []);
 
+    expect($errors)->toBe([]);
+});
+
+it('reports V-01 after the competition has been seeded', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Seeded]);
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate(draftsFrom($meet, $meet['event']), []);
+
     expect(collect($errors)->pluck('code')->all())->toContain('V-01')
-        ->and(collect($errors)->firstWhere('code', 'V-01')['message'])->toBe('Pendaftaran sudah ditutup');
+        ->and(collect($errors)->firstWhere('code', 'V-01')['message'])->toBe('Nomor lomba tidak bisa diubah setelah seeding');
 });
 
 it('reports V-02 when the birth year matches no age group', function () {

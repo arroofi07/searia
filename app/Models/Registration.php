@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Casts\SwimTimeCast;
-use App\Enums\CompetitionStatus;
 use App\Enums\RegistrationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -149,7 +148,7 @@ class Registration extends Model
     {
         $this->loadMissing(['competition', 'heatLane']);
 
-        return $this->competition?->status === CompetitionStatus::Registration
+        return $this->competition?->allowsCommitteeRegistration() === true
             && $this->heatLane === null;
     }
 }

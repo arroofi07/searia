@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CompetitionStatus;
 use App\Enums\Equipment;
 use App\Enums\EventGender;
 use App\Enums\RegistrationStatus;
@@ -164,6 +165,81 @@ it('reactivates a withdrawn event instead of inserting a duplicate row', functio
     expect(Registration::query()->where('athlete_id', $meet['athlete']->id)->count())->toBe(1)
         ->and($registration->fresh()->status)->toBe(RegistrationStatus::Verified)
         ->and($registration->fresh()->seed_time_ms)->toBe(44_000);
+});
+
+it('lets panitia add and change event numbers after registration is closed', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Closed]);
+    $registration = verifiedRegistration($meet, ['seed_time_ms' => 45_000]);
+    $second = extraMaleEvent($meet);
+
+    $this->actingAs($meet['panitia'])
+        ->from(route('athletes.show', ['athlete' => $meet['athlete'], 'competition_id' => $meet['competition']->id]))
+        ->post(route('athletes.registrations.store', $meet['athlete']), [
+            'competition_id' => $meet['competition']->id,
+            'event_ids' => [$second->id],
+            'seed_times' => [$second->id => '00:48.00'],
+            'verify_now' => '1',
+        ])
+        ->assertRedirect(route('athletes.show', [
+            'athlete' => $meet['athlete'],
+            'competition_id' => $meet['competition']->id,
+        ]));
+
+    $this->actingAs($meet['panitia'])
+        ->put(route('athletes.registrations.update', [$meet['athlete'], $registration]), [
+            'event_id' => extraMaleEvent($meet, 17, Stroke::Butterfly)->id,
+            'seed_time' => '00:47.00',
+        ])
+        ->assertRedirect(route('athletes.show', $meet['athlete']));
+
+    expect(Registration::query()->where('athlete_id', $meet['athlete']->id)->where('status', '!=', RegistrationStatus::Withdrawn)->count())->toBe(2)
+        ->and($registration->fresh()->seed_time_ms)->toBe(47_000)
+        ->and($registration->fresh()->event?->event_number)->toBe(17);
+});
+
+it('rejects adding an event number after the competition is seeded', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Seeded]);
+
+    $this->actingAs($meet['panitia'])
+        ->from(route('athletes.show', $meet['athlete']))
+        ->post(route('athletes.registrations.store', $meet['athlete']), [
+            'competition_id' => $meet['competition']->id,
+            'event_ids' => [$meet['event']->id],
+            'verify_now' => '1',
+        ])
+        ->assertRedirect(route('athletes.show', $meet['athlete']))
+        ->assertSessionHasErrors('registration');
+
+    expect(Registration::query()->where('athlete_id', $meet['athlete']->id)->count())->toBe(0);
+});
+
+it('does not change the event after the athlete is placed in a heat when registration is closed', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['status' => CompetitionStatus::Closed]);
+    $registration = verifiedRegistration($meet);
+    $second = extraMaleEvent($meet);
+    $heat = Heat::factory()->create([
+        'event_id' => $meet['event']->id,
+        'age_group_id' => $meet['group']->id,
+    ]);
+    HeatLane::factory()->create([
+        'heat_id' => $heat->id,
+        'registration_id' => $registration->id,
+        'lane_number' => 4,
+    ]);
+
+    $this->actingAs($meet['panitia'])
+        ->from(route('athletes.show', $meet['athlete']))
+        ->put(route('athletes.registrations.update', [$meet['athlete'], $registration]), [
+            'event_id' => $second->id,
+            'seed_time' => '00:47.00',
+        ])
+        ->assertRedirect(route('athletes.show', $meet['athlete']))
+        ->assertSessionHasErrors('event_id');
+
+    expect($registration->fresh()->event_id)->toBe($meet['event']->id);
 });
 
 it('forbids juri from managing athlete event numbers', function () {

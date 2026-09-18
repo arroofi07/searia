@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\CompetitionStatus;
 use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotOverrideAgeGroupException;
 use App\Exceptions\InvalidSwimTimeException;
@@ -30,8 +29,13 @@ class RegistrationValidator
         $event = $draft->event->loadMissing('ageGroups');
         $batch = $batch === [] ? [$draft] : $batch;
 
-        if ($competition->status !== CompetitionStatus::Registration) {
-            $errors[] = $this->error('V-01', 'Pendaftaran sudah ditutup');
+        if (! $competition->allowsCommitteeRegistration()) {
+            $errors[] = $this->error(
+                'V-01',
+                $competition->status->isSeededOrLater()
+                    ? 'Nomor lomba tidak bisa diubah setelah seeding'
+                    : 'Pendaftaran belum dibuka',
+            );
         }
 
         $ageGroup = $this->ageGroups->resolve($competition, $athlete->birth_year);

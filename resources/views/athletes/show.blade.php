@@ -173,10 +173,10 @@
         @can('update', $athlete)
             <div class="mt-6 rounded-lg border border-slate-200 bg-white p-5">
                 <h3 class="font-semibold">Tambah nomor lomba</h3>
-                <p class="mt-1 text-sm text-slate-500">Pilih kejuaraan yang masih membuka pendaftaran, lalu centang nomor yang diikuti atlet ini.</p>
+                <p class="mt-1 text-sm text-slate-500">Pilih kejuaraan yang masih Pendaftaran terbuka atau Pendaftaran ditutup. Form publik tetap tertutup; panitia boleh menambah atau mengubah nomor sampai sebelum seeding.</p>
 
                 @if ($openCompetitions->isEmpty())
-                    <p class="mt-4 text-sm text-slate-500">Tidak ada kejuaraan yang sedang membuka pendaftaran.</p>
+                    <p class="mt-4 text-sm text-slate-500">Tidak ada kejuaraan yang masih bisa dikoreksi panitia (sebelum seeding).</p>
                 @else
                     <form method="GET" action="{{ route('athletes.show', $athlete) }}" class="mt-4 max-w-xl">
                         <label for="competition_id" class="block text-sm font-medium text-slate-700">Kejuaraan</label>
@@ -185,7 +185,7 @@
                                 <option value="">Pilih kejuaraan</option>
                                 @foreach ($openCompetitions as $competition)
                                     <option value="{{ $competition->id }}" @selected((string) old('competition_id', request('competition_id')) === (string) $competition->id)>
-                                        {{ $competition->name }}
+                                        {{ $competition->name }} · {{ $competition->status->label() }}
                                     </option>
                                 @endforeach
                             </select>
