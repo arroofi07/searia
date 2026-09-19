@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-teal-100/80">
-                    @if ($featuredResults)
+                    @if ($featuredResults?->hasPublicAwards())
                         <a href="{{ route('results.best-club', $featuredResults) }}" class="underline-offset-4 hover:text-white hover:underline">Club terbaik</a>
                         <a href="{{ route('results.best-swimmers', $featuredResults) }}" class="underline-offset-4 hover:text-white hover:underline">Atlet terbaik</a>
                     @endif
@@ -165,7 +165,7 @@
                     <div>
                         <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Buku acara &amp; hasil</h2>
                         <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-                            Peserta dapat melihat buku acara, buku hasil, club terbaik, dan atlet terbaik tanpa akun. Buku acara tampil setelah seri dibagi. Hasil dan penghargaan tampil setelah dipublikasikan.
+                            Peserta dapat melihat buku acara, buku hasil, club terbaik, dan atlet terbaik tanpa akun. Buku acara tampil setelah seri dibagi. Buku hasil tampil sejak hari lomba (sementara jika belum dipublikasikan). Club terbaik dan atlet terbaik tampil setelah dipublikasikan.
                         </p>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                     @empty
                         @unless ($recentCompetitions->isNotEmpty())
                             <p class="rounded-3xl border border-dashed border-slate-300 bg-white px-5 py-10 text-sm text-slate-500 lg:col-span-2">
-                                Buku acara tampil setelah seri dibagi. Buku hasil tampil setelah dipublikasikan. Lihat arsip jika kejuaraan sudah selesai.
+                                Buku acara tampil setelah seri dibagi. Buku hasil tampil sejak hari lomba. Lihat arsip jika kejuaraan sudah dipublikasikan.
                             </p>
                         @endunless
                     @endforelse
@@ -197,7 +197,7 @@
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                         <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Hasil terbaru</h2>
-                        <p class="mt-1 text-sm text-slate-500">Peringkat, medali, club terbaik, dan atlet terbaik setelah dipublikasikan.</p>
+                        <p class="mt-1 text-sm text-slate-500">Peringkat, medali, club terbaik, dan atlet terbaik. Buku hasil bisa dilihat sejak hari lomba; penghargaan resmi setelah dipublikasikan.</p>
                     </div>
                     <a href="{{ route('archive.index') }}" class="text-sm font-semibold text-teal-700 hover:text-teal-900">Lihat arsip →</a>
                 </div>

@@ -16,6 +16,8 @@
     @endif
     @if ($competition->hasPublicResults())
         <a href="{{ route('results.index', $competition) }}" class="{{ $primary === 'results' ? $activeClass : $idleClass }}">Buku hasil</a>
+    @endif
+    @if ($competition->hasPublicAwards())
         <a href="{{ route('results.best-club', $competition) }}" class="{{ $primary === 'best-club' ? $activeClass : $idleClass }}">Club terbaik</a>
         <a href="{{ route('results.best-swimmers', $competition) }}" class="{{ $primary === 'best-swimmers' ? $activeClass : $idleClass }}">Atlet terbaik</a>
     @endif

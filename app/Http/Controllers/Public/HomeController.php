@@ -35,7 +35,8 @@ class HomeController extends Controller
             'recentCompetitions' => $recent,
             'liveCompetitions' => $live,
             'featuredStartList' => $live->first() ?? $recent->first(),
-            'featuredResults' => $recent->first(),
+            'featuredResults' => $live->first(fn (Competition $competition): bool => $competition->hasPublicResults())
+                ?? $recent->first(),
         ]);
     }
 }

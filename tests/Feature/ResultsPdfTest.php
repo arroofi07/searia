@@ -9,7 +9,26 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('lets guests download results pdf after publish and hides it before', function () {
+it('lets guests download results pdf during the meet and hides it before racing starts', function () {
+    [$competition, $event, $group] = seedMeetWithEntrants(4);
+    app(RunSeeding::class)->handle($competition, $event, $group);
+    $competition->update(['status' => CompetitionStatus::Seeded]);
+
+    $this->get(route('results.pdf', $competition))->assertNotFound();
+
+    $competition->update(['status' => CompetitionStatus::Running]);
+
+    $judge = User::factory()->panitia()->create();
+    $heat = $event->heats()->where('age_group_id', $group->id)->firstOrFail();
+    $lane = $heat->lanes()->whereNotNull('registration_id')->firstOrFail();
+    app(RecordLaneResult::class)->handle($lane, ['status' => ResultStatus::Ok, 'time' => '3470'], $judge);
+
+    $this->get(route('results.pdf', $competition))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
+it('lets guests download results pdf after publish', function () {
     [$competition, $event, $group] = seedMeetWithEntrants(4);
     app(RunSeeding::class)->handle($competition, $event, $group);
     $competition->update(['status' => CompetitionStatus::Running]);
@@ -18,8 +37,6 @@ it('lets guests download results pdf after publish and hides it before', functio
     $heat = $event->heats()->where('age_group_id', $group->id)->firstOrFail();
     $lane = $heat->lanes()->whereNotNull('registration_id')->firstOrFail();
     app(RecordLaneResult::class)->handle($lane, ['status' => ResultStatus::Ok, 'time' => '3470'], $judge);
-
-    $this->get(route('results.pdf', $competition))->assertNotFound();
 
     $competition->update(['status' => CompetitionStatus::Published, 'published_at' => now()]);
 

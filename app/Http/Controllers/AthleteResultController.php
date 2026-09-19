@@ -84,7 +84,7 @@ class AthleteResultController extends Controller
         $hasEntry = $athlete->registrations()->where('competition_id', $competition->id)->exists();
         abort_unless($hasEntry, 404);
 
-        if ($competition->status === CompetitionStatus::Published) {
+        if ($competition->hasPublicResults()) {
             return;
         }
 

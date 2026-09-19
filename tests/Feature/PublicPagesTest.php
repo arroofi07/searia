@@ -202,6 +202,7 @@ it('lets visitors open start lists and results books from the home page', functi
         ->assertSee('Buku acara')
         ->assertSee('Buku hasil')
         ->assertSee(route('start-list.show', $live), false)
+        ->assertSee(route('results.index', $live), false)
         ->assertSee(route('results.index', $published), false)
         ->assertSee(route('start-list.show', $published), false)
         ->assertSee(route('results.best-club', $published), false)

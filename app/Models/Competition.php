@@ -310,6 +310,15 @@ class Competition extends Model
 
     public function hasPublicResults(): bool
     {
+        return in_array($this->status, [
+            CompetitionStatus::Running,
+            CompetitionStatus::Finished,
+            CompetitionStatus::Published,
+        ], true);
+    }
+
+    public function hasPublicAwards(): bool
+    {
         return $this->status === CompetitionStatus::Published;
     }
 

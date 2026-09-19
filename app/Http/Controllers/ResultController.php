@@ -22,7 +22,7 @@ class ResultController extends Controller
 {
     public function index(Request $request, Competition $competition, RankingCalculator $ranking): View
     {
-        $this->authorizePublicOrPreview($request, $competition);
+        $this->authorizePublicResults($request, $competition);
 
         $events = $competition->events()
             ->with(['ageGroups', 'heats.ageGroup'])
@@ -65,7 +65,7 @@ class ResultController extends Controller
 
     public function show(Request $request, Competition $competition, Event $event, AgeGroup $ageGroup, RankingCalculator $ranking): View
     {
-        $this->authorizePublicOrPreview($request, $competition);
+        $this->authorizePublicResults($request, $competition);
         abort_unless($event->competition_id === $competition->id, 404);
         abort_unless($ageGroup->competition_id === $competition->id, 404);
 
@@ -139,6 +139,24 @@ class ResultController extends Controller
             'groups' => ListPaginator::for($standing->forCompetition($competition, $medals, $ranking)),
             'preview' => $competition->status !== CompetitionStatus::Published,
         ]);
+    }
+
+    private function authorizePublicResults(Request $request, Competition $competition): void
+    {
+        if ($competition->hasPublicResults()) {
+            return;
+        }
+
+        $user = $request->user();
+        if ($user?->managesMasterData() && in_array($competition->status, [
+            CompetitionStatus::Finished,
+            CompetitionStatus::Running,
+            CompetitionStatus::Seeded,
+        ], true)) {
+            return;
+        }
+
+        throw new NotFoundHttpException;
     }
 
     private function authorizePublicOrPreview(Request $request, Competition $competition): void

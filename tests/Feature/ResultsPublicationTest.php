@@ -49,19 +49,24 @@ function finishedMeetWithResults(bool $verify = true, bool $lock = true): array
     return compact('competition', 'event', 'group', 'heat', 'judge', 'admin', 'registrations');
 }
 
-it('returns 404 to guests when competition is only finished', function () {
+it('lets guests open unfinished results and keeps awards unpublished', function () {
     $meet = finishedMeetWithResults();
 
-    $this->get(route('results.index', $meet['competition']))->assertNotFound();
+    $this->get(route('results.index', $meet['competition']))
+        ->assertOk()
+        ->assertSee('Hasil sementara');
+
+    $this->get(route('results.best-club', $meet['competition']))->assertNotFound();
 });
 
-it('allows panitia to preview results while finished', function () {
+it('allows panitia to preview results while seeded', function () {
     $meet = finishedMeetWithResults();
+    $meet['competition']->update(['status' => CompetitionStatus::Seeded]);
 
     $this->actingAs($meet['admin'])
         ->get(route('results.index', $meet['competition']))
         ->assertOk()
-        ->assertSee('Pratinjau');
+        ->assertSee('Pratinjau panitia');
 });
 
 it('flags a result ten seconds faster than seed as an anomaly', function () {

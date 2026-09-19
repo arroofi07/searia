@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CompetitionStatus;
 use App\Http\Controllers\Controller as BaseController;
 use App\Models\Competition;
 use App\Models\User;
@@ -18,7 +17,7 @@ class ResultsPdfController extends BaseController
         $user = $request->user();
 
         if (! $this->isStaff($user)) {
-            abort_unless($competition->status === CompetitionStatus::Published, 404);
+            abort_unless($competition->hasPublicResults(), 404);
         }
 
         $document = $builder->build(

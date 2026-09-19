@@ -7,7 +7,9 @@
     <p class="text-sm"><a href="{{ route('results.index', $competition) }}" class="text-teal-800 hover:underline">← Hasil kejuaraan</a></p>
     <h1 class="mt-2 text-2xl font-semibold">{{ $athlete->full_name }}</h1>
     <p class="text-sm text-slate-500">{{ $competition->name }} · {{ $athlete->club?->name }}</p>
-    @if ($preview)
+    @if ($competition->hasPublicResults() && $competition->status !== \App\Enums\CompetitionStatus::Published)
+        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Hasil sementara — lomba belum dipublikasikan.</div>
+    @elseif ($preview)
         <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau</div>
     @endif
 

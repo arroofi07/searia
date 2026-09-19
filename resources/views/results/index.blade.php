@@ -23,13 +23,17 @@
             @include('public._books', ['competition' => $competition, 'primary' => 'results'])
             <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 <a href="{{ route('results.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF buku hasil</a>
-                <a href="{{ route('results.medals', $competition) }}" class="public-btn-secondary">Rekap medali</a>
-                <a href="{{ route('results.standings', $competition) }}" class="public-btn-secondary">Klasemen klub</a>
+                @if ($competition->hasPublicAwards())
+                    <a href="{{ route('results.medals', $competition) }}" class="public-btn-secondary">Rekap medali</a>
+                    <a href="{{ route('results.standings', $competition) }}" class="public-btn-secondary">Klasemen klub</a>
+                @endif
             </div>
         </div>
     </div>
 
-    @if ($preview)
+    @if ($competition->hasPublicResults() && $competition->status !== \App\Enums\CompetitionStatus::Published)
+        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Hasil sementara — lomba belum dipublikasikan. Nomor yang belum selesai belum masuk atau belum ada waktu.</div>
+    @elseif ($preview)
         <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia — belum dipublikasikan.</div>
     @endif
 
