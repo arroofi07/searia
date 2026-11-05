@@ -2,5 +2,5 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/seaf5528/public_html
-    - /bin/chmod +x scripts/cpanel-deploy.sh
-    - DEPLOY_PATH=/home/seaf5528/public_html /bin/bash scripts/cpanel-deploy.sh
+    - /bin/chmod +x /home/seaf5528/searia/scripts/cpanel-deploy.sh
+    - DEPLOY_PATH=/home/seaf5528/public_html /bin/bash /home/seaf5528/searia/scripts/cpanel-deploy.sh
