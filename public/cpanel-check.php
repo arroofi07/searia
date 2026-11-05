@@ -1,47 +1,82 @@
 <?php
 /**
- * Diagnosa cepat cPanel. Upload/salin ke public_html lalu buka:
- *   https://domain-anda/cpanel-check.php
- * HAPUS file ini setelah selesai.
+ * Diagnosa cPanel. Letakkan di public_html, buka:
+ *   https://seariaquatic.com/cpanel-check.php
+ * HAPUS setelah selesai.
  */
 
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
 header('Content-Type: text/plain; charset=utf-8');
 
-$laravelRoot = __DIR__.'/../searia';
-$checks = [];
+$laravelRoot = realpath(__DIR__.'/../website/searia') ?: (__DIR__.'/../website/searia');
 
-$checks['PHP_VERSION'] = PHP_VERSION;
-$checks['PHP_OK_(>=8.2)'] = version_compare(PHP_VERSION, '8.2.0', '>=') ? 'YES' : 'NO — naikkan PHP di MultiPHP Manager';
-$checks['__DIR___(public_html)'] = __DIR__;
-$checks['laravelRoot'] = $laravelRoot;
-$checks['laravelRoot_exists'] = is_dir($laravelRoot) ? 'YES' : 'NO';
-$checks['vendor_autoload'] = is_file($laravelRoot.'/vendor/autoload.php') ? 'YES' : 'NO — upload folder vendor';
-$checks['bootstrap_app'] = is_file($laravelRoot.'/bootstrap/app.php') ? 'YES' : 'NO';
-$checks['env_file'] = is_file($laravelRoot.'/.env') ? 'YES' : 'NO — buat .env di folder searia';
-$checks['storage_writable'] = is_dir($laravelRoot.'/storage') && is_writable($laravelRoot.'/storage') ? 'YES' : 'NO';
-$checks['bootstrap_cache_writable'] = is_dir($laravelRoot.'/bootstrap/cache') && is_writable($laravelRoot.'/bootstrap/cache') ? 'YES' : 'NO';
-$checks['maintenance_mode'] = is_file($laravelRoot.'/storage/framework/maintenance.php') ? 'YES (matikan maintenance)' : 'NO';
-$checks['index_is_cpanel'] = (is_file(__DIR__.'/index.php') && str_contains((string) file_get_contents(__DIR__.'/index.php'), '../searia'))
-    ? 'YES'
-    : 'NO — index.php belum versi cPanel';
+echo "=== PATH ===\n";
+echo 'public_html : '.__DIR__."\n";
+echo 'laravelRoot : '.$laravelRoot."\n";
+echo 'resolved    : '.(is_dir($laravelRoot) ? 'DIR OK' : 'DIR MISSING')."\n\n";
 
-foreach ($checks as $k => $v) {
-    echo str_pad($k, 32).': '.$v.PHP_EOL;
+echo "=== PHP ===\n";
+echo 'version : '.PHP_VERSION.(version_compare(PHP_VERSION, '8.2.0', '>=') ? " OK\n" : " NEED >= 8.2\n");
+foreach (['openssl', 'pdo', 'mbstring', 'tokenizer', 'xml', 'ctype', 'json', 'bcmath', 'fileinfo', 'curl'] as $ext) {
+    echo 'ext '.$ext.' : '.(extension_loaded($ext) ? 'YES' : 'MISSING')."\n";
 }
 
-echo PHP_EOL.'--- require test ---'.PHP_EOL;
+echo "\n=== FILES ===\n";
+$files = [
+    'vendor/autoload.php',
+    'bootstrap/app.php',
+    '.env',
+    'storage/logs',
+    'bootstrap/cache',
+];
+foreach ($files as $rel) {
+    $path = $laravelRoot.'/'.$rel;
+    $ok = file_exists($path) || is_dir($path);
+    $w = (is_dir($path) ? (is_writable($path) ? ' writable' : ' NOT writable') : '');
+    echo str_pad($rel, 24).': '.($ok ? 'YES'.$w : 'NO')."\n";
+}
+
+$index = (string) @file_get_contents(__DIR__.'/index.php');
+echo 'index.php has /../website/searia : '.(str_contains($index, '/../website/searia') ? 'YES' : 'NO — path index salah')."\n";
 
 if (! is_file($laravelRoot.'/vendor/autoload.php')) {
-    echo "STOP: vendor belum ada\n";
+    echo "\nSTOP: upload vendor/ dulu\n";
     exit;
 }
 
+echo "\n=== BOOT LARAVEL ===\n";
 try {
     require $laravelRoot.'/vendor/autoload.php';
-    echo "autoload: OK\n";
+    echo "autoload OK\n";
+
+    /** @var \Illuminate\Foundation\Application $app */
     $app = require $laravelRoot.'/bootstrap/app.php';
-    echo 'bootstrap: OK ('.get_class($app).")\n";
+    $app->usePublicPath(__DIR__);
+    echo 'bootstrap OK ('.$app->version().")\n";
+
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    $request = Illuminate\Http\Request::capture();
+    $response = $kernel->handle($request);
+    echo 'HTTP status : '.$response->getStatusCode()."\n";
+    if ($response->getStatusCode() >= 500) {
+        echo "\n--- body (awal) ---\n";
+        echo substr($response->getContent() ?: '', 0, 2000)."\n";
+    } else {
+        echo "Request OK — masalah mungkin sudah teratasi, coba buka beranda.\n";
+    }
+    $kernel->terminate($request, $response);
 } catch (Throwable $e) {
-    echo 'ERROR: '.$e->getMessage()."\n";
-    echo $e->getFile().':'.$e->getLine()."\n";
+    echo "EXCEPTION: ".$e->getMessage()."\n";
+    echo $e->getFile().':'.$e->getLine()."\n\n";
+    echo $e->getTraceAsString()."\n";
+}
+
+$log = $laravelRoot.'/storage/logs/laravel.log';
+if (is_file($log)) {
+    echo "\n=== laravel.log (ekor) ===\n";
+    $lines = @file($log);
+    if (is_array($lines)) {
+        echo implode('', array_slice($lines, -40));
+    }
 }

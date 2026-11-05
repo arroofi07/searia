@@ -2,7 +2,7 @@
 # Dijalankan otomatis oleh Git cPanel (.cpanel.yml) — tidak perlu Terminal.
 set -u
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="${REPO_ROOT:-/home/seaf5528/website/searia}"
 DEPLOY_PATH="${DEPLOY_PATH:-/home/seaf5528/public_html}"
 PHP_BIN="${PHP_BIN:-/usr/local/bin/php}"
 
@@ -21,7 +21,7 @@ echo "==> Sync public/ -> ${DEPLOY_PATH}"
 mkdir -p "$DEPLOY_PATH"
 cp -RF "${REPO_ROOT}/public/." "${DEPLOY_PATH}/"
 cp -f "${REPO_ROOT}/public/index.cpanel.php" "${DEPLOY_PATH}/index.php"
-rm -f "${DEPLOY_PATH}/index.cpanel.php" "${DEPLOY_PATH}/hot"
+rm -f "${DEPLOY_PATH}/index.cpanel.php" "${DEPLOY_PATH}/hot" "${DEPLOY_PATH}/ping.php" "${DEPLOY_PATH}/cpanel-check.php"
 
 if [ -d "${REPO_ROOT}/storage/app/public" ]; then
   rm -rf "${DEPLOY_PATH}/storage"
@@ -31,7 +31,6 @@ fi
 cd "$REPO_ROOT"
 chmod -R ug+rwx storage bootstrap/cache 2>/dev/null || true
 
-# Composer opsional: jika gagal/tidak ada, pakai folder vendor yang sudah diupload.
 if [ -n "$COMPOSER_BIN" ] && [ -n "$PHP_BIN" ] && [ -f composer.json ]; then
   echo "==> composer install"
   if ! "$PHP_BIN" "$COMPOSER_BIN" install --no-dev --optimize-autoloader --no-interaction; then

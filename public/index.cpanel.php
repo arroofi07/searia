@@ -10,12 +10,12 @@ define('LARAVEL_START', microtime(true));
 | Entry point cPanel (Git Version Control)
 |--------------------------------------------------------------------------
 |
-| Repo Laravel : /home/seaf5528/searia
-| Document root: /home/seaf5528/public_html  (file ini jadi index.php di sana)
+| Repo Laravel : /home/seaf5528/website/searia
+| Document root: /home/seaf5528/public_html
 |
 */
 
-$laravelRoot = __DIR__.'/../searia';
+$laravelRoot = __DIR__.'/../website/searia';
 
 if (file_exists($maintenance = $laravelRoot.'/storage/framework/maintenance.php')) {
     require $maintenance;
