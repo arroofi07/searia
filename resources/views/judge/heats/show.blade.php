@@ -212,5 +212,5 @@
 @endsection
 
 @push('scripts')
-    @vite(['resources/js/heat-results.js'])
+    @include('layouts.partials.vite', ['entrypoints' => ['resources/js/heat-results.js']])
 @endpush

@@ -15,7 +15,7 @@
     <meta name="twitter:card" content="summary">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
+    @include('layouts.partials.vite', ['entrypoints' => ['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js']])
     <link rel="stylesheet" href="{{ \App\Support\PublicAssets::cssUrl() }}">
     <link rel="stylesheet" href="{{ rtrim(request()->getBasePath(), '/') }}/css/public.css?v={{ is_file(public_path('css/public.css')) ? filemtime(public_path('css/public.css')) : '1' }}">
     @stack('head')
@@ -87,5 +87,26 @@
         </div>
     </footer>
     @stack('scripts')
+    @unless (file_exists(public_path('hot')) || file_exists(public_path('build/manifest.json')))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const toggle = document.querySelector('[data-public-nav-toggle]');
+                const panel = document.querySelector('[data-public-nav-panel]');
+                if (!toggle || !panel) return;
+                toggle.addEventListener('click', () => {
+                    const open = panel.classList.toggle('open');
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    document.body.classList.toggle('overflow-hidden', open);
+                });
+                panel.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', () => {
+                        panel.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        document.body.classList.remove('overflow-hidden');
+                    });
+                });
+            });
+        </script>
+    @endunless
 </body>
 </html>

@@ -9,7 +9,7 @@
         @include('layouts.partials.favicon')
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700" rel="stylesheet">
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('layouts.partials.vite', ['entrypoints' => ['resources/css/app.css', 'resources/js/app.js']])
         <link rel="stylesheet" href="{{ \App\Support\PublicAssets::cssUrl() }}">
         <link rel="stylesheet" href="{{ rtrim(request()->getBasePath(), '/') }}/css/public.css?v={{ is_file(public_path('css/public.css')) ? filemtime(public_path('css/public.css')) : '1' }}">
     </head>
