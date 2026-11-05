@@ -5,24 +5,23 @@
 @section('og_title', 'Buku acara · '.$competition->name)
 
 @section('content')
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div class="flex items-start gap-4">
-            @include('layouts.partials.event-logo', ['class' => 'h-20 w-20 sm:h-24 sm:w-24'])
-            <div>
-                <h1 class="text-2xl font-semibold">Buku acara</h1>
-                <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · {{ $competition->venue }}, {{ $competition->city }}</p>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                    Ini susunan seri dan lintasan. Kolom <strong>waktu</strong> adalah catatan waktu saat daftar (seed), bukan hasil lomba.
-                </p>
-            </div>
+    <div class="mast-row">
+        <div class="mast-id">
+            @include('layouts.partials.event-logo', ['class' => 'meet-logo'])
+            @include('public._mast', [
+                'kicker' => 'Buku acara',
+                'title' => 'Buku acara',
+                'meta' => $competition->name.' · '.$competition->venue.', '.$competition->city,
+                'lead' => 'Ini susunan seri dan lintasan. Kolom waktu adalah catatan waktu saat daftar (seed), bukan hasil lomba.',
+            ])
         </div>
-        <div class="flex flex-col gap-2 sm:items-end">
+        <div class="toolbar">
             @include('public._books', ['competition' => $competition, 'primary' => 'start-list'])
             <a href="{{ route('start-list.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF acara</a>
         </div>
     </div>
 
-    <form method="GET" action="{{ route('start-list.show', $competition) }}" class="mt-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form method="GET" action="{{ route('start-list.show', $competition) }}" class="filters">
         <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Nomor acara</label>
             <select name="event_id" class="public-input">
@@ -56,7 +55,7 @@
             <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Cari nama</label>
             <input type="search" name="q" value="{{ $search }}" placeholder="Nama atlet" class="public-input">
         </div>
-        <div class="sm:col-span-2 lg:col-span-4">
+        <div class="span">
             <button class="public-btn">Terapkan saringan</button>
         </div>
     </form>
@@ -64,7 +63,7 @@
     @forelse ($document->sessions as $session)
         <h2 class="mt-8 text-lg font-semibold">Sesi {{ $session->session }}</h2>
         @foreach ($session->events as $event)
-            <section class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <section class="program">
                 <div class="border-b border-slate-100 px-4 py-3">
                     <h3 class="font-medium">{{ $event->title() }}</h3>
                 </div>
@@ -90,7 +89,7 @@
                                         @php
                                             $highlight = $search !== '' && $lane->athleteName && str_contains(mb_strtoupper($lane->athleteName), mb_strtoupper($search));
                                         @endphp
-                                        <tr class="border-t border-slate-100 {{ $highlight ? 'bg-amber-50' : '' }}">
+                                        <tr class="{{ $highlight ? 'lane-hit bg-amber-50' : '' }}">
                                             <td class="px-4 py-1.5 font-medium sm:px-2" data-label="Lintasan">{{ $lane->laneNumber }}</td>
                                             @if ($lane->isEmpty())
                                                 <td colspan="6" class="px-4 py-1.5 italic text-slate-400 sm:px-2" data-label="Nama">kosong</td>

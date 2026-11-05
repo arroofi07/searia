@@ -4,25 +4,27 @@
 @section('meta_description', 'Rekap medali '.$competition->name)
 
 @section('content')
-    <p class="text-sm"><a href="{{ route('results.index', $competition) }}" class="text-teal-800 hover:underline">← Hasil</a></p>
-    <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="mast-row">
         <div>
-            <h1 class="text-2xl font-semibold">Rekap medali</h1>
-            <p class="text-sm text-slate-500">{{ $competition->name }}</p>
+            @include('public._mast', [
+                'back' => route('results.index', $competition),
+                'backLabel' => 'Hasil',
+                'kicker' => 'Penghargaan',
+                'title' => 'Rekap medali',
+                'meta' => $competition->name,
+            ])
         </div>
-        <div class="flex flex-col gap-2 sm:flex-row">
+        <div class="toolbar">
+            @include('public._books', ['competition' => $competition, 'primary' => 'results'])
             <a href="{{ route('results.best-swimmers', $competition) }}" class="public-btn-secondary">Atlet terbaik</a>
             <a href="{{ route('results.best-club', $competition) }}" class="public-btn-secondary">Club terbaik</a>
         </div>
     </div>
-    <div class="mt-4">
-        @include('public._books', ['competition' => $competition, 'primary' => 'results'])
-    </div>
     @if ($preview)
-        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia</div>
+        <div class="note">Pratinjau panitia</div>
     @endif
 
-    <nav class="mt-6 flex flex-wrap gap-3 text-sm">
+    <nav class="toolbar">
         <a href="#per-nomor" class="text-teal-800 hover:underline">Per nomor lomba</a>
         <a href="#per-klub" class="text-teal-800 hover:underline">Per klub</a>
         <a href="#per-ku" class="text-teal-800 hover:underline">Per kelompok umur</a>
@@ -30,7 +32,7 @@
 
     <section id="per-klub" class="mt-8">
         <h2 class="text-lg font-semibold">Per klub</h2>
-        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div class="program">
             <table class="stack-table min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
@@ -63,7 +65,7 @@
 
     <section id="per-ku" class="mt-8">
         <h2 class="text-lg font-semibold">Per kelompok umur</h2>
-        <div class="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div class="program">
             <table class="stack-table min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                     <tr>
@@ -106,7 +108,7 @@
         <h2 class="text-lg font-semibold">Per nomor lomba</h2>
         <div class="mt-3 space-y-4">
             @foreach ($blocks as $block)
-                <section class="rounded-lg border border-slate-200 bg-white p-4">
+                <section class="panel">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <h3 class="font-medium">Acara {{ $block['event']->event_number }} · {{ $block['age_group']->name }}</h3>
                         <div class="text-sm text-slate-600">

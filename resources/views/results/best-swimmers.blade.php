@@ -5,24 +5,26 @@
 @section('og_title', 'Atlet terbaik · '.$competition->name)
 
 @section('content')
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="mast-row">
         <div>
-            <h1 class="text-2xl font-semibold">Atlet terbaik</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · juara medali per putra/putri dan kelompok umur</p>
+            @include('public._mast', [
+                'kicker' => 'Penghargaan',
+                'title' => 'Atlet terbaik',
+                'meta' => $competition->name.' · juara medali per putra/putri dan kelompok umur',
+            ])
         </div>
-        <a href="{{ route('results.best-swimmers.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF</a>
-    </div>
-
-    <div class="mt-4">
-        @include('public._books', ['competition' => $competition, 'primary' => 'best-swimmers'])
+        <div class="toolbar">
+            @include('public._books', ['competition' => $competition, 'primary' => 'best-swimmers'])
+            <a href="{{ route('results.best-swimmers.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF</a>
+        </div>
     </div>
 
     @if ($preview)
-        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia — belum dipublikasikan.</div>
+        <div class="note">Pratinjau panitia — belum dipublikasikan.</div>
     @endif
 
     @forelse ($groups as $group)
-        <section class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <section class="program">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h2 class="font-medium">{{ $group['gender_label'] }} · {{ $group['age_group_name'] }}</h2>
             </div>
@@ -61,7 +63,7 @@
             </table>
         </section>
     @empty
-        <p class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">Belum ada atlet terbaik. Medali belum dihitung.</p>
+        <p class="note">Belum ada atlet terbaik. Medali belum dihitung.</p>
     @endforelse
 
     @include('partials.pagination', ['paginator' => $groups])

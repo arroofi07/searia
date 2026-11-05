@@ -4,25 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#00A3E0">
+    <meta name="theme-color" content="#07151d">
     <title>@yield('title', 'Terjadi kesalahan') · SeaRIA</title>
     <link rel="icon" href="{{ url('/brand/favicon') }}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700" rel="stylesheet">
     <style>
         :root {
-            --ink: #e2e8f0;
-            --muted: #94a3b8;
-            --teal: #5eead4;
-            --btn: #f8fafc;
-            --btn-text: #042f2e;
+            --ink: #12343f;
+            --paper: #f5f8fa;
+            --signal: #ff6a3d;
+            --muted: #5b6f78;
+            --live: #ff6a3d;
         }
         * { box-sizing: border-box; }
         html, body { margin: 0; min-height: 100%; }
         body {
-            font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+            font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
             color: var(--ink);
-            background: #020617;
+            background: var(--paper);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -31,19 +31,9 @@
             position: fixed;
             inset: 0;
             pointer-events: none;
-            opacity: .07;
-            background-image: repeating-linear-gradient(90deg, transparent 0, transparent 11.5%, #fff 11.5%, #fff 12%);
+            opacity: .2;
+            background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 2px), #5ce1ff calc(12.5% - 2px), #5ce1ff 12.5%);
         }
-        .orb {
-            position: fixed;
-            width: 22rem;
-            height: 22rem;
-            border-radius: 999px;
-            filter: blur(64px);
-            pointer-events: none;
-        }
-        .orb-a { top: -6rem; left: -5rem; background: rgba(45, 212, 191, .22); }
-        .orb-b { right: -4rem; top: 8rem; background: rgba(14, 165, 233, .18); }
         main {
             position: relative;
             z-index: 1;
@@ -58,8 +48,8 @@
             justify-content: center;
             margin-bottom: 1.75rem;
             padding: 1rem 1.25rem;
-            background: #fff;
-            border-radius: 1.5rem;
+            background: var(--paper);
+            border: 3px solid var(--ink);
         }
         .brand img { height: 4.5rem; width: auto; display: block; }
         .code {
@@ -68,7 +58,8 @@
             font-weight: 700;
             letter-spacing: -.06em;
             line-height: 1;
-            color: rgba(94, 234, 212, .22);
+            color: transparent;
+            -webkit-text-stroke: 2px var(--live);
         }
         h1 {
             margin: .75rem 0 0;
@@ -77,7 +68,7 @@
             font-weight: 600;
             letter-spacing: -.03em;
             line-height: 1.2;
-            color: #fff;
+            color: var(--ink);
         }
         .lead {
             margin: .85rem auto 0;
@@ -99,19 +90,15 @@
             justify-content: center;
             min-height: 3rem;
             padding: .75rem 1.35rem;
-            border-radius: 999px;
+            border: 2px solid var(--ink);
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             text-decoration: none;
         }
-        .btn { background: var(--btn); color: var(--btn-text); }
-        .btn:hover { background: #ccfbf1; }
-        .btn-ghost {
-            border: 1px solid rgba(255,255,255,.2);
-            color: #fff;
-            background: rgba(255,255,255,.06);
-        }
-        .btn-ghost:hover { background: rgba(255,255,255,.12); }
+        .btn { background: var(--signal); color: #fff; border-radius: 999px; }
+        .btn:hover { background: #e85a30; }
+        .btn-ghost { background: transparent; color: var(--ink); border-radius: 999px; }
+        .btn-ghost:hover { background: #0a2e39; color: #fff; }
         .links {
             margin-top: 1.5rem;
             display: flex;
@@ -120,22 +107,20 @@
             gap: .9rem 1.25rem;
             font-size: .95rem;
         }
-        .links a { color: #99f6e4; text-decoration: none; }
+        .links a { color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--signal); }
         .links a:hover { text-decoration: underline; }
         footer {
             position: relative;
             z-index: 1;
             padding: 1.25rem;
             text-align: center;
-            color: #64748b;
+            color: var(--muted);
             font-size: .8rem;
         }
     </style>
 </head>
 <body>
     <div class="lanes" aria-hidden="true"></div>
-    <div class="orb orb-a" aria-hidden="true"></div>
-    <div class="orb orb-b" aria-hidden="true"></div>
     <main>
         <a class="brand" href="{{ url('/') }}">
             <img src="{{ url('/brand/logo') }}" alt="Aquatic SeaRIA" width="160" height="104" onerror="this.parentNode.style.display='none'">

@@ -1,4 +1,4 @@
-<section class="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white p-4 sm:p-5">
+<section class="guide">
     <h2 class="text-base font-semibold text-teal-950">Apa itu catatan waktu?</h2>
     <p class="mt-1.5 text-sm leading-6 text-slate-700">
         Catatan waktu (sering disebut <strong>seed</strong>) adalah <strong>waktu terbaik atlet</strong> di nomor yang sama.

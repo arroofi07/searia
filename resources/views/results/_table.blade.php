@@ -39,7 +39,7 @@
                         {{ $entry->athleteName }}
                     @endif
                     @if ($entry->isPersonalBest)
-                        <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">PB</span>
+                        <span class="pb">PB</span>
                     @endif
                 </td>
                 <td class="px-3 py-2" data-label="Umur">{{ $entry->formattedAge() }}</td>

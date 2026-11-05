@@ -3,37 +3,38 @@
 @section('title', 'Masuk')
 
 @section('content')
-    <div class="mb-5 flex justify-center">
-        @include('layouts.partials.brand-mark', ['class' => 'h-24 w-auto', 'alt' => 'Aquatic SeaRIA'])
+    <div class="mast-id">
+        @include('layouts.partials.brand-mark', ['class' => 'meet-logo', 'alt' => 'Aquatic SeaRIA'])
+        <div>
+            <p class="kicker">Panitia &amp; juri</p>
+            <h1>Masuk</h1>
+        </div>
     </div>
-    <h1 class="text-xl font-semibold text-slate-900">Masuk ke SeaRIA</h1>
-    <p class="mt-1 text-sm text-slate-500">Khusus panitia dan juri. Peserta mendaftar lewat form publik tanpa akun.</p>
+    <p class="lead">Peserta tidak memakai akun. Pendaftaran lomba ada di halaman publik.</p>
 
-    <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <div>
-            <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
-                class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600">
+        <div class="gap-top">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="username" class="public-input">
             @error('email')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="note">{{ $message }}</p>
             @enderror
         </div>
 
-        <div>
-            <label for="password" class="block text-sm font-medium text-slate-700">Kata sandi</label>
-            <input id="password" name="password" type="password" required
-                class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600">
+        <div class="gap-top">
+            <label for="password">Kata sandi</label>
+            <input id="password" name="password" type="password" required autocomplete="current-password" class="public-input">
         </div>
 
-        <label class="flex items-center gap-2 text-sm text-slate-600">
-            <input type="checkbox" name="remember" class="rounded border-slate-300 text-teal-700">
+        <label class="pick gap-top">
+            <input type="checkbox" name="remember" class="event-box">
             Ingat saya
         </label>
 
-        <button type="submit" class="w-full rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800">
-            Masuk
-        </button>
+        <div class="gap-top">
+            <button type="submit" class="public-btn">Masuk</button>
+        </div>
     </form>
 @endsection

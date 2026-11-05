@@ -4,16 +4,20 @@
 @section('meta_description', 'Hasil '.$athlete->full_name.' pada '.$competition->name)
 
 @section('content')
-    <p class="text-sm"><a href="{{ route('results.index', $competition) }}" class="text-teal-800 hover:underline">← Hasil kejuaraan</a></p>
-    <h1 class="mt-2 text-2xl font-semibold">{{ $athlete->full_name }}</h1>
-    <p class="text-sm text-slate-500">{{ $competition->name }} · {{ $athlete->club?->name }}</p>
+    @include('public._mast', [
+        'back' => route('results.index', $competition),
+        'backLabel' => 'Hasil kejuaraan',
+        'kicker' => 'Atlet',
+        'title' => $athlete->full_name,
+        'meta' => $competition->name.' · '.($athlete->club?->name ?? ''),
+    ])
     @if ($competition->hasPublicResults() && $competition->status !== \App\Enums\CompetitionStatus::Published)
-        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Hasil sementara — lomba belum dipublikasikan.</div>
+        <div class="note">Hasil sementara — lomba belum dipublikasikan.</div>
     @elseif ($preview)
-        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau</div>
+        <div class="note">Pratinjau</div>
     @endif
 
-    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div class="program">
         <table class="stack-table min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
@@ -39,7 +43,7 @@
                         <td class="px-3 py-2" data-label="Hasil">
                             {{ ($formatTime)($row['time_ms']) }}
                             @if ($row['is_pb'])
-                                <span class="ml-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">PB</span>
+                                <span class="pb">PB</span>
                             @endif
                             @if ($row['status'] !== \App\Enums\ResultStatus::Ok)
                                 <span class="text-xs text-slate-500">{{ $row['status']->label() }}</span>
@@ -69,7 +73,7 @@
         <h2 class="mt-8 text-lg font-semibold">Riwayat kejuaraan lain</h2>
         <ul class="mt-3 space-y-2 text-sm">
             @foreach ($history as $item)
-                <li class="rounded border border-slate-200 bg-white px-3 py-2">
+                <li class="panel">
                     {{ $item->heatLane?->heat?->event?->competition?->name }}
                     · Acara {{ $item->heatLane?->heat?->event?->event_number }}
                     · {{ ($formatTime)($item->time_ms) }}

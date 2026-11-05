@@ -2,15 +2,20 @@
     $primary = $primary ?? 'start-list';
     $variant = $variant ?? 'buttons';
     $isPills = $variant === 'pills';
-    $activeClass = $isPills
-        ? 'inline-flex min-h-10 items-center justify-center rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800'
-        : 'public-btn';
-    $idleClass = $isPills
-        ? 'inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900'
-        : 'public-btn-secondary';
+    $isDeck = $variant === 'deck';
+    $activeClass = $isDeck
+        ? 'deck-btn deck-btn-ink'
+        : ($isPills
+            ? 'inline-flex min-h-10 items-center justify-center rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800'
+            : 'public-btn');
+    $idleClass = $isDeck
+        ? 'deck-btn deck-btn-ghost'
+        : ($isPills
+            ? 'inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-900'
+            : 'public-btn-secondary');
 @endphp
 
-<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+<div class="toolbar {{ $isDeck ? 'deck-book-row' : '' }}">
     @if ($competition->hasPublicStartList())
         <a href="{{ route('start-list.show', $competition) }}" class="{{ $primary === 'start-list' ? $activeClass : $idleClass }}">Buku acara</a>
     @endif

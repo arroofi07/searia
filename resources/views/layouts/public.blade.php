@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0a2e39">
     <title>@yield('title', 'SeaRIA')</title>
     @include('layouts.partials.favicon')
     <meta name="description" content="@yield('meta_description', 'Sistem informasi kejuaraan renang SeaRIA — pendaftaran, buku acara, dan hasil lomba.')">
@@ -13,76 +14,75 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public.js'])
     <link rel="stylesheet" href="{{ \App\Support\PublicAssets::cssUrl() }}">
+    <link rel="stylesheet" href="{{ rtrim(request()->getBasePath(), '/') }}/css/public.css?v={{ is_file(public_path('css/public.css')) ? filemtime(public_path('css/public.css')) : '1' }}">
+    @stack('head')
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <header class="relative sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
-        <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-            <a href="{{ route('home') }}" class="flex min-h-11 items-center">
-                @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto sm:h-16', 'alt' => 'Aquatic SeaRIA'])
+<body class="deck @yield('bodyClass')">
+    <a class="skip" href="#isi">Langsung ke isi</a>
+    <header class="site-head">
+        <div class="site-head-bar">
+            <a href="{{ route('home') }}" class="site-logo">
+                @include('layouts.partials.brand-mark', ['class' => '', 'alt' => 'Aquatic SeaRIA'])
             </a>
 
-            <div class="flex items-center gap-2 md:hidden">
-                <a href="{{ route('register.index') }}" class="inline-flex min-h-10 items-center rounded-full bg-teal-700 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-800 md:hidden">
-                    Daftar
-                </a>
-                <button type="button" class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 md:hidden" data-public-nav-toggle aria-expanded="false" aria-controls="public-nav">
+            <div class="site-tools">
+                <a href="{{ route('register.index') }}" class="site-cta">Daftar</a>
+                <button type="button" class="site-menu" data-public-nav-toggle aria-expanded="false" aria-controls="public-nav">
                     <span class="sr-only">Buka menu</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
                     </svg>
                 </button>
             </div>
 
-            <nav id="public-nav" data-public-nav-panel class="border-b border-slate-200 bg-white px-4 py-4 shadow-lg md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-                <div class="flex flex-col gap-1 text-base md:ml-auto md:flex-row md:items-center md:gap-1 md:text-sm">
-                    <a href="{{ route('home') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('home') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Beranda</a>
-                    <a href="{{ route('register.index') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('register.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Daftar lomba</a>
-                    <a href="{{ route('home') }}#buku-acara" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('start-list.*', 'results.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Buku &amp; hasil</a>
-                    <a href="{{ route('archive.index') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('archive.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Arsip</a>
-                    <a href="{{ route('public.athletes.search') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('public.athletes.*') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Cari atlet</a>
-                    <a href="{{ route('about') }}" class="rounded-lg px-3 py-2.5 {{ request()->routeIs('about') ? 'bg-teal-50 font-semibold text-teal-900' : 'text-slate-600 hover:bg-slate-50 hover:text-teal-800' }}">Tentang</a>
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-lg px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-teal-800">Dasbor</a>
-                    @else
-                        <a href="{{ route('login') }}" class="mt-2 rounded-xl bg-slate-900 px-4 py-2.5 text-center font-semibold text-white hover:bg-slate-800 md:mt-0 md:ml-2 md:rounded-full md:px-3 md:py-1.5 md:text-sm">Masuk panitia</a>
-                    @endauth
-                </div>
+            <nav id="public-nav" data-public-nav-panel class="site-nav">
+                <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'is-on' : '' }}">Beranda</a>
+                <a href="{{ route('register.index') }}" class="{{ request()->routeIs('register.*') ? 'is-on' : '' }}">Daftar lomba</a>
+                <a href="{{ route('home') }}#buku-acara" class="{{ request()->routeIs('start-list.*', 'results.*') ? 'is-on' : '' }}">Buku &amp; hasil</a>
+                <a href="{{ route('archive.index') }}" class="{{ request()->routeIs('archive.*') ? 'is-on' : '' }}">Arsip</a>
+                <a href="{{ route('public.athletes.search') }}" class="{{ request()->routeIs('public.athletes.*') ? 'is-on' : '' }}">Cari atlet</a>
+                <a href="{{ route('about') }}" class="{{ request()->routeIs('about', 'terms') ? 'is-on' : '' }}">Tentang</a>
+                @auth
+                    <a href="{{ route('dashboard') }}">Dasbor</a>
+                @else
+                    <a href="{{ route('login') }}" class="site-login">Masuk panitia</a>
+                @endauth
             </nav>
         </div>
     </header>
 
-    <main class="{{ trim($__env->yieldContent('mainClass')) ?: 'mx-auto max-w-6xl px-4 py-6 sm:py-8' }}">
+    <main id="isi" class="{{ trim($__env->yieldContent('mainClass')) ?: 'site-main' }}">
         @if (session('status'))
-            <div class="mx-auto mb-4 max-w-6xl px-4 rounded-2xl border border-teal-200 bg-teal-50 py-3 text-sm text-teal-900">{{ session('status') }}</div>
+            <div class="flash">{{ session('status') }}</div>
         @endif
         @yield('content')
     </main>
 
-    <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
-            <div class="flex items-start gap-3">
-                @include('layouts.partials.brand-mark', ['class' => 'h-14 w-auto', 'alt' => 'Aquatic SeaRIA'])
+    <footer class="site-foot">
+        <div class="site-foot-grid">
+            <div class="site-brand">
+                @include('layouts.partials.brand-mark', ['class' => '', 'alt' => 'Aquatic SeaRIA'])
                 <div>
-                    <p class="font-semibold text-slate-900">Aquatic SeaRIA</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-600">&copy; {{ date('Y') }} Sistem informasi kejuaraan renang. Pendaftaran, buku acara, dan hasil dalam satu tempat.</p>
+                    <p><strong>Aquatic SeaRIA</strong></p>
+                    <p>&copy; {{ date('Y') }} Sistem informasi kejuaraan renang. Pendaftaran, buku acara, dan hasil dalam satu tempat.</p>
                 </div>
             </div>
-            <nav class="flex flex-col gap-2 text-sm text-slate-600">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Peserta</p>
-                <a href="{{ route('register.index') }}" class="hover:text-teal-800">Daftar lomba</a>
-                <a href="{{ route('home') }}#buku-acara" class="hover:text-teal-800">Buku &amp; hasil</a>
-                <a href="{{ route('public.athletes.search') }}" class="hover:text-teal-800">Cari hasil atlet</a>
-                <a href="{{ route('archive.index') }}" class="hover:text-teal-800">Arsip hasil</a>
+            <nav aria-label="Tautan peserta">
+                <p class="kicker">Peserta</p>
+                <a href="{{ route('register.index') }}">Daftar lomba</a>
+                <a href="{{ route('home') }}#buku-acara">Buku &amp; hasil</a>
+                <a href="{{ route('public.athletes.search') }}">Cari hasil atlet</a>
+                <a href="{{ route('archive.index') }}">Arsip hasil</a>
             </nav>
-            <nav class="flex flex-col gap-2 text-sm text-slate-600">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Informasi</p>
-                <a href="{{ route('about') }}" class="hover:text-teal-800">Pengenalan</a>
-                <a href="{{ route('terms') }}" class="hover:text-teal-800">Syarat &amp; ketentuan</a>
-                <a href="{{ route('sitemap') }}" class="hover:text-teal-800">Peta situs</a>
-                <a href="{{ route('login') }}" class="hover:text-teal-800">Masuk panitia</a>
+            <nav aria-label="Informasi">
+                <p class="kicker">Informasi</p>
+                <a href="{{ route('about') }}">Pengenalan</a>
+                <a href="{{ route('terms') }}">Syarat &amp; ketentuan</a>
+                <a href="{{ route('sitemap') }}">Peta situs</a>
+                <a href="{{ route('login') }}">Masuk panitia</a>
             </nav>
         </div>
     </footer>

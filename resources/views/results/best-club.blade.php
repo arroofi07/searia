@@ -5,23 +5,25 @@
 @section('og_title', 'Club terbaik · '.$competition->name)
 
 @section('content')
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div class="mast-row">
         <div>
-            <h1 class="text-2xl font-semibold">Club terbaik</h1>
-            <p class="mt-1 text-sm text-slate-500">{{ $competition->name }} · diurutkan emas, perak, perunggu</p>
+            @include('public._mast', [
+                'kicker' => 'Penghargaan',
+                'title' => 'Club terbaik',
+                'meta' => $competition->name.' · diurutkan emas, perak, perunggu',
+            ])
         </div>
-        <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF</a>
-    </div>
-
-    <div class="mt-4">
-        @include('public._books', ['competition' => $competition, 'primary' => 'best-club'])
+        <div class="toolbar">
+            @include('public._books', ['competition' => $competition, 'primary' => 'best-club'])
+            <a href="{{ route('results.best-club.pdf', $competition) }}" class="public-btn-secondary">Unduh PDF</a>
+        </div>
     </div>
 
     @if ($preview)
-        <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">Pratinjau panitia — belum dipublikasikan.</div>
+        <div class="note">Pratinjau panitia — belum dipublikasikan.</div>
     @endif
 
-    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <div class="program">
         <table class="stack-table min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
