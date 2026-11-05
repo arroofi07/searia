@@ -51,14 +51,6 @@ class CompetitionReadinessCheck
             }
         }
 
-        if ($competition->fee_per_event <= 0) {
-            $findings[] = [
-                'code' => 'zero_fee',
-                'message' => 'Biaya per nomor masih bernilai nol.',
-                'blocking' => true,
-            ];
-        }
-
         return $findings;
     }
 

@@ -9,7 +9,8 @@ use App\Models\Event;
 use App\Models\User;
 
 it('lists an event without an age group as a readiness finding', function () {
-    $competition = Competition::factory()->create(['fee_per_event' => 75_000]);
+    // MVP tanpa pembayaran: fee 0 tidak memblokir kesiapan.
+    $competition = Competition::factory()->create(['fee_per_event' => 0]);
     AgeGroup::factory()->create([
         'competition_id' => $competition->id,
         'code' => '3',
