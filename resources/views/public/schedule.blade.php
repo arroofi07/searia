@@ -44,7 +44,7 @@
 
             @forelse ($programBySession as $session => $rows)
                 <div class="@if (! $loop->first) border-t border-slate-200 @endif">
-                    <h2 class="bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">Sesi {{ $session }}</h2>
+                    <h2 class="bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">H{{ $session }}</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>

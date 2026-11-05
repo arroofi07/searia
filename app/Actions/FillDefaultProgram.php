@@ -34,7 +34,7 @@ class FillDefaultProgram
                             'distance' => $pair['distance'],
                             'stroke' => $pair['stroke'],
                             'equipment' => $pair['equipment'],
-                            'session' => 1,
+                            'session' => $pair['session'],
                             'is_active' => true,
                         ]);
                     }

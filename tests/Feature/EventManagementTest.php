@@ -32,7 +32,7 @@ it('rejects two events that share an event number in the same competition', func
     expect($competition->events()->count())->toBe(1);
 });
 
-it('fills the official 36-event program in PA/PI order', function () {
+it('fills the official 58-event program in PA/PI order', function () {
     $competition = Competition::factory()->create();
     foreach (AgeGroup::defaultDefinitions($competition->year()) as $definition) {
         $competition->ageGroups()->create($definition);
@@ -44,19 +44,21 @@ it('fills the official 36-event program in PA/PI order', function () {
         ->assertRedirect();
 
     $events = $competition->events()->orderBy('event_number')->get();
-    $dadaPutra = $events->firstWhere('event_number', 13);
-    $bebas200 = $events->firstWhere('event_number', 21);
+    $dadaPutra = $events->firstWhere('event_number', 7);
+    $bebas200 = $events->firstWhere('event_number', 13);
 
-    expect($events)->toHaveCount(36)
+    expect($events)->toHaveCount(58)
         ->and($events->first()->event_number)->toBe(1)
         ->and($events->first()->programName())->toBe('50 M GAYA KUPU-KUPU')
+        ->and($events->first()->session)->toBe(1)
         ->and($dadaPutra->stroke)->toBe(Stroke::Breaststroke)
-        ->and($dadaPutra->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['2', '3', '4', '5'])
+        ->and($dadaPutra->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['3', '4', '5', '6'])
         ->and($bebas200->distance)->toBe(200)
         ->and($bebas200->stroke)->toBe(Stroke::Freestyle)
-        ->and($bebas200->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['1'])
-        ->and($events->firstWhere('event_number', 35)->programName())->toBe('50 M BEBAS (FINS)')
-        ->and($events->last()->event_number)->toBe(36);
+        ->and($bebas200->ageGroups()->pluck('code')->all())->toEqualCanonicalizing(['1', '2'])
+        ->and($events->firstWhere('event_number', 33)->session)->toBe(2)
+        ->and($events->firstWhere('event_number', 53)->programName())->toBe('50 M GAYA BEBAS (FINS)')
+        ->and($events->last()->event_number)->toBe(58);
 
     $this->actingAs($panitia)
         ->get(route('admin.competitions.events.index', $competition))
@@ -64,5 +66,6 @@ it('fills the official 36-event program in PA/PI order', function () {
         ->assertSee('Susunan Acara Perlombaan')
         ->assertSee('50 M GAYA KUPU-KUPU')
         ->assertSee('200 M GAYA BEBAS')
-        ->assertSee('50 M BEBAS (FINS)');
+        ->assertSee('100 M GAYA KUPU-KUPU (FINS)')
+        ->assertSee('H1');
 });

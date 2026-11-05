@@ -12,7 +12,7 @@
     <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
     @include('admin.competitions._nav', ['competition' => $competition, 'current' => 'events'])
 
-    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 18 nomor lomba, 36 nomor acara (PA ganjil, PI genap), termasuk 200 M Gaya Bebas untuk Group 1. Panitia dan Super Admin juga bisa mengisi lewat Excel.</p>
+    <p class="mt-4 text-sm text-slate-500">Susunan baku Fun Swimming SeaRIA: 29 nomor lomba, 58 nomor acara (PA ganjil, PI genap) di H1 dan H2, disesuaikan dengan kelompok umur Group 1–8. Panitia dan Super Admin juga bisa mengisi lewat Excel.</p>
 
     <form method="POST" action="{{ route('admin.competitions.events.quick-fill', $competition) }}" class="mt-4">
         @csrf
@@ -62,12 +62,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($programRows as $row)
-                        <tr class="border-t border-slate-100 {{ $loop->even ? 'bg-slate-50/80' : 'bg-white' }}">
-                            <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pa']?->paddedEventNumber() ?? '—' }}</td>
-                            <td class="px-3 py-2.5 text-center font-medium tracking-wide">{{ $row['label'] }}</td>
-                            <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pi']?->paddedEventNumber() ?? '—' }}</td>
+                    @foreach ($programRows->groupBy('session') as $session => $rows)
+                        <tr class="border-t border-slate-200 bg-slate-100">
+                            <td colspan="3" class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">H{{ $session }}</td>
                         </tr>
+                        @foreach ($rows as $row)
+                            <tr class="border-t border-slate-100 {{ $loop->even ? 'bg-slate-50/80' : 'bg-white' }}">
+                                <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pa']?->paddedEventNumber() ?? '—' }}</td>
+                                <td class="px-3 py-2.5 text-center font-medium tracking-wide">{{ $row['label'] }}</td>
+                                <td class="px-3 py-2.5 text-center font-mono font-semibold text-teal-900">{{ $row['pi']?->paddedEventNumber() ?? '—' }}</td>
+                            </tr>
+                        @endforeach
                     @endforeach
                 </tbody>
             </table>

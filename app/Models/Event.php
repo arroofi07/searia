@@ -118,10 +118,6 @@ class Event extends Model
      */
     public function programName(): string
     {
-        if ($this->stroke === Stroke::Freestyle && $this->equipment === Equipment::Fins) {
-            return $this->distance.' M BEBAS (FINS)';
-        }
-
         $stroke = match ($this->stroke) {
             Stroke::Butterfly => 'GAYA KUPU-KUPU',
             Stroke::Backstroke => 'GAYA PUNGGUNG',
@@ -142,43 +138,66 @@ class Event extends Model
     }
 
     /**
-     * 18 nomor lomba baku Fun Swimming SeaRIA (36 nomor acara PA/PI).
+     * 29 nomor lomba baku Fun Swimming SeaRIA (58 nomor acara PA/PI, H1+H2).
+     * Kode grup mengikuti matriks brosur Group 1–8. Group 9 (jika ada) ikut
+     * nomor yang sama dengan Group 8.
      *
-     * @return list<array{distance: int, stroke: Stroke, equipment: Equipment, male_number: int, female_number: int, eligible_codes: list<string>}>
+     * @return list<array{distance: int, stroke: Stroke, equipment: Equipment, male_number: int, female_number: int, session: int, eligible_codes: list<string>}>
      */
     public static function defaultProgram(): array
     {
+        $eligible = static function (int ...$groups): array {
+            $codes = array_map(strval(...), $groups);
+
+            if (in_array(8, $groups, true)) {
+                $codes[] = '9';
+            }
+
+            return $codes;
+        };
+
         $pairs = [
-            [50, Stroke::Butterfly, Equipment::None, ['2', '3', '4', '5']],
-            [50, Stroke::Backstroke, Equipment::None, ['2', '3', '4', '5']],
-            [50, Stroke::Butterfly, Equipment::Fins, ['4', '5', '6', '7']],
-            [50, Stroke::Backstroke, Equipment::Fins, ['4', '5', '6', '7']],
-            [25, Stroke::Butterfly, Equipment::None, ['5', '6', '7']],
-            [25, Stroke::Backstroke, Equipment::None, ['5', '6', '7']],
-            [50, Stroke::Breaststroke, Equipment::None, ['2', '3', '4', '5']],
-            [50, Stroke::Freestyle, Equipment::None, ['2', '3', '4', '5']],
-            [50, Stroke::Butterfly, Equipment::Kickboard, ['4', '5']],
-            [50, Stroke::Breaststroke, Equipment::Kickboard, ['4', '5']],
-            [200, Stroke::Freestyle, Equipment::None, ['1']],
-            [25, Stroke::Breaststroke, Equipment::None, ['5', '6', '7', '8', '9']],
-            [25, Stroke::Freestyle, Equipment::None, ['5', '6', '7', '8', '9']],
-            [25, Stroke::Butterfly, Equipment::Kickboard, ['6', '7']],
-            [25, Stroke::Breaststroke, Equipment::Kickboard, ['6', '7', '8', '9']],
-            [50, Stroke::Freestyle, Equipment::Kickboard, ['4', '5']],
-            [25, Stroke::Freestyle, Equipment::Kickboard, ['6', '7', '8', '9']],
-            [50, Stroke::Freestyle, Equipment::Fins, ['2', '3', '4', '5', '6', '7']],
+            [1, 1, 50, Stroke::Butterfly, Equipment::None, $eligible(3, 4, 5)],
+            [1, 3, 100, Stroke::Freestyle, Equipment::Fins, $eligible(1, 2, 4)],
+            [1, 5, 25, Stroke::Backstroke, Equipment::None, $eligible(6, 7, 8)],
+            [1, 7, 50, Stroke::Breaststroke, Equipment::None, $eligible(3, 4, 5, 6)],
+            [1, 9, 100, Stroke::Butterfly, Equipment::Fins, $eligible(1, 2)],
+            [1, 11, 25, Stroke::Freestyle, Equipment::None, $eligible(6, 7, 8)],
+            [1, 13, 200, Stroke::Freestyle, Equipment::None, $eligible(1, 2)],
+            [1, 15, 50, Stroke::Butterfly, Equipment::Kickboard, $eligible(4, 5)],
+            [1, 17, 100, Stroke::Backstroke, Equipment::None, $eligible(1, 2, 3)],
+            [1, 19, 25, Stroke::Butterfly, Equipment::Kickboard, $eligible(5, 6, 7, 8)],
+            [1, 21, 50, Stroke::Backstroke, Equipment::Fins, $eligible(3, 4, 5)],
+            [1, 23, 50, Stroke::Breaststroke, Equipment::Kickboard, $eligible(4, 5, 6)],
+            [1, 25, 25, Stroke::Butterfly, Equipment::None, $eligible(6, 7, 8)],
+            [1, 27, 100, Stroke::Freestyle, Equipment::None, $eligible(1, 2, 3, 4, 5)],
+            [1, 29, 25, Stroke::Freestyle, Equipment::Kickboard, $eligible(6, 7, 8)],
+            [1, 31, 25, Stroke::Breaststroke, Equipment::None, $eligible(6, 7, 8)],
+            [2, 33, 50, Stroke::Butterfly, Equipment::Fins, $eligible(3)],
+            [2, 35, 100, Stroke::Backstroke, Equipment::Fins, $eligible(1, 2)],
+            [2, 37, 25, Stroke::Freestyle, Equipment::Fins, $eligible(6, 7, 8)],
+            [2, 39, 100, Stroke::Butterfly, Equipment::None, $eligible(1, 2, 3)],
+            [2, 41, 100, Stroke::Breaststroke, Equipment::None, $eligible(1, 2, 3, 4, 5)],
+            [2, 43, 25, Stroke::Butterfly, Equipment::Fins, $eligible(4, 5, 6, 7, 8)],
+            [2, 45, 200, Stroke::Freestyle, Equipment::Fins, $eligible(1, 2)],
+            [2, 47, 50, Stroke::Backstroke, Equipment::None, $eligible(3, 4, 5)],
+            [2, 49, 25, Stroke::Backstroke, Equipment::Fins, $eligible(6, 7, 8)],
+            [2, 51, 25, Stroke::Breaststroke, Equipment::Kickboard, $eligible(6, 7, 8)],
+            [2, 53, 50, Stroke::Freestyle, Equipment::Fins, $eligible(3, 4, 5)],
+            [2, 55, 50, Stroke::Freestyle, Equipment::Kickboard, $eligible(4, 5)],
+            [2, 57, 50, Stroke::Freestyle, Equipment::None, $eligible(3, 4, 5)],
         ];
 
         $program = [];
 
-        foreach ($pairs as $index => [$distance, $stroke, $equipment, $eligibleCodes]) {
-            $maleNumber = ($index * 2) + 1;
+        foreach ($pairs as [$session, $maleNumber, $distance, $stroke, $equipment, $eligibleCodes]) {
             $program[] = [
                 'distance' => $distance,
                 'stroke' => $stroke,
                 'equipment' => $equipment,
                 'male_number' => $maleNumber,
                 'female_number' => $maleNumber + 1,
+                'session' => $session,
                 'eligible_codes' => $eligibleCodes,
             ];
         }
