@@ -5,6 +5,7 @@ use App\Enums\Equipment;
 use App\Enums\EventGender;
 use App\Enums\RegistrationStatus;
 use App\Enums\Stroke;
+use App\Models\AgeGroup;
 use App\Models\Athlete;
 use App\Models\Club;
 use App\Models\Event;
@@ -259,6 +260,71 @@ it('lets panitia find a submission by code and read the participant data', funct
     $this->actingAs(User::factory()->juri()->create())
         ->get(route('admin.submissions.show', $submission))
         ->assertForbidden();
+});
+
+it('reactivates a rejected entry when the athlete registers again', function () {
+    $meet = openRegistrationMeet();
+    $existing = verifiedRegistration($meet, [
+        'status' => RegistrationStatus::Rejected,
+        'rejection_reason' => 'Data tidak lengkap',
+    ]);
+
+    submitStep1($meet);
+    $this->post(route('register.events.store', $meet['competition']), [
+        'event_ids' => [$meet['event']->id],
+        'seed_times' => [$meet['event']->id => '00:51.10'],
+    ]);
+    $this->get(route('register.review', $meet['competition']));
+    $this->post(route('register.store', $meet['competition']), [
+        'submit_token' => session('register_token.'.$meet['competition']->id),
+        'terms' => '1',
+    ])->assertRedirect();
+
+    expect(Registration::query()->count())->toBe(1)
+        ->and($existing->fresh()->status)->toBe(RegistrationStatus::Pending)
+        ->and($existing->fresh()->rejection_reason)->toBeNull()
+        ->and($existing->fresh()->seed_time_ms)->toBe(51_100);
+});
+
+it('hides a competition whose registration window has not started', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update([
+        'registration_opens_at' => now()->addDay(),
+        'registration_closes_at' => now()->addWeek(),
+    ]);
+
+    $this->get(route('register.index'))
+        ->assertOk()
+        ->assertDontSee($meet['competition']->name);
+
+    $this->get(route('register.create', $meet['competition']))->assertForbidden();
+});
+
+it('refuses the public form after the registration closing time', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update([
+        'registration_opens_at' => now()->subWeek(),
+        'registration_closes_at' => now()->subMinute(),
+    ]);
+
+    $this->get(route('register.create', $meet['competition']))->assertForbidden();
+    submitStep1($meet)->assertForbidden();
+});
+
+it('explains overlapping age groups on the public form instead of failing', function () {
+    $meet = openRegistrationMeet();
+    AgeGroup::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'code' => '4',
+        'name' => 'Group 4',
+        'birth_year_start' => 2016,
+        'birth_year_end' => 2017,
+        'sort_order' => 4,
+    ]);
+
+    submitStep1($meet)
+        ->assertRedirect()
+        ->assertSessionHasErrors('birth_year');
 });
 
 it('keeps entries pending until panitia verifies them', function () {

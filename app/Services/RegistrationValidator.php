@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\RegistrationStatus;
 use App\Exceptions\CannotOverrideAgeGroupException;
 use App\Exceptions\InvalidSwimTimeException;
+use App\Exceptions\OverlappingAgeGroupsException;
 use App\Models\Athlete;
 use App\Models\Registration;
 use App\Rules\ReasonableSwimTime;
@@ -38,9 +39,15 @@ class RegistrationValidator
             );
         }
 
-        $ageGroup = $this->ageGroups->resolve($competition, $athlete->birth_year);
+        $ageGroup = null;
 
-        if ($ageGroup === null) {
+        try {
+            $ageGroup = $this->ageGroups->resolve($competition, $athlete->birth_year);
+        } catch (OverlappingAgeGroupsException $exception) {
+            $errors[] = $this->error('V-02', $exception->getMessage());
+        }
+
+        if ($ageGroup === null && collect($errors)->pluck('code')->doesntContain('V-02')) {
             $errors[] = $this->error('V-02', 'Usia atlet di luar rentang kejuaraan ini');
         }
 
@@ -82,7 +89,7 @@ class RegistrationValidator
         $alreadyStored = Registration::query()
             ->where('event_id', $event->id)
             ->where('athlete_id', $athlete->id)
-            ->where('status', '!=', RegistrationStatus::Withdrawn)
+            ->whereIn('status', RegistrationStatus::blockingDuplicate())
             ->when(
                 $draft->exceptRegistrationId !== null,
                 fn ($query) => $query->whereKeyNot($draft->exceptRegistrationId),

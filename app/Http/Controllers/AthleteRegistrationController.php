@@ -227,7 +227,7 @@ class AthleteRegistrationController extends Controller
         int $userId,
         bool $verifyNow,
     ): void {
-        $payload = [
+        Registration::syncPair([
             'competition_id' => $competition->id,
             'event_id' => $event->id,
             'athlete_id' => $athlete->id,
@@ -238,20 +238,6 @@ class AthleteRegistrationController extends Controller
             'registered_by' => $userId,
             'verified_by' => $verifyNow ? $userId : null,
             'verified_at' => $verifyNow ? now() : null,
-        ];
-
-        $existing = Registration::query()
-            ->where('event_id', $event->id)
-            ->where('athlete_id', $athlete->id)
-            ->lockForUpdate()
-            ->first();
-
-        if ($existing !== null) {
-            $existing->update($payload);
-
-            return;
-        }
-
-        Registration::query()->create($payload);
+        ]);
     }
 }

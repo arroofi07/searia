@@ -151,4 +151,26 @@ class Registration extends Model
         return $this->competition?->allowsCommitteeRegistration() === true
             && $this->heatLane === null;
     }
+
+    /**
+     * Satu baris fisik per atlet × nomor. Entri ditolak atau dibatalkan dipakai ulang.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public static function syncPair(array $payload): self
+    {
+        $existing = static::query()
+            ->where('event_id', $payload['event_id'])
+            ->where('athlete_id', $payload['athlete_id'])
+            ->lockForUpdate()
+            ->first();
+
+        if ($existing !== null) {
+            $existing->update($payload);
+
+            return $existing;
+        }
+
+        return static::query()->create($payload);
+    }
 }

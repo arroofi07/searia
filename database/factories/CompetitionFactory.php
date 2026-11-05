@@ -46,8 +46,15 @@ class CompetitionFactory extends Factory
 
     public function status(CompetitionStatus $status): static
     {
-        return $this->state(fn (): array => [
-            'status' => $status,
-        ]);
+        return $this->state(function () use ($status): array {
+            $state = ['status' => $status];
+
+            if ($status === CompetitionStatus::Registration) {
+                $state['registration_opens_at'] = now()->subWeek();
+                $state['registration_closes_at'] = now()->addWeeks(2);
+            }
+
+            return $state;
+        });
     }
 }

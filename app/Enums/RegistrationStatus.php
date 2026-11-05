@@ -24,8 +24,24 @@ enum RegistrationStatus: string
     public function countsTowardQuota(): bool
     {
         return match ($this) {
-            self::Draft, self::Pending, self::Verified, self::Rejected => true,
-            self::Withdrawn => false,
+            self::Draft, self::Pending, self::Verified => true,
+            self::Rejected, self::Withdrawn => false,
         };
+    }
+
+    public function blocksDuplicateEntry(): bool
+    {
+        return match ($this) {
+            self::Draft, self::Pending, self::Verified => true,
+            self::Rejected, self::Withdrawn => false,
+        };
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function blockingDuplicate(): array
+    {
+        return [self::Draft, self::Pending, self::Verified];
     }
 }

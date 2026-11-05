@@ -120,7 +120,7 @@ class RowValidator
             $alreadyStored = Registration::query()
                 ->where('event_id', $event->id)
                 ->where('athlete_id', $athlete->id)
-                ->where('status', '!=', RegistrationStatus::Withdrawn)
+                ->whereIn('status', RegistrationStatus::blockingDuplicate())
                 ->exists();
 
             if ($alreadyStored) {

@@ -51,7 +51,7 @@ class SubmitPublicRegistration
             foreach ($state['event_ids'] as $eventId) {
                 $input = $seedTimes[$eventId] ?? $seedTimes[(string) $eventId] ?? null;
 
-                Registration::query()->create([
+                Registration::syncPair([
                     'competition_id' => $competition->id,
                     'event_id' => $eventId,
                     'athlete_id' => $athlete->id,
@@ -60,6 +60,9 @@ class SubmitPublicRegistration
                     'seed_time_ms' => SwimTime::parse(is_string($input) ? $input : null)?->milliseconds,
                     'status' => RegistrationStatus::Pending,
                     'registered_by' => null,
+                    'rejection_reason' => null,
+                    'verified_by' => null,
+                    'verified_at' => null,
                 ]);
             }
 

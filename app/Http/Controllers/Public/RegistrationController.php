@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Public;
 
 use App\Actions\SubmitPublicRegistration;
-use App\Enums\CompetitionStatus;
 use App\Exceptions\InvalidSwimTimeException;
+use App\Exceptions\OverlappingAgeGroupsException;
+use App\Models\AgeGroup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreRegistrantRequest;
 use App\Http\Requests\Public\StoreRegistrationEventsRequest;
@@ -37,7 +38,7 @@ class RegistrationController extends Controller
     public function index(): View
     {
         $competitions = Competition::query()
-            ->where('status', CompetitionStatus::Registration)
+            ->openForRegistration()
             ->orderBy('start_date')
             ->paginate(ListPaginator::PER_PAGE)
             ->withQueryString();
@@ -64,12 +65,10 @@ class RegistrationController extends Controller
         $this->assertOpen($competition);
 
         $data = $request->validated();
-        $ageGroup = $resolver->resolve($competition, (int) $data['birth_year']);
+        $ageGroup = $this->resolvedAgeGroup($competition, (int) $data['birth_year'], $resolver, withInput: true);
 
-        if ($ageGroup === null) {
-            return back()->withInput()->withErrors([
-                'birth_year' => 'Usia atlet di luar rentang kejuaraan ini',
-            ]);
+        if ($ageGroup instanceof RedirectResponse) {
+            return $ageGroup;
         }
 
         $wizard->put($competition, [
@@ -102,11 +101,10 @@ class RegistrationController extends Controller
             return redirect()->route('register.create', $competition);
         }
 
-        $ageGroup = $resolver->resolve($competition, $athlete->birth_year);
+        $ageGroup = $this->resolvedAgeGroup($competition, $athlete->birth_year, $resolver);
 
-        if ($ageGroup === null) {
-            return redirect()->route('register.create', $competition)
-                ->withErrors(['birth_year' => 'Usia atlet di luar rentang kejuaraan ini']);
+        if ($ageGroup instanceof RedirectResponse) {
+            return $ageGroup;
         }
 
         $events = $this->eligibleEvents($competition, $athlete, $ageGroup->id);
@@ -180,13 +178,19 @@ class RegistrationController extends Controller
             }
         }
 
+        $ageGroup = $this->resolvedAgeGroup($competition, $athlete->birth_year, $resolver);
+
+        if ($ageGroup instanceof RedirectResponse) {
+            return $ageGroup;
+        }
+
         $token = (string) Str::uuid();
         session(['register_token.'.$competition->id => $token]);
 
         return view('register.review', [
             'competition' => $competition,
             'athlete' => $athlete,
-            'ageGroup' => $resolver->resolve($competition, $athlete->birth_year),
+            'ageGroup' => $ageGroup,
             'events' => $events,
             'state' => $state,
             'parsed' => $parsed,
@@ -291,6 +295,34 @@ class RegistrationController extends Controller
     private function assertOpen(Competition $competition): void
     {
         abort_unless($competition->isOpenForRegistration(), 403, 'Pendaftaran sudah ditutup');
+    }
+
+    private function resolvedAgeGroup(
+        Competition $competition,
+        int $birthYear,
+        AgeGroupResolver $resolver,
+        bool $withInput = false,
+    ): AgeGroup|RedirectResponse {
+        try {
+            $ageGroup = $resolver->resolve($competition, $birthYear);
+        } catch (OverlappingAgeGroupsException $exception) {
+            return $this->birthYearError($competition, $exception->getMessage(), $withInput);
+        }
+
+        if ($ageGroup === null) {
+            return $this->birthYearError($competition, 'Usia atlet di luar rentang kejuaraan ini', $withInput);
+        }
+
+        return $ageGroup;
+    }
+
+    private function birthYearError(Competition $competition, string $message, bool $withInput): RedirectResponse
+    {
+        $redirect = $withInput
+            ? back()->withInput()
+            : redirect()->route('register.create', $competition);
+
+        return $redirect->withErrors(['birth_year' => $message]);
     }
 
     /**

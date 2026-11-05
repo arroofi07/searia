@@ -21,6 +21,7 @@ use App\Services\RegistrationDraft;
 use App\Services\RegistrationValidator;
 use App\Support\SwimTime;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -102,7 +103,7 @@ class RegistrationEntryController extends Controller
 
         $verifyNow = $request->boolean('verify_now');
 
-        $registration = Registration::query()->create([
+        $registration = DB::transaction(fn (): Registration => Registration::syncPair([
             'competition_id' => $competition->id,
             'event_id' => $event->id,
             'athlete_id' => $athlete->id,
@@ -112,7 +113,8 @@ class RegistrationEntryController extends Controller
             'registered_by' => $request->user()->id,
             'verified_by' => $verifyNow ? $request->user()->id : null,
             'verified_at' => $verifyNow ? now() : null,
-        ]);
+            'rejection_reason' => null,
+        ]));
 
         if ($ageGroup !== null && $natural !== null && ! $ageGroup->is($natural)) {
             ActivityLog::record(

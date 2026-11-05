@@ -168,7 +168,41 @@ class Competition extends Model
 
     public function isOpenForRegistration(): bool
     {
-        return $this->status === CompetitionStatus::Registration;
+        if ($this->status !== CompetitionStatus::Registration) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->registration_opens_at !== null && $now->lt($this->registration_opens_at)) {
+            return false;
+        }
+
+        if ($this->registration_closes_at !== null && $now->gt($this->registration_closes_at)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  Builder<Competition>  $query
+     * @return Builder<Competition>
+     */
+    public function scopeOpenForRegistration(Builder $query): Builder
+    {
+        $now = now();
+
+        return $query
+            ->where('status', CompetitionStatus::Registration)
+            ->where(function (Builder $dates) use ($now): void {
+                $dates->whereNull('registration_opens_at')
+                    ->orWhere('registration_opens_at', '<=', $now);
+            })
+            ->where(function (Builder $dates) use ($now): void {
+                $dates->whereNull('registration_closes_at')
+                    ->orWhere('registration_closes_at', '>=', $now);
+            });
     }
 
     public function allowsCommitteeRegistration(): bool

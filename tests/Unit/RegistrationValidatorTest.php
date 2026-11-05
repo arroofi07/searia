@@ -37,6 +37,23 @@ it('reports V-01 after the competition has been seeded', function () {
         ->and(collect($errors)->firstWhere('code', 'V-01')['message'])->toBe('Nomor lomba tidak bisa diubah setelah seeding');
 });
 
+it('reports V-02 when two age groups overlap for the birth year', function () {
+    $meet = openRegistrationMeet();
+    \App\Models\AgeGroup::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'code' => '4',
+        'name' => 'Group 4',
+        'birth_year_start' => 2016,
+        'birth_year_end' => 2017,
+        'sort_order' => 4,
+    ]);
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate(draftsFrom($meet, $meet['event']), []);
+
+    expect(collect($errors)->pluck('code')->all())->toContain('V-02')
+        ->and(collect($errors)->firstWhere('code', 'V-02')['message'])->toContain('Lebih dari satu kelompok umur');
+});
+
 it('reports V-02 when the birth year matches no age group', function () {
     $meet = openRegistrationMeet();
     $meet['athlete']->update(['birth_year' => 2010]);
@@ -76,6 +93,48 @@ it('reports V-04 when the athlete gender does not match the event', function () 
 
     expect(collect($errors)->pluck('code')->all())->toContain('V-04')
         ->and(collect($errors)->firstWhere('code', 'V-04')['message'])->toBe('Nomor ini khusus putri');
+});
+
+it('does not treat a rejected entry as a duplicate', function () {
+    $meet = openRegistrationMeet();
+    Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Rejected,
+    ]);
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate(draftsFrom($meet, $meet['event']), []);
+
+    expect($errors)->toBe([]);
+});
+
+it('does not count rejected entries toward the athlete quota', function () {
+    $meet = openRegistrationMeet();
+    $meet['competition']->update(['max_events_per_athlete' => 1]);
+    Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Rejected,
+    ]);
+    $other = Event::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_number' => 15,
+        'gender' => EventGender::Male,
+        'distance' => 50,
+        'stroke' => \App\Enums\Stroke::Freestyle,
+        'equipment' => \App\Enums\Equipment::None,
+    ]);
+    $other->ageGroups()->attach($meet['group']->id);
+
+    $errors = (new RegistrationValidator(new AgeGroupResolver))->validate(draftsFrom($meet, $other), []);
+
+    expect($errors)->toBe([]);
 });
 
 it('reports V-05 when the athlete is already entered in the event', function () {

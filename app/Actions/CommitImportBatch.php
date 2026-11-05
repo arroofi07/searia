@@ -71,7 +71,7 @@ class CommitImportBatch
                     $reason = $reason !== '' ? $reason : AgeGroupOverride::IMPORT_STAR_REASON;
                 }
 
-                $registration = Registration::query()->create([
+                $registration = Registration::syncPair([
                     'competition_id' => $batch->competition_id,
                     'event_id' => $event->id,
                     'athlete_id' => $athlete->id,
@@ -80,6 +80,9 @@ class CommitImportBatch
                     'status' => RegistrationStatus::Pending,
                     'registered_by' => $batch->user_id,
                     'import_batch_id' => $batch->id,
+                    'rejection_reason' => null,
+                    'verified_by' => null,
+                    'verified_at' => null,
                 ]);
 
                 if ($actor !== null && $ageGroup !== null && $natural !== null && ! $ageGroup->is($natural)) {

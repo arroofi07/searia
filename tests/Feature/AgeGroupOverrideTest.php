@@ -8,6 +8,24 @@ use App\Models\HeatLane;
 use App\Models\Registration;
 use App\Models\User;
 
+it('lets panitia reuse a withdrawn row when adding the same event again', function () {
+    $meet = openRegistrationMeet();
+    $existing = verifiedRegistration($meet, ['status' => RegistrationStatus::Withdrawn]);
+    $panitia = User::factory()->panitia()->create();
+
+    $this->actingAs($panitia)
+        ->post(route('admin.registrations.store', $meet['competition']), [
+            'athlete_id' => $meet['athlete']->id,
+            'event_id' => $meet['event']->id,
+            'seed_time' => '00:46.00',
+        ])
+        ->assertRedirect(route('admin.registrations.index', $meet['competition']));
+
+    expect(Registration::query()->count())->toBe(1)
+        ->and($existing->fresh()->status)->toBe(RegistrationStatus::Pending)
+        ->and($existing->fresh()->seed_time_ms)->toBe(46_000);
+});
+
 it('lets panitia create a manual entry that competes up', function () {
     $meet = competeUpMeet();
     $panitia = User::factory()->panitia()->create();

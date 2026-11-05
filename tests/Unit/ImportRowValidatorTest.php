@@ -130,6 +130,25 @@ it('reports E-10 when the same athlete and event appear twice in the file', func
     expect(collect($errors)->firstWhere('code', 'E-10')['message'])->toBe('Baris 12 mengulang baris 7');
 });
 
+it('allows import of an event that was previously rejected or withdrawn', function () {
+    $meet = openRegistrationMeet();
+    Registration::factory()->create([
+        'competition_id' => $meet['competition']->id,
+        'event_id' => $meet['event']->id,
+        'athlete_id' => $meet['athlete']->id,
+        'age_group_id' => $meet['group']->id,
+        'registered_by' => $meet['panitia']->id,
+        'status' => RegistrationStatus::Rejected,
+    ]);
+
+    $errors = importCodes($meet, importRow($meet, [
+        'full_name' => $meet['athlete']->full_name,
+        'club_name' => $meet['club']->name,
+    ]));
+
+    expect(collect($errors)->pluck('code')->all())->not->toContain('E-11');
+});
+
 it('reports E-11 when the athlete is already registered in the event', function () {
     $meet = openRegistrationMeet();
     Registration::factory()->create([

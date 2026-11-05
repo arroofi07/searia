@@ -320,3 +320,17 @@ it('imports nomor lomba and peserta from one workbook upload including draft com
         ->and(ImportBatch::query()->latest('id')->first()->status)->toBe(ImportStatus::Committed)
         ->and(Registration::query()->where('competition_id', $competition->id)->count())->toBe(1);
 });
+
+it('reactivates a withdrawn row instead of inserting a duplicate on import', function () {
+    $meet = openRegistrationMeet();
+    $existing = verifiedRegistration($meet, ['status' => RegistrationStatus::Withdrawn]);
+    $path = writeParticipantCsv([
+        ['1', $meet['athlete']->full_name, 'L', '2016', $meet['club']->name, $meet['club']->city, '13', '00:47.00'],
+    ]);
+
+    uploadCsv($meet, $path)->assertRedirect();
+
+    expect(Registration::query()->where('athlete_id', $meet['athlete']->id)->count())->toBe(1)
+        ->and($existing->fresh()->status)->toBe(RegistrationStatus::Pending)
+        ->and($existing->fresh()->seed_time_ms)->toBe(47_000);
+});
