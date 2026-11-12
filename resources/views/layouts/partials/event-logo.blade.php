@@ -5,5 +5,5 @@
         ? $competition->logoUrl()
         : route('brand.image', 'event-logo', false);
 @endphp
-<img src="{{ $logoSrc }}" alt="{{ $logoAlt }}" width="240" height="240"
+<img src="{{ $logoSrc }}" alt="{{ $logoAlt }}" width="72" height="72"
     class="{{ $logoClass }} shrink-0 object-contain" decoding="async">

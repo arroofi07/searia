@@ -256,7 +256,15 @@ body.deck-home {
 .deck-steps-list h3 { margin: 0.7rem 0 0; font-size: 1.05rem; color: var(--void); }
 .deck-steps-list p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; }
 
-.deck-meet-logo { width: 3.5rem; height: 3.5rem; }
+.deck-meet .meet-logo,
+.deck-meet-logo,
+.deck-result .meet-logo {
+    width: 4.5rem;
+    height: 4.5rem;
+    max-width: 4.5rem;
+    max-height: 4.5rem;
+    object-fit: contain;
+}
 
 .deck-meet,
 .deck-result {
@@ -267,6 +275,10 @@ body.deck-home {
     background: #fff;
     border-radius: 1.2rem;
     box-shadow: 0 16px 36px rgba(10, 46, 57, 0.07);
+}
+
+.deck-meet-body {
+    min-width: 0;
 }
 
 .deck-meet-no,
@@ -364,9 +376,31 @@ body.deck-home {
     .deck-steps-list { grid-template-columns: repeat(3, 1fr); }
     .deck-steps-list li { display: block; }
     .deck-meet,
-    .deck-result { grid-template-columns: 3.2rem 3.5rem 1fr auto; align-items: center; }
+    .deck-result {
+        grid-template-columns: 2.75rem 4.75rem minmax(0, 1fr) auto;
+        grid-template-areas: "no logo body actions";
+        column-gap: 1rem;
+        row-gap: 0.65rem;
+        align-items: center;
+    }
+    .deck-meet-no,
+    .deck-result-no { grid-area: no; align-self: center; }
+    .deck-meet > img,
+    .deck-result > img { grid-area: logo; justify-self: center; }
+    .deck-meet-body { grid-area: body; }
     .deck-meet-actions,
-    .deck-result .deck-book-row { margin-top: 0; justify-content: flex-end; }
+    .deck-result .deck-book-row { grid-area: actions; }
+    .deck-meet-actions,
+    .deck-result .deck-book-row {
+        margin-top: 0;
+        justify-content: flex-end;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .deck-meet-actions .deck-btn {
+        width: auto;
+        min-width: 7.5rem;
+    }
     .deck-live-grid { grid-template-columns: 1fr 1fr; }
     .deck-split { grid-template-columns: 1.2fr 0.8fr; }
     .deck-block-head { text-align: left; }
@@ -379,8 +413,35 @@ body.deck-home {
 }
 
 @media (max-width: 759px) {
+    .deck-meet,
+    .deck-result {
+        grid-template-columns: 3rem 1fr;
+        grid-template-areas:
+            "no logo"
+            "body body"
+            "actions actions";
+        column-gap: 0.75rem;
+    }
+    .deck-meet-no,
+    .deck-result-no { grid-area: no; align-self: center; }
+    .deck-meet > img,
+    .deck-result > img { grid-area: logo; justify-self: start; }
+    .deck-meet-body { grid-area: body; }
+    .deck-meet-actions,
+    .deck-result .deck-book-row { grid-area: actions; }
+    .deck-meet-actions,
+    .deck-result .deck-book-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
     .deck-btn { width: 100%; }
+    .deck-meet-actions .deck-btn,
+    .deck-result .deck-book-row .deck-btn {
+        width: auto;
+        flex: 1 1 calc(50% - 0.35rem);
+        min-width: 9rem;
+    }
     .deck-actions,
-    .deck-book-row,
-    .deck-meet-actions { flex-direction: column; }
+    .deck-book-row { flex-direction: column; }
+    .deck-actions .deck-btn { width: 100%; }
 }

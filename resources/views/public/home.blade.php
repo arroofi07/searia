@@ -127,7 +127,7 @@
                             'class' => 'meet-logo deck-meet-logo',
                             'alt' => $competition->name,
                         ])
-                        <div>
+                        <div class="deck-meet-body">
                             <p class="deck-stamp">Pendaftaran terbuka</p>
                             <h3>{{ $competition->name }}</h3>
                             <p class="deck-meta">
@@ -215,7 +215,7 @@
                                 'class' => 'meet-logo deck-meet-logo',
                                 'alt' => $competition->name,
                             ])
-                            <div>
+                            <div class="deck-meet-body">
                                 <h3>{{ $competition->name }}</h3>
                                 <p class="deck-meta">{{ $competition->city }} · {{ $competition->type->label() }}</p>
                             </div>
