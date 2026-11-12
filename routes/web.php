@@ -41,6 +41,7 @@ use App\Http\Controllers\Public\ArchiveController;
 use App\Http\Controllers\Public\AthleteSearchController;
 use App\Http\Controllers\Public\CertificateVerificationController;
 use App\Http\Controllers\Public\CompetitionInfoController;
+use App\Http\Controllers\Public\CompetitionLogoController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\RegistrationController;
@@ -56,6 +57,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/brand/{name}', BrandImageController::class)
     ->where('name', 'logo|event-logo|apple-touch-icon|favicon')
     ->name('brand.image');
+
+Route::get('/media/competitions/{competition}/logo', CompetitionLogoController::class)
+    ->name('public.competitions.logo');
 
 Route::middleware(CachePublicPages::class.':300')->group(function (): void {
     Route::get('/', HomeController::class)->name('home');

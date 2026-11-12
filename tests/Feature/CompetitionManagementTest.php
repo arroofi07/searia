@@ -84,6 +84,9 @@ it('stores an uploaded competition logo', function () {
     expect($competition)->not->toBeNull()
         ->and($competition->logo_path)->not->toBeNull()
         ->and(Storage::disk('public')->exists($competition->logo_path))->toBeTrue();
+
+    $this->get(route('public.competitions.logo', $competition))
+        ->assertOk();
 });
 
 it('explains the max events per athlete field on the create form', function () {

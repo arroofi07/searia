@@ -26,6 +26,13 @@ rm -f "${DEPLOY_PATH}/index.cpanel.php" "${DEPLOY_PATH}/hot" "${DEPLOY_PATH}/pin
 if [ -d "${REPO_ROOT}/storage/app/public" ]; then
   rm -rf "${DEPLOY_PATH}/storage"
   ln -sfn "${REPO_ROOT}/storage/app/public" "${DEPLOY_PATH}/storage"
+  if [ -L "${DEPLOY_PATH}/storage" ]; then
+    echo "==> storage symlink OK"
+  else
+    echo "!! storage symlink gagal — logo kejuaraan tetap lewat /media/competitions/{id}/logo"
+  fi
+  mkdir -p "${REPO_ROOT}/storage/app/public/competitions/logos"
+  chmod -R ug+rwx "${REPO_ROOT}/storage/app/public" 2>/dev/null || true
 fi
 
 cd "$REPO_ROOT"
