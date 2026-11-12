@@ -30,6 +30,11 @@
         @foreach ($items as $competition)
             <article class="list-plain">
                 <div class="mast-row">
+                    @include('layouts.partials.event-logo', [
+                        'competition' => $competition,
+                        'class' => 'meet-logo',
+                        'alt' => $competition->name,
+                    ])
                     <div>
                         <h3>{{ $competition->name }}</h3>
                         <p class="meta">

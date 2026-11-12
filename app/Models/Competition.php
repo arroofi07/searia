@@ -5,11 +5,14 @@ namespace App\Models;
 use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionType;
 use App\Enums\SeedingMode;
+use App\Support\PdfRenderer;
+use App\Support\PublicAssets;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Competition extends Model
@@ -38,6 +41,7 @@ class Competition extends Model
         'status',
         'published_at',
         'banner_path',
+        'logo_path',
         'certificate_background_path',
         'certificate_signer_name',
         'certificate_signer_title',
@@ -213,6 +217,24 @@ class Competition extends Model
     public function year(): int
     {
         return (int) $this->start_date->year;
+    }
+
+    public function logoUrl(): ?string
+    {
+        if (blank($this->logo_path)) {
+            return null;
+        }
+
+        return PublicAssets::storageUrl($this->logo_path);
+    }
+
+    public function logoDataUriForPdf(): ?string
+    {
+        if (blank($this->logo_path)) {
+            return null;
+        }
+
+        return PdfRenderer::fileDataUri(Storage::disk('public')->path($this->logo_path));
     }
 
     public function allowsFastTimeInput(): bool

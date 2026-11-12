@@ -47,6 +47,7 @@ class StoreCompetitionRequest extends FormRequest
             'late_fee_per_event' => ['sometimes', 'integer', 'min:0'],
             'fast_time_input' => ['required', 'boolean'],
             'description' => ['nullable', 'string'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
         ];
     }
 
@@ -90,6 +91,7 @@ class StoreCompetitionRequest extends FormRequest
             'late_fee_per_event' => 'denda keterlambatan',
             'fast_time_input' => 'input waktu cepat',
             'description' => 'deskripsi',
+            'logo' => 'logo kejuaraan',
         ];
     }
 

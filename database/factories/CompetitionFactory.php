@@ -40,6 +40,7 @@ class CompetitionFactory extends Factory
             'late_fee_per_event' => 0,
             'status' => CompetitionStatus::Draft,
             'banner_path' => null,
+            'logo_path' => null,
             'description' => null,
         ];
     }

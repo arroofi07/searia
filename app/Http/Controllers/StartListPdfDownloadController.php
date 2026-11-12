@@ -33,6 +33,7 @@ class StartListPdfDownloadController extends Controller
             'printedAt' => $document->printedAt,
             'includeToc' => ! $request->filled('event_id'),
             'includeCover' => ! $request->filled('event_id'),
+            'logoPath' => PdfRenderer::competitionLogoDataUri($competition),
         ];
 
         return $request->boolean('inline')

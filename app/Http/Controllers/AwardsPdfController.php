@@ -80,6 +80,7 @@ class AwardsPdfController extends Controller
             'dateLabel' => $dateLabel,
             'printedAt' => now(),
             'includeCover' => false,
+            'logoPath' => PdfRenderer::competitionLogoDataUri($competition),
         ];
     }
 

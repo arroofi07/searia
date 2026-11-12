@@ -118,6 +118,11 @@
                 @forelse ($openCompetitions as $competition)
                     <article class="deck-meet">
                         <div class="deck-meet-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
+                        @include('layouts.partials.event-logo', [
+                            'competition' => $competition,
+                            'class' => 'meet-logo deck-meet-logo',
+                            'alt' => $competition->name,
+                        ])
                         <div>
                             <p class="deck-stamp">Pendaftaran terbuka</p>
                             <h3>{{ $competition->name }}</h3>
@@ -164,6 +169,11 @@
                 <div class="deck-live-grid">
                     @forelse ($liveCompetitions as $competition)
                         <article class="deck-live">
+                            @include('layouts.partials.event-logo', [
+                                'competition' => $competition,
+                                'class' => 'meet-logo deck-meet-logo',
+                                'alt' => $competition->name,
+                            ])
                             <p class="deck-status">{{ $competition->status->label() }}</p>
                             <h3>{{ $competition->name }}</h3>
                             <p class="deck-meta">
@@ -196,6 +206,11 @@
                     @forelse ($recentCompetitions as $competition)
                         <article class="deck-result">
                             <div class="deck-result-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
+                            @include('layouts.partials.event-logo', [
+                                'competition' => $competition,
+                                'class' => 'meet-logo deck-meet-logo',
+                                'alt' => $competition->name,
+                            ])
                             <div>
                                 <h3>{{ $competition->name }}</h3>
                                 <p class="deck-meta">{{ $competition->city }} · {{ $competition->type->label() }}</p>

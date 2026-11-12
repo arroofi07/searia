@@ -7,6 +7,21 @@
 @endphp
 
 <div>
+    <label for="logo" class="block text-sm font-medium text-slate-700">Logo kejuaraan</label>
+    @if ($competition?->logoUrl())
+        <div class="mt-2 flex items-center gap-3">
+            <img src="{{ $competition->logoUrl() }}" alt="Logo {{ $competition->name }}" class="h-16 w-16 rounded-md border border-slate-200 bg-white object-contain p-1">
+            <p class="text-xs text-slate-500">Unggah berkas baru untuk mengganti logo. Tampil di halaman publik kejuaraan dan kop PDF.</p>
+        </div>
+    @else
+        <p class="mt-1 text-xs text-slate-500">Opsional. Format JPG, PNG, atau WebP. Maks. 2 MB. Jika kosong, dipakai logo acara bawaan SeaRIA.</p>
+    @endif
+    <input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp"
+        class="mt-2 block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200">
+    @error('logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+</div>
+
+<div>
     <label for="name" class="block text-sm font-medium text-slate-700">Nama kejuaraan</label>
     <input id="name" name="name" value="{{ old('name', $competition?->name) }}" required maxlength="150"
         class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">

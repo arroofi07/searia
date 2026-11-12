@@ -35,6 +35,7 @@ class ResultsPdfController extends BaseController
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
             'includeCover' => ! $request->filled('event_id'),
+            'logoPath' => PdfRenderer::competitionLogoDataUri($competition),
         ];
 
         $response = $request->boolean('inline')

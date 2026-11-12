@@ -8,6 +8,7 @@
     <div class="mast-row">
         <div>
             @include('public._mast', [
+                'competition' => $competition,
                 'kicker' => 'Penghargaan',
                 'title' => 'Club terbaik',
                 'meta' => $competition->name.' · diurutkan emas, perak, perunggu',

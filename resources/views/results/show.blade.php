@@ -6,6 +6,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $competition,
         'back' => route('results.index', $competition),
         'backLabel' => 'Semua hasil',
         'kicker' => $table->ageGroupName,

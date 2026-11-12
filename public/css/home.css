@@ -256,6 +256,8 @@ body.deck-home {
 .deck-steps-list h3 { margin: 0.7rem 0 0; font-size: 1.05rem; color: var(--void); }
 .deck-steps-list p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; }
 
+.deck-meet-logo { width: 3.5rem; height: 3.5rem; }
+
 .deck-meet,
 .deck-result {
     display: grid;
@@ -362,7 +364,7 @@ body.deck-home {
     .deck-steps-list { grid-template-columns: repeat(3, 1fr); }
     .deck-steps-list li { display: block; }
     .deck-meet,
-    .deck-result { grid-template-columns: 3.2rem 1fr auto; align-items: center; }
+    .deck-result { grid-template-columns: 3.2rem 3.5rem 1fr auto; align-items: center; }
     .deck-meet-actions,
     .deck-result .deck-book-row { margin-top: 0; justify-content: flex-end; }
     .deck-live-grid { grid-template-columns: 1fr 1fr; }

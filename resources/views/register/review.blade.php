@@ -5,6 +5,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $competition,
         'kicker' => 'Pendaftaran · langkah 3',
         'title' => $competition->name,
         'lead' => 'Periksa sekali lagi. Setelah dikirim, Anda tidak bisa mengubah sendiri — koreksi lewat panitia.',

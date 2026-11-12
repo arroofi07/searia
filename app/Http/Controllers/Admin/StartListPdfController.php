@@ -42,6 +42,7 @@ class StartListPdfController extends Controller
             'printedAt' => $document->printedAt,
             'includeToc' => ! $request->filled('event_id'),
             'includeCover' => ! $request->filled('event_id'),
+            'logoPath' => PdfRenderer::competitionLogoDataUri($competition),
         ], $this->filename($competition, 'buku-acara'));
     }
 
@@ -62,6 +63,7 @@ class StartListPdfController extends Controller
             'city' => $document->city,
             'dateLabel' => $document->dateLabel,
             'printedAt' => $document->printedAt,
+            'logoPath' => PdfRenderer::competitionLogoDataUri($competition),
         ], $this->filename($competition, 'lembar-hasil'));
     }
 

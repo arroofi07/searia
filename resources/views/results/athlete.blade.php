@@ -5,6 +5,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $competition,
         'back' => route('results.index', $competition),
         'backLabel' => 'Hasil kejuaraan',
         'kicker' => 'Atlet',

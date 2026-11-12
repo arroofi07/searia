@@ -9,6 +9,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $competition,
         'kicker' => 'Pendaftaran · langkah 1',
         'title' => $competition->name,
         'meta' => $competition->venue.', '.$competition->city,

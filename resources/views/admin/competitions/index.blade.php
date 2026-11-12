@@ -42,7 +42,12 @@
                 @forelse ($competitions as $competition)
                     <tr class="border-t border-slate-100">
                         <td class="px-4 py-3">
-                            <a href="{{ route('admin.competitions.show', $competition) }}" class="font-medium text-teal-800 hover:underline">{{ $competition->name }}</a>
+                            <div class="flex items-center gap-2">
+                                @if ($competition->logoUrl())
+                                    <img src="{{ $competition->logoUrl() }}" alt="" class="h-8 w-8 shrink-0 rounded border border-slate-200 bg-white object-contain p-0.5">
+                                @endif
+                                <a href="{{ route('admin.competitions.show', $competition) }}" class="font-medium text-teal-800 hover:underline">{{ $competition->name }}</a>
+                            </div>
                             <div class="text-xs text-slate-500">{{ $competition->city }}</div>
                         </td>
                         <td class="px-4 py-3">{{ $competition->start_date->translatedFormat('d M Y') }}</td>

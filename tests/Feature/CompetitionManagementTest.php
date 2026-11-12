@@ -9,6 +9,8 @@ use App\Models\Competition;
 use App\Models\Event;
 use App\Models\Registration;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 function competitionForm(Competition $competition, array $overrides = []): array
 {
@@ -64,10 +66,31 @@ it('duplicates a competition with the same events and no registrations', functio
         ->and($copy->status)->toBe(CompetitionStatus::Draft);
 });
 
+it('stores an uploaded competition logo', function () {
+    Storage::fake('public');
+
+    $source = Competition::factory()->make();
+    $logo = UploadedFile::fake()->image('meet-logo.png', 240, 240);
+
+    $this->actingAs(User::factory()->panitia()->create())
+        ->post(route('admin.competitions.store'), [
+            ...competitionForm($source),
+            'logo' => $logo,
+        ])
+        ->assertRedirect();
+
+    $competition = Competition::query()->latest('id')->first();
+
+    expect($competition)->not->toBeNull()
+        ->and($competition->logo_path)->not->toBeNull()
+        ->and(Storage::disk('public')->exists($competition->logo_path))->toBeTrue();
+});
+
 it('explains the max events per athlete field on the create form', function () {
     $this->actingAs(User::factory()->panitia()->create())
         ->get(route('admin.competitions.create'))
         ->assertOk()
+        ->assertSee('Logo kejuaraan')
         ->assertSee('Batas nomor per atlet')
         ->assertSee('Jumlah nomor lomba maksimal yang boleh diikuti satu atlet')
         ->assertSee('form daftar, import Excel, dan input manual');

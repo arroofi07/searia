@@ -10,6 +10,7 @@ use App\Models\Competition;
 use App\Services\CompetitionDuplicator;
 use App\Services\CompetitionReadinessCheck;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CompetitionController extends Controller
@@ -37,7 +38,7 @@ class CompetitionController extends Controller
     public function store(StoreCompetitionRequest $request): RedirectResponse
     {
         $competition = Competition::query()->create([
-            ...$request->validated(),
+            ...$this->competitionAttributes($request),
             'status' => CompetitionStatus::Draft,
         ]);
 
@@ -68,7 +69,7 @@ class CompetitionController extends Controller
 
     public function update(UpdateCompetitionRequest $request, Competition $competition): RedirectResponse
     {
-        $competition->update($request->validated());
+        $competition->update($this->competitionAttributes($request, $competition));
 
         return redirect()
             ->route('admin.competitions.show', $competition)
@@ -84,5 +85,29 @@ class CompetitionController extends Controller
         return redirect()
             ->route('admin.competitions.show', $copy)
             ->with('status', 'Kejuaraan digandakan. Pendaftaran tidak ikut tersalin.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function competitionAttributes(StoreCompetitionRequest|UpdateCompetitionRequest $request, ?Competition $competition = null): array
+    {
+        $attributes = $request->safe()->except(['logo']);
+
+        if ($request->hasFile('logo')) {
+            $this->deleteLogoFile($competition?->logo_path);
+            $attributes['logo_path'] = $request->file('logo')->store('competitions/logos', 'public');
+        }
+
+        return $attributes;
+    }
+
+    private function deleteLogoFile(?string $path): void
+    {
+        if (blank($path)) {
+            return;
+        }
+
+        Storage::disk('public')->delete($path);
     }
 }

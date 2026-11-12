@@ -31,6 +31,11 @@
     <div class="gap-top">
         @forelse ($competitions as $competition)
             <article class="mast-row panel">
+                @include('layouts.partials.event-logo', [
+                    'competition' => $competition,
+                    'class' => 'meet-logo',
+                    'alt' => $competition->name,
+                ])
                 <div>
                     <h2>{{ $competition->name }}</h2>
                     <p class="meta">{{ $competition->venue }}, {{ $competition->city }}</p>

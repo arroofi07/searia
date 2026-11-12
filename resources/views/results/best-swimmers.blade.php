@@ -8,6 +8,7 @@
     <div class="mast-row">
         <div>
             @include('public._mast', [
+                'competition' => $competition,
                 'kicker' => 'Penghargaan',
                 'title' => 'Atlet terbaik',
                 'meta' => $competition->name.' · juara medali per putra/putri dan kelompok umur',

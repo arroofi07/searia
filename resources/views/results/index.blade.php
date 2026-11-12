@@ -6,9 +6,9 @@
 
 @section('content')
     <div class="mast-row">
-        <div class="mast-id">
-            @include('layouts.partials.event-logo', ['class' => 'meet-logo'])
+        <div>
             @include('public._mast', [
+                'competition' => $competition,
                 'kicker' => 'Buku hasil',
                 'title' => 'Hasil lomba',
                 'meta' => $competition->name,

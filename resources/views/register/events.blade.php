@@ -10,6 +10,7 @@
 @section('content')
     <div class="pb-dock">
         @include('public._mast', [
+            'competition' => $competition,
             'kicker' => 'Pendaftaran · langkah 2',
             'title' => $competition->name,
             'lead' => 'Centang kode acara yang diikuti. Hanya nomor yang cocok dengan L/P dan kelompok umur peserta yang tampil di sini.',

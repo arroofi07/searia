@@ -7,6 +7,7 @@
     <div class="mast-row">
         <div>
             @include('public._mast', [
+                'competition' => $competition,
                 'back' => route('results.index', $competition),
                 'backLabel' => 'Hasil',
                 'kicker' => 'Penghargaan',

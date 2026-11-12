@@ -8,12 +8,17 @@
 
 @section('content')
     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div class="flex gap-4">
+            @if ($competition->logoUrl())
+                <img src="{{ $competition->logoUrl() }}" alt="Logo {{ $competition->name }}" class="h-16 w-16 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1">
+            @endif
+            <div>
             <h1 class="text-2xl font-semibold">{{ $competition->name }}</h1>
             <p class="text-sm text-slate-500">{{ $competition->venue }}, {{ $competition->city }} · {{ $competition->status->label() }}</p>
             <p class="mt-2 text-sm">
                 <a href="{{ route('admin.activity-logs.subject') }}?{{ http_build_query(['type' => \App\Models\Competition::class, 'id' => $competition->id]) }}" class="text-teal-800 hover:underline">Riwayat audit kejuaraan</a>
             </p>
+            </div>
         </div>
         <form method="POST" action="{{ route('admin.competitions.duplicate', $competition) }}">
             @csrf

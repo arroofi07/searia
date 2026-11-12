@@ -4,6 +4,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $competition,
         'kicker' => 'Berhasil dikirim',
         'title' => 'Pendaftaran terkirim',
         'lead' => 'Simpan atau potret halaman ini. Kode di bawah adalah rujukan Anda saat menghubungi panitia. Halaman ini tidak bisa dibuka lagi setelah peramban ditutup.',

@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\Competition;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\PDF as DomPdf;
 use Illuminate\Http\Response;
 use RuntimeException;
@@ -121,6 +123,18 @@ class PdfRenderer
         }
 
         return null;
+    }
+
+    public static function competitionLogoDataUri(?Competition $competition): ?string
+    {
+        if ($competition instanceof Competition && filled($competition->logo_path)) {
+            $custom = self::fileDataUri(Storage::disk('public')->path($competition->logo_path));
+            if ($custom !== null) {
+                return $custom;
+            }
+        }
+
+        return self::logoDataUri();
     }
 
     public static function fileDataUri(string $path): ?string
