@@ -31,4 +31,18 @@ class PublicAssets
 
         return ($base === '' ? '' : $base).'/storage/'.$path;
     }
+
+    /**
+     * URL gambar merek bawaan (/brand/...) dengan base path aplikasi.
+     */
+    public static function brandImageUrl(string $name): string
+    {
+        $base = '';
+
+        if (! app()->runningInConsole()) {
+            $base = rtrim((string) request()->getBasePath(), '/');
+        }
+
+        return ($base === '' ? '' : $base).route('brand.image', $name, false);
+    }
 }

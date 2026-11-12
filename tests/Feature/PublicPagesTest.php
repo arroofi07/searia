@@ -41,9 +41,11 @@ it('shows the featured competition logo in the home hero', function () {
     $path = UploadedFile::fake()->image('hero.png')->store('competitions/logos', 'public');
     $competition->update(['logo_path' => $path]);
 
+    $logoUrl = \App\Support\PublicAssets::storageUrl($path);
+
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee(route('public.competitions.logo', $competition, false), false);
+        ->assertSee($logoUrl, false);
 });
 
 it('returns 200 on home when there are no open competitions', function () {

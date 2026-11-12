@@ -6,6 +6,7 @@ use App\Enums\CompetitionStatus;
 use App\Enums\CompetitionType;
 use App\Enums\SeedingMode;
 use App\Support\PdfRenderer;
+use App\Support\PublicAssets;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -224,7 +225,11 @@ class Competition extends Model
             return null;
         }
 
-        return route('public.competitions.logo', $this, absolute: false);
+        if (! Storage::disk('public')->exists($this->logo_path)) {
+            return route('public.competitions.logo', $this, absolute: false);
+        }
+
+        return PublicAssets::storageUrl($this->logo_path);
     }
 
     public function logoDataUriForPdf(): ?string

@@ -55,7 +55,7 @@
                     <div class="deck-hero-card">
                         @include('layouts.partials.event-logo', [
                             'competition' => $featuredCompetition,
-                            'class' => '',
+                            'class' => 'deck-hero-logo',
                             'alt' => $featuredCompetition?->name ?? 'Aquatic SeaRIA',
                         ])
                         <dl class="deck-stats">
