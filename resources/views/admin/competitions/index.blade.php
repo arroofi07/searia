@@ -27,6 +27,17 @@
         </div>
     @endif
 
+    @if (auth()->user()?->managesMasterData())
+        <label class="mt-6 block rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600" for="maintenance-cache-panel">
+            <span class="font-medium text-slate-800">Pemeliharaan (tanpa terminal)</span>
+            — setelah upload berkas lewat cPanel, bersihkan cache agar logo/CSS/beranda ikut terbaru.
+        </label>
+        <form id="maintenance-cache-panel" method="POST" action="{{ route('admin.maintenance.clear-cache') }}" class="mt-2">
+            @csrf
+            <button type="submit" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50">Bersihkan cache aplikasi</button>
+        </form>
+    @endif
+
     <div class="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-600">

@@ -41,7 +41,7 @@ it('shows the featured competition logo in the home hero', function () {
     $path = UploadedFile::fake()->image('hero.png')->store('competitions/logos', 'public');
     $competition->update(['logo_path' => $path]);
 
-    $logoUrl = \App\Support\PublicAssets::storageUrl($path);
+    $logoUrl = \App\Support\PublicAssets::competitionLogoUrl($competition->fresh());
 
     $this->get(route('home'))
         ->assertOk()

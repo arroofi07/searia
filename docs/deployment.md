@@ -37,7 +37,11 @@ Document root container harus folder `public/`. Cek `https://domain-anda/images/
 
 `public/build` tidak ada di git. Deploy CapRover harus `npm ci && npm run build`.
 
+Tanpa SSH: lihat [cPanel tanpa terminal](cpanel-tanpa-terminal.md) (logo, cache, unggah berkas).
+
 Untuk **cPanel**, unggah juga `public/css/app.css` (stylesheet stabil hasil build). Tanpa file itu, landing page baru tampil berantakan karena CSS Tailwind di server masih versi lama. Setelah unggah: `php artisan cache:clear && php artisan view:clear`.
+
+Logo kejuaraan disimpan di `storage/app/public/competitions/logos/` (bukan di git). Di produksi, unggah logo lewat admin atau salin folder itu dari lingkungan lokal. Halaman publik memuat logo lewat `/media/competitions/{id}/logo` — tidak bergantung symlink, asalkan berkas ada di disk `public` server.
 
 ## Langkah penerapan
 
@@ -46,6 +50,7 @@ git pull
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
 php artisan migrate --force
+php artisan storage:link
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

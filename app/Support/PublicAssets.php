@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\Competition;
+use Illuminate\Support\Facades\Storage;
+
 class PublicAssets
 {
     public static function cssUrl(): string
@@ -44,5 +47,32 @@ class PublicAssets
         }
 
         return ($base === '' ? '' : $base).route('brand.image', $name, false);
+    }
+
+    /**
+     * URL logo kejuaraan untuk halaman publik. Memakai rute Laravel agar tetap
+     * berfungsi di produksi tanpa symlink public/storage (cPanel, CapRover, subfolder).
+     */
+    public static function competitionLogoUrl(Competition $competition): string
+    {
+        $path = route('public.competitions.logo', $competition, false);
+        $base = '';
+
+        if (! app()->runningInConsole()) {
+            $base = rtrim((string) request()->getBasePath(), '/');
+        }
+
+        $url = ($base === '' ? '' : $base).$path;
+        $logoPath = $competition->logo_path;
+
+        if (is_string($logoPath) && $logoPath !== '' && Storage::disk('public')->exists($logoPath)) {
+            try {
+                $url .= '?v='.Storage::disk('public')->lastModified($logoPath);
+            } catch (\Throwable) {
+                // Abaikan jika driver tidak mendukung lastModified.
+            }
+        }
+
+        return $url;
     }
 }

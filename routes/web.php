@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\HeatLaneController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\ImportTemplateController;
 use App\Http\Controllers\Admin\JudgeAssignmentController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\RegistrationEntryController;
 use App\Http\Controllers\Admin\RegistrationVerificationController;
 use App\Http\Controllers\Admin\ResultCorrectionController;
@@ -223,6 +224,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('site-pages', [SitePageController::class, 'index'])->name('site-pages.index');
         Route::get('site-pages/{sitePage}/edit', [SitePageController::class, 'edit'])->name('site-pages.edit');
         Route::put('site-pages/{sitePage}', [SitePageController::class, 'update'])->name('site-pages.update');
+
+        Route::post('maintenance/clear-cache', [MaintenanceController::class, 'clearCache'])->name('maintenance.clear-cache');
 
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('activity-logs/for-subject', [ActivityLogController::class, 'forSubject'])->name('activity-logs.subject');

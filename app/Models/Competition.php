@@ -225,11 +225,7 @@ class Competition extends Model
             return null;
         }
 
-        if (! Storage::disk('public')->exists($this->logo_path)) {
-            return route('public.competitions.logo', $this, absolute: false);
-        }
-
-        return PublicAssets::storageUrl($this->logo_path);
+        return PublicAssets::competitionLogoUrl($this);
     }
 
     public function logoDataUriForPdf(): ?string
