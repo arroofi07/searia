@@ -121,29 +121,33 @@
 
                 @forelse ($openCompetitions as $competition)
                     <article class="deck-meet">
-                        <div class="deck-meet-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
-                        @include('layouts.partials.event-logo', [
-                            'competition' => $competition,
-                            'class' => 'meet-logo deck-meet-logo',
-                            'alt' => $competition->name,
-                        ])
-                        <div class="deck-meet-body">
-                            <p class="deck-stamp">Pendaftaran terbuka</p>
-                            <h3>{{ $competition->name }}</h3>
-                            <p class="deck-meta">
-                                {{ $competition->venue }}, {{ $competition->city }}
-                                · {{ $competition->start_date->translatedFormat('d M Y') }}
-                                @if (! $competition->start_date->equalTo($competition->end_date))
-                                    – {{ $competition->end_date->translatedFormat('d M Y') }}
-                                @endif
-                            </p>
-                            <p class="deck-count" data-countdown="{{ $competition->registration_closes_at->toIso8601String() }}">
-                                Pendaftaran ditutup {{ $competition->registration_closes_at->timezone(config('app.timezone'))->translatedFormat('d M Y H:i') }}
-                            </p>
+                        <div class="deck-meet-lead">
+                            <div class="deck-meet-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
+                            @include('layouts.partials.event-logo', [
+                                'competition' => $competition,
+                                'class' => 'meet-logo deck-meet-logo',
+                                'alt' => $competition->name,
+                            ])
                         </div>
-                        <div class="deck-meet-actions deck-actions">
-                            <a href="{{ route('public.competitions.schedule', $competition) }}" class="deck-btn deck-btn-ghost">Lihat jadwal</a>
-                            <a href="{{ route('register.create', $competition) }}" class="deck-btn deck-btn-signal">Daftar</a>
+                        <div class="deck-meet-main">
+                            <div class="deck-meet-body">
+                                <p class="deck-stamp">Pendaftaran terbuka</p>
+                                <h3>{{ $competition->name }}</h3>
+                                <p class="deck-meta">
+                                    {{ $competition->venue }}, {{ $competition->city }}
+                                    · {{ $competition->start_date->translatedFormat('d M Y') }}
+                                    @if (! $competition->start_date->equalTo($competition->end_date))
+                                        – {{ $competition->end_date->translatedFormat('d M Y') }}
+                                    @endif
+                                </p>
+                                <p class="deck-count" data-countdown="{{ $competition->registration_closes_at->toIso8601String() }}">
+                                    Pendaftaran ditutup {{ $competition->registration_closes_at->timezone(config('app.timezone'))->translatedFormat('d M Y H:i') }}
+                                </p>
+                            </div>
+                            <div class="deck-meet-actions deck-actions">
+                                <a href="{{ route('public.competitions.schedule', $competition) }}" class="deck-btn deck-btn-ghost">Lihat jadwal</a>
+                                <a href="{{ route('register.create', $competition) }}" class="deck-btn deck-btn-signal">Daftar</a>
+                            </div>
                         </div>
                     </article>
                 @empty
@@ -208,18 +212,22 @@
                     </div>
 
                     @forelse ($recentCompetitions as $competition)
-                        <article class="deck-result">
-                            <div class="deck-result-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
-                            @include('layouts.partials.event-logo', [
-                                'competition' => $competition,
-                                'class' => 'meet-logo deck-meet-logo',
-                                'alt' => $competition->name,
-                            ])
-                            <div class="deck-meet-body">
-                                <h3>{{ $competition->name }}</h3>
-                                <p class="deck-meta">{{ $competition->city }} · {{ $competition->type->label() }}</p>
+                        <article class="deck-result deck-meet">
+                            <div class="deck-meet-lead">
+                                <div class="deck-result-no deck-meet-no" aria-hidden="true">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div>
+                                @include('layouts.partials.event-logo', [
+                                    'competition' => $competition,
+                                    'class' => 'meet-logo deck-meet-logo',
+                                    'alt' => $competition->name,
+                                ])
                             </div>
-                            @include('public._books', ['competition' => $competition, 'primary' => 'results', 'variant' => 'deck'])
+                            <div class="deck-meet-main">
+                                <div class="deck-meet-body">
+                                    <h3>{{ $competition->name }}</h3>
+                                    <p class="deck-meta">{{ $competition->city }} · {{ $competition->type->label() }}</p>
+                                </div>
+                                @include('public._books', ['competition' => $competition, 'primary' => 'results', 'variant' => 'deck'])
+                            </div>
                         </article>
                     @empty
                         <p class="deck-empty">Belum ada hasil yang dipublikasikan.</p>

@@ -267,9 +267,11 @@ body.deck-home {
 }
 
 .deck-meet,
-.deck-result {
-    display: grid;
-    gap: 0.85rem;
+.deck-result.deck-meet {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem 1.15rem;
     margin-top: 1rem;
     padding: 1.15rem;
     background: #fff;
@@ -277,8 +279,43 @@ body.deck-home {
     box-shadow: 0 16px 36px rgba(10, 46, 57, 0.07);
 }
 
-.deck-meet-body {
+.deck-meet-lead {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.deck-meet-main {
+    display: flex;
+    flex: 1 1 14rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem 1rem;
     min-width: 0;
+}
+
+.deck-meet-body {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.deck-meet-actions,
+.deck-result .deck-book-row {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 0;
+}
+
+.deck-meet-actions .deck-btn,
+.deck-result .deck-book-row .deck-btn {
+    width: auto;
+    min-width: 7.25rem;
 }
 
 .deck-meet-no,
@@ -375,32 +412,6 @@ body.deck-home {
     .deck-hero-grid { grid-template-columns: 1.15fr 0.85fr; }
     .deck-steps-list { grid-template-columns: repeat(3, 1fr); }
     .deck-steps-list li { display: block; }
-    .deck-meet,
-    .deck-result {
-        grid-template-columns: 2.75rem 4.75rem minmax(0, 1fr) auto;
-        grid-template-areas: "no logo body actions";
-        column-gap: 1rem;
-        row-gap: 0.65rem;
-        align-items: center;
-    }
-    .deck-meet-no,
-    .deck-result-no { grid-area: no; align-self: center; }
-    .deck-meet > img,
-    .deck-result > img { grid-area: logo; justify-self: center; }
-    .deck-meet-body { grid-area: body; }
-    .deck-meet-actions,
-    .deck-result .deck-book-row { grid-area: actions; }
-    .deck-meet-actions,
-    .deck-result .deck-book-row {
-        margin-top: 0;
-        justify-content: flex-end;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    .deck-meet-actions .deck-btn {
-        width: auto;
-        min-width: 7.5rem;
-    }
     .deck-live-grid { grid-template-columns: 1fr 1fr; }
     .deck-split { grid-template-columns: 1.2fr 0.8fr; }
     .deck-block-head { text-align: left; }
@@ -413,35 +424,28 @@ body.deck-home {
 }
 
 @media (max-width: 759px) {
-    .deck-meet,
-    .deck-result {
-        grid-template-columns: 3rem 1fr;
-        grid-template-areas:
-            "no logo"
-            "body body"
-            "actions actions";
-        column-gap: 0.75rem;
+    .deck-meet-main {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
-    .deck-meet-no,
-    .deck-result-no { grid-area: no; align-self: center; }
-    .deck-meet > img,
-    .deck-result > img { grid-area: logo; justify-self: start; }
-    .deck-meet-body { grid-area: body; }
-    .deck-meet-actions,
-    .deck-result .deck-book-row { grid-area: actions; }
     .deck-meet-actions,
     .deck-result .deck-book-row {
-        flex-direction: row;
-        flex-wrap: wrap;
+        width: 100%;
+        justify-content: stretch;
     }
-    .deck-btn { width: 100%; }
     .deck-meet-actions .deck-btn,
     .deck-result .deck-book-row .deck-btn {
-        width: auto;
         flex: 1 1 calc(50% - 0.35rem);
-        min-width: 9rem;
+        min-width: 0;
     }
-    .deck-actions,
-    .deck-book-row { flex-direction: column; }
-    .deck-actions .deck-btn { width: 100%; }
+    .deck-hero .deck-actions .deck-btn,
+    .deck-empty .deck-actions .deck-btn {
+        width: 100%;
+    }
+    .deck-actions:not(.deck-meet-actions),
+    .deck-book-row:not(.deck-meet-actions) {
+        flex-direction: column;
+    }
+    .deck-actions:not(.deck-meet-actions) .deck-btn { width: 100%; }
 }
