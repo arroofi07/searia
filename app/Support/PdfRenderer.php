@@ -19,7 +19,10 @@ class PdfRenderer
         self::prepare();
 
         if (! array_key_exists('logoPath', $data)) {
-            $data['logoPath'] = self::logoDataUri();
+            $competition = $data['competition'] ?? null;
+            $data['logoPath'] = $competition instanceof Competition
+                ? self::competitionLogoDataUri($competition)
+                : self::logoDataUri();
         }
 
         try {

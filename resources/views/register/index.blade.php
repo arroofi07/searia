@@ -5,6 +5,7 @@
 
 @section('content')
     @include('public._mast', [
+        'competition' => $featuredCompetition ?? null,
         'kicker' => 'Untuk peserta',
         'title' => 'Daftar lomba tanpa akun',
         'lead' => 'Pilih kejuaraan, isi data peserta, pilih kode acara, lalu simpan kode pendaftaran. Setelah dikirim, perubahan hanya lewat panitia.',

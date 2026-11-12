@@ -56,7 +56,7 @@
         <table class="header-table">
             <tr>
                 @if ($logoPath)
-                    <td style="width:84px"><img class="logo" src="{{ $logoPath }}" alt="Fun Swimming SeaRIA Series 1"></td>
+                    <td style="width:84px"><img class="logo" src="{{ $logoPath }}" alt="{{ $competitionName ?? 'SeaRIA' }}"></td>
                 @endif
                 <td>
                     <h1>{{ $competitionName ?? '' }}</h1>

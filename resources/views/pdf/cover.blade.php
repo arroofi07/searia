@@ -1,6 +1,6 @@
 <div class="cover">
     @if ($logoPath)
-        <img class="badge" src="{{ $logoPath }}" alt="Fun Swimming SeaRIA Series 1">
+        <img class="badge" src="{{ $logoPath }}" alt="{{ $competitionName ?? 'SeaRIA' }}">
     @endif
     <p class="eyebrow">{{ $coverTitle }}</p>
     <h1>{{ $competitionName ?? '' }}</h1>

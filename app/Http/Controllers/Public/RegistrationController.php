@@ -43,7 +43,9 @@ class RegistrationController extends Controller
             ->paginate(ListPaginator::PER_PAGE)
             ->withQueryString();
 
-        return view('register.index', compact('competitions'));
+        $featuredCompetition = $competitions->getCollection()->first();
+
+        return view('register.index', compact('competitions', 'featuredCompetition'));
     }
 
     public function create(Competition $competition, PublicRegistrationWizard $wizard): View

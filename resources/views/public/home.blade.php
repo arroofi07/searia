@@ -53,7 +53,11 @@
                     </div>
 
                     <div class="deck-hero-card">
-                        @include('layouts.partials.event-logo', ['class' => '', 'alt' => 'Aquatic SeaRIA'])
+                        @include('layouts.partials.event-logo', [
+                            'competition' => $featuredCompetition,
+                            'class' => '',
+                            'alt' => $featuredCompetition?->name ?? 'Aquatic SeaRIA',
+                        ])
                         <dl class="deck-stats">
                             <div>
                                 <dt>Daftar</dt>

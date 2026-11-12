@@ -4,6 +4,8 @@ use App\Enums\CompetitionStatus;
 use App\Models\Competition;
 use App\Models\SitePage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -28,6 +30,20 @@ it('keeps draft competitions off the public home page', function () {
         ->assertOk()
         ->assertSee('OPEN MEET VISIBLE')
         ->assertDontSee('DRAFT MEET HIDDEN');
+});
+
+it('shows the featured competition logo in the home hero', function () {
+    Storage::fake('public');
+
+    $competition = Competition::factory()->status(CompetitionStatus::Registration)->create([
+        'name' => 'Hero Logo Meet',
+    ]);
+    $path = UploadedFile::fake()->image('hero.png')->store('competitions/logos', 'public');
+    $competition->update(['logo_path' => $path]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee(route('public.competitions.logo', $competition, false), false);
 });
 
 it('returns 200 on home when there are no open competitions', function () {

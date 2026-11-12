@@ -30,10 +30,15 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
+        $featuredCompetition = $open->getCollection()->first()
+            ?? $live->first()
+            ?? $recent->first();
+
         return view('public.home', [
             'openCompetitions' => $open,
             'recentCompetitions' => $recent,
             'liveCompetitions' => $live,
+            'featuredCompetition' => $featuredCompetition,
             'featuredStartList' => $live->first() ?? $recent->first(),
             'featuredResults' => $live->first(fn (Competition $competition): bool => $competition->hasPublicResults())
                 ?? $recent->first(),
