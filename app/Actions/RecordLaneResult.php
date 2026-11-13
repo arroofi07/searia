@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Enums\DisqualificationCode;
 use App\Enums\ResultStatus;
 use App\Exceptions\CannotRecordResultException;
+use App\Exceptions\InvalidSwimTimeException;
 use App\Models\HeatLane;
 use App\Models\Result;
 use App\Models\User;
@@ -48,7 +49,11 @@ class RecordLaneResult
                 }
                 $fastInput ??= $heat->event?->competition?->allowsFastTimeInput()
                     ?? (bool) config('searia.swim_time.fast_input', true);
-                $timeMs = SwimTime::parse(is_string($raw) ? $raw : (string) $raw, $fastInput)?->milliseconds;
+                try {
+                    $timeMs = SwimTime::parse(is_string($raw) ? $raw : (string) $raw, $fastInput)?->milliseconds;
+                } catch (InvalidSwimTimeException $e) {
+                    throw new CannotRecordResultException($e->getMessage());
+                }
                 if ($timeMs === null) {
                     throw new CannotRecordResultException('Catatan waktu wajib diisi untuk status OK.');
                 }

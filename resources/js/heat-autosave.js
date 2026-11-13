@@ -1,4 +1,4 @@
-import { formatSwimTime, parseSwimTime } from './swim-time-input';
+import { formatSwimTime, parseSwimTime } from './swim-time-input.js';
 
 const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 const board = document.getElementById('heat-result-board');
@@ -54,16 +54,50 @@ if (!board) {
     }
   }
 
+  function parsedTime(value) {
+    try {
+      return parseSwimTime(value, fastInput);
+    } catch {
+      return undefined;
+    }
+  }
+
   function updatePreview(row) {
     const timeInput = row.querySelector('[data-time-input]');
     const preview = row.querySelector('[data-time-preview]');
     if (!timeInput || !preview) return;
 
-    try {
-      const ms = parseSwimTime(timeInput.value, fastInput);
-      preview.textContent = ms == null ? (timeInput.value.trim() === '' ? '—' : 'NT') : formatSwimTime(ms);
-    } catch {
+    const parsed = parsedTime(timeInput.value);
+    if (parsed === undefined) {
       preview.textContent = 'format salah';
+      return;
+    }
+
+    preview.textContent = parsed == null
+      ? (timeInput.value.trim() === '' ? '—' : 'NT')
+      : formatSwimTime(parsed);
+  }
+
+  function syncRecordedProgress(fullyRecorded) {
+    const rows = [...board.querySelectorAll('[data-lane-row][data-lane-id]')];
+    const saved = rows.filter((row) => row.dataset.saveState === 'saved').length;
+    const badge = document.querySelector('[data-recorded-count]');
+    if (badge) {
+      badge.textContent = `${saved}/${rows.length} lintasan tercatat`;
+    }
+
+    const lockButton = document.getElementById('lock-heat-button');
+    const lockHint = document.querySelector('[data-lock-hint]');
+    if (!lockButton) return;
+
+    const unsettled = rows.some((row) => ['dirty', 'saving', 'error'].includes(row.dataset.saveState ?? ''));
+    const ready = rows.length > 0 && !unsettled && (fullyRecorded || saved === rows.length);
+
+    lockButton.disabled = !ready;
+    if (lockHint) {
+      lockHint.textContent = ready
+        ? 'Semua lintasan terisi sudah tercatat. Kunci seri jika yakin hasil benar.'
+        : 'Tombol kunci aktif setelah semua lintasan terisi punya hasil (waktu atau DNS/DNF/DSQ).';
     }
   }
 
@@ -76,10 +110,27 @@ if (!board) {
     const dsqCode = row.querySelector('[data-dsq-input]')?.value ?? '';
 
     if (!url || !status) return;
-    if (status === 'ok' && time.trim() === '') {
-      setState(row, 'dirty');
-      return;
+
+    let timeToSend = time;
+    if (status === 'ok') {
+      if (time.trim() === '') {
+        setState(row, 'dirty');
+        return;
+      }
+
+      const parsed = parsedTime(time);
+      if (parsed == null) {
+        setState(row, 'error', parsed === undefined ? 'Format waktu tidak valid' : 'Waktu tidak sah');
+        updatePreview(row);
+        return;
+      }
+
+      timeToSend = formatSwimTime(parsed);
+      const timeInput = row.querySelector('[data-time-input]');
+      if (timeInput) timeInput.value = timeToSend;
+      updatePreview(row);
     }
+
     if (status === 'dsq' && dsqCode === '') {
       setState(row, 'error', 'Pilih alasan diskualifikasi');
       return;
@@ -99,32 +150,34 @@ if (!board) {
         },
         body: JSON.stringify({
           status,
-          time: status === 'ok' ? time : null,
+          time: status === 'ok' ? timeToSend : null,
           dsq_code: status === 'dsq' ? dsqCode : null,
         }),
       });
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.message || 'Gagal menyimpan');
+        const error = new Error(payload.message || 'Gagal menyimpan');
+        error.status = response.status;
+        throw error;
       }
 
       const payload = await response.json();
       setState(row, 'saved');
       pending.delete(row);
 
-      const lockButton = document.getElementById('lock-heat-button');
-      const lockHint = document.querySelector('[data-lock-hint]');
-      if (lockButton && payload.heat_fully_recorded) {
-        lockButton.disabled = false;
-        if (lockHint) {
-          lockHint.textContent = 'Semua lintasan terisi sudah tercatat. Kunci seri jika yakin hasil benar.';
-        }
+      if (status === 'ok' && payload.result?.time_formatted) {
+        const timeInput = row.querySelector('[data-time-input]');
+        if (timeInput) timeInput.value = payload.result.time_formatted;
+        updatePreview(row);
       }
+
+      syncRecordedProgress(Boolean(payload.heat_fully_recorded));
     } catch (error) {
       setState(row, 'error', error.message);
       pending.delete(row);
-      if (attempt < 4) {
+      syncRecordedProgress(false);
+      if (attempt < 4 && (error.status == null || error.status >= 500)) {
         const delay = Math.min(1000 * 2 ** attempt, 8000);
         setTimeout(() => saveRow(row, attempt + 1), delay);
       }
@@ -133,8 +186,11 @@ if (!board) {
 
   board.querySelectorAll('[data-lane-row][data-lane-id]').forEach((row) => {
     syncTimeEnabled(row);
+    updatePreview(row);
     if (row.dataset.saveState === 'saved') {
       setState(row, 'saved');
+    } else if (!locked && (row.querySelector('[data-time-input]')?.value ?? '').trim() !== '') {
+      saveRow(row);
     }
 
     row.querySelector('[data-status-input]')?.addEventListener('change', () => {

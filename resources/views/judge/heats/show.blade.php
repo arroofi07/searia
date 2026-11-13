@@ -28,7 +28,7 @@
                 @else
                     <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">Belum dikunci</span>
                 @endif
-                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">{{ $recordedCount }}/{{ $occupiedCount }} lintasan tercatat</span>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700" data-recorded-count>{{ $recordedCount }}/{{ $occupiedCount }} lintasan tercatat</span>
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -212,5 +212,6 @@
 @endsection
 
 @push('scripts')
-    @include('layouts.partials.vite', ['entrypoints' => ['resources/js/heat-results.js']])
+    {{-- Skrip ini wajib jalan tanpa build Vite. CSS punya cadangan statis; penyimpanan waktu tidak. --}}
+    <script type="module" src="{{ route('assets.judge-script', 'heat-autosave.js') }}?v={{ filemtime(resource_path('js/heat-autosave.js')) }}"></script>
 @endpush

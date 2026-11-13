@@ -35,6 +35,7 @@ use App\Http\Controllers\BrandImageController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\JudgeScriptController;
 use App\Http\Controllers\Judge\HeatLaneResultController;
 use App\Http\Controllers\Judge\HeatResultController;
 use App\Http\Controllers\Judge\TaskListController;
@@ -58,6 +59,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/brand/{name}', BrandImageController::class)
     ->where('name', 'logo|event-logo|apple-touch-icon|favicon')
     ->name('brand.image');
+
+Route::get('/js/judge/{script}', JudgeScriptController::class)
+    ->where('script', '[A-Za-z0-9._-]+')
+    ->name('assets.judge-script');
 
 Route::get('/media/competitions/{competition}/logo', CompetitionLogoController::class)
     ->name('public.competitions.logo');
